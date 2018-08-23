@@ -8,12 +8,12 @@ load('test/gbm/viper.rda')
 load('test/gbm/gbm-cindy.rda')
 load('test/gbm/gbm-rawcnv.rda')
 load('test/gbm/gbm-rawsnp.rda')
-load('test/gbm/preppi.pvals.ENTREZ.rda')
+load('test/preppi.pvals.ENTREZ.rda')
 load('test/gbm/gbm-fCNV.rda')
 
-fusions <- as.matrix(read.table("test/gbm/gbm.txt", header=T, check.names=F, row.names=1))
+fusions <- as.matrix(read.table("test/gbm/gbm-fusions_PRADA-calls.txt", header=T, check.names=F, row.names=1))
 
-gene.loc.mapping <- read.table("test/gbm/metadata/name.loc.map.txt", header=T)
+gene.loc.mapping <- read.table("metadata/name.loc.map.txt", header=T)
 
 #  CINDY and PREPPI used here for ranking
 pathways = list()
@@ -33,7 +33,7 @@ momaObj$Rank(use.cindy=TRUE)
 clustering.solutions <- momaObj$Cluster()
 # use clinical survival data to select the clustering solution / break ties in analytical solution. 
 # set the clustering variable to MOMA object
-clinical <- get.clin('test/gbm/gdac.broadinstitute.org_GBM.Merge_Clinical.Level_1.2016012800.0.0/GBM.clin.merged.txt')
+clinical <- get.clin('test/gbm/GBM.clin.merged.txt')
 res <- get.best.clustering.supervised(cluster.sweep=clustering.solutions, clinical=clinical, tissue=tissue, progression.free.surv=TRUE)
 momaObj$sample.clustering <- res$clustering
 # clustering -> pass to genomic coverage. 
