@@ -1,0 +1,13 @@
+Package: MOMA
+Version: 0.1
+Date: 2018-03-30
+Title: Multi Omic Master Regulator Analysis
+Author: Evan O Paull <evanpaull@gmail.com>
+Maintainer: Evan O Paull <evanpaull@gmail.com>
+Depends: R (>= 2.2.0)
+Imports: 
+Description: 
+License: GPL Version 3 or later
+RoxygenNote: 5.0.1
+NeedsCompilation: no
+Packaged: 
