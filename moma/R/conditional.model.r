@@ -46,11 +46,13 @@ conditional.p <- function(gene.name, condition.on, x) {
 
 }
 
-#'
+#' Implements the conditional Bayes model to combine VIPER scores with diggit and pathway scores
 #'
 #' @param viper.scores numeric Vector 
 #' @param pathway.scores List , double indexed by each pathway dataset, then with type char. Each points to a numeric score vectors in [0,R+] for each
 #' @param diggit.scores List indexed by type char, with numeric score vectors in [0,R+] for each
+#' @return a named vector of empirical p-values for each protein/candidate Master Regulator
+#' @export
 conditional.model <- function(viper.scores, diggit.scores, pathway.scores) {
 
 	integrated.pvals <- unlist(lapply(names(viper.scores), function(VIP) {

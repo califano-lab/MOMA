@@ -3,16 +3,17 @@
 ## Interface definitions section:
 ##
 
-source("moma/R/cnv.functions.r")
-source("moma/R/diggit.r")
-source("moma/R/conditional.model.r")
-source("moma/R/genomic.saturation.r")
+source("R/cnv.functions.r")
+source("R/diggit.r")
+source("R/conditional.model.r")
+source("R/genomic.saturation.r")
 library(qvalue)
 library(parallel)
 library(atools)
 library(clusterpam)
 library(MKmisc)
 
+#' @export
 momaRunner <- setRefClass("momaRunner", fields=
 	list(viper="matrix",
 	mut="matrix",
@@ -182,9 +183,14 @@ momaRunner <- setRefClass("momaRunner", fields=
 
 
 #
-# constructor
-# @param cytoband.mapping : vector of band locations, names are Entrez IDs
-#
+#' MOMA Constructor
+#' @param mut : an indicator matrix (0/1) of mutation events with samples as columns and genes as rows
+#' @param fusions : an indicator matrix (0/1) of fusion events with samples as columns and genes as rows
+#' @param cnv : a matrix of CNV scores (typically SNP6 array scores from TCGA) with samples as columns and genes as rows
+#' @param pathways : a named list of lists. Each named list represents interactions between proteins (keys) and their associated partners
+#' @param cytoband.mapping : vector of band locations, names are Entrez IDs
+#' @return an instance of class momaRunner
+#' @export
 moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist=NULL, output.folder=NULL, gene.loc.mapping=NULL) {
 	viper <- samplename.filter(viper)
 	mut <- samplename.filter(mut)
@@ -268,6 +274,7 @@ moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist=
 #' @param : pathway - a list indexed by TF/MR entrez ID, contains the 
 #' 	named vector of p-values for interactions 
 #' @returns numeric vector, zscores for each TF/MR
+#' @export
 pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only=TRUE) {
 
 	pathway.pvals <- mclapply(names(diggit.int), function(tf) {
@@ -325,6 +332,7 @@ pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only=TRUE) {
 }
 
 #' dispatch method for either CNV location corrected or SNV
+#' @export
 stouffer.integrate <- function(interactions, cytoband.map=NULL) {
 	z <- NULL
 	if (!is.null(cytoband.map)) {

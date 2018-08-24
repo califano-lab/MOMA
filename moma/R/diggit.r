@@ -7,6 +7,7 @@
 #' @param pos.nes.only : use only positive NES scores to rank proteins (default TRUE)
 #' 
 #' @returns list indexed by TF, a stouffer integrated z-score
+#' @export
 stouffer.integrate.diggit <- function(interactions, from.p=FALSE, pos.nes.only=TRUE) {
 
 	##
@@ -51,6 +52,7 @@ stouffer.integrate.diggit <- function(interactions, from.p=FALSE, pos.nes.only=T
 #' @param nes.scores : matrix with tfs as columns, rows are genomic events
 #' @returns a list (indexed by VIPER protein) of significant genomic interactions 
 #' and associated pvals over the background (null TF) model, and NES scores
+#' @export
 sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh=0.05, cindy.only=TRUE) {
 
 	pvals.matrix <- get.pvals.matrix(corrected.scores)
@@ -131,7 +133,7 @@ sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh
 #'
 #'
 #'
-#'
+#' @export
 associate.events <- function(vipermat, events.mat, min.events=NA, whitelist=NA, blacklist=NA) {
 
 	if (is.null(events.mat)) {
@@ -181,6 +183,7 @@ associate.events <- function(vipermat, events.mat, min.events=NA, whitelist=NA, 
 #' @param vipermat viper inferences matrix, samples are columns, rows are TF entrez gene IDs 
 #' @param nes scores for each mutation (rows) against each TF (columns) 
 #' @param null.TFs low-importance TFs used to calculate null distributions
+#' @export
 get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alt="greater") {
 
 	# subset NES to Viper Proteins in the vipermat only

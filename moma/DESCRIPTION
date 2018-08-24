@@ -1,13 +1,10 @@
-Package: MOMA
-Version: 0.1
-Date: 2018-03-30
+Package: moma
 Title: Multi Omic Master Regulator Analysis
-Author: Evan O Paull <evanpaull@gmail.com>
-Maintainer: Evan O Paull <evanpaull@gmail.com>
-Depends: R (>= 2.2.0)
-Imports: 
-Description: 
+Version: 0.0.0.9000
+Authors@R: person("Evan", "Paull", email = "evan.paull@gmail.com", role = c("aut", "cre"))
+Description: Inference of candidate master regulator proteins from multi-omics' data
+Depends: R (>= 3.5.0)
 License: GPL Version 3 or later
-RoxygenNote: 5.0.1
-NeedsCompilation: no
-Packaged: 
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.0.9000
