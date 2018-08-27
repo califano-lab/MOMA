@@ -1,5 +1,5 @@
 
-#library(parallel)
+library(qvalue)
 
 #'
 #' @param interactions : list indexed by TF, includes z-scores or p-values for each interacting event

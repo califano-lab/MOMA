@@ -7,6 +7,7 @@ source("R/cnv.functions.r")
 source("R/diggit.r")
 source("R/conditional.model.r")
 source("R/genomic.saturation.r")
+
 library(qvalue)
 library(parallel)
 library(atools)
@@ -63,6 +64,7 @@ momaRunner <- setRefClass("momaRunner", fields=
 			# Save aREA results
 			# Save aREA results
 			print ("Writing hypotheses...")
+			dir.create(output.folder, showWarnings=FALSE)
 			write.table(amps.hypotheses,file=paste0(output.folder, "/hypotheses.amps.txt"), quote=F, sep="\t")
 			write.table(dels.hypotheses,file=paste0(output.folder, "/hypotheses.dels.txt"), quote=F, sep="\t")
 			write.table(mut.hypotheses,file=paste0(output.folder, "/hypotheses.muts.txt"), quote=F, sep="\t")
