@@ -9,6 +9,7 @@ is.entrezIDs <- function(vec) {
 
 #' @param momaObj : numeric vector with cluster membership, names are samples
 #' @param clustering.solution : 
+#' @export
 get.coverage <- function(momaObj, viper.samples, clustering.solution, topN=100, mutation.filter=NULL) {
 
 	if (class(momaObj) != 'momaRunner') {
@@ -54,6 +55,7 @@ get.coverage <- function(momaObj, viper.samples, clustering.solution, topN=100, 
 #' @param filter.priors : use only CHASM and Gistic validated events? Default TRUE
 #' mutation driver prediction based on the nucleotide change
 #' @param mutation.filter : a vector of whitelisted mutation events, in entrez gene IDs
+#' @export
 sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map, cnv.threshold=0.5, mutation.filter=NULL, verbose=FALSE, idx.range=NULL) {
 
 	if (is.null(momaObj$hypotheses)) {
@@ -224,6 +226,11 @@ sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map
 	coverage
 }
 
+#' Return a set of events 'covered' by specified cMR-event interactions 
+#' @param interactions : list indexed by amp/mut/del/fus - from cMRs to interacting events
+#' @param selected.tfs : for each event type list, search within only these cMRS
+#' @returns a list of events 'covered' by the supplied interactions of type mut/amp/del/fus
+#' @export
 valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selected.tfs) {
 	
 	if (length(selected.tfs)==0) {
@@ -299,6 +306,7 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 
 #' helper function: subset a list to the set of keys supplied
 #' return the names of interactions with positive values, in a list structure
+#' @export
 subset.list.interactions <- function(int.l, keys) {
 
 	filtered.I <- lapply(keys, function(key, interactions) {
@@ -312,6 +320,7 @@ subset.list.interactions <- function(int.l, keys) {
 	filtered.I
 }
 
+#' @export
 merge.lists <- function(l1, l2) {
 
 	merged <- list()

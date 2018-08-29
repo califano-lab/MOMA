@@ -2,9 +2,10 @@
 library(reshape)
 library(methods)
 
-# mapping: a named vector of genomic locations/cytoband IDs. 
-# names are the gene names for each--i.e. a many to one mapping from HUGO or entrez IDs to
-# cytoband location
+#' mapping: a named vector of genomic locations/cytoband IDs. 
+#' names are the gene names for each--i.e. a many to one mapping from HUGO or entrez IDs to
+#' cytoband location
+#' @export
 mapScores.cnvBand <- function(mapping, diggit.interactions, from.p=FALSE, pos.nes.only=TRUE) {
 
 	# apply over each TF/MR:
@@ -82,6 +83,7 @@ mapScores.cnvBand <- function(mapping, diggit.interactions, from.p=FALSE, pos.ne
 
 #' diggit.interactions: list indexed by MR/TF name in Entrez Space
 #' 	each points to a named vector of NES / z-scores associated with entrez IDs for each interacting event. 
+#' @export
 cnvScoreStouffer <- function(mapping, diggit.interactions, cytoband=TRUE, from.p=FALSE, pos.nes.only=TRUE) {
 
 	mapped.diggit <- mapScores.cnvBand(mapping, diggit.interactions, from.p=FALSE, pos.nes.only=TRUE)

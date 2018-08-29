@@ -3,17 +3,18 @@
 ## Interface definitions section:
 ##
 
-source("R/cnv.functions.r")
-source("R/diggit.r")
-source("R/conditional.model.r")
-source("R/genomic.saturation.r")
+#source("R/cnv.functions.r")
+#source("R/diggit.r")
+#source("R/conditional.model.r")
+#source("R/genomic.saturation.r")
 
-library(qvalue)
-library(parallel)
-library(atools)
-library(clusterpam)
-library(MKmisc)
-
+#' @import qvalue
+#' @import parallel
+#' @import atools
+#' @import clusterpam
+#' @import reshape2
+#' @import tidyverse
+#' @import MKmisc
 #' @export
 momaRunner <- setRefClass("momaRunner", fields=
 	list(viper="matrix",

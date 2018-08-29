@@ -6,7 +6,7 @@
 #' @param gene.name Character
 #' @param x named Vector of scores for the distribution
 #' @return a numeric p-value between 0 and 1
-#' @export 
+#' @export
 empirical.p <- function(gene.name, x) {
 
 	# unranked genes in either distribution should get no score from this
@@ -24,7 +24,7 @@ empirical.p <- function(gene.name, x) {
 #' @param condition.on named Vector of scores for the distribution we are conditioning ON
 #' @param x named Vector of scores for the dependent distribution
 #' @return a numeric p-value between 0 and 1
-#' @export 
+#' @export
 conditional.p <- function(gene.name, condition.on, x) {
 
 	# null ranks for all: return NA

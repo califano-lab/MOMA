@@ -4,6 +4,7 @@ suppressMessages( library(survival) )
 suppressMessages( library(RColorBrewer) )
 
 #' parse the full clinical merged file from GDAC/Firehose and make a dlpyr tibble out of it
+#' @export
 get.clin <- function(clin.file=NULL) {
 
 	if (is.null(clin.file)) {
@@ -24,6 +25,7 @@ get.clin <- function(clin.file=NULL) {
 }
 
 #' Add clustering solutions to the tibble dataset 'survObj' and return
+#' @export
 tibble.add_clusters <- function(data, clustering) {
 
 	# Make a joint vector
@@ -45,6 +47,7 @@ tibble.add_clusters <- function(data, clustering) {
 }
 
 #' Add a survival object to the tibble dataset 'survObj' and return
+#' @export
 tibble.survfit <- function(data) {
 
 	data$days.death <- as.numeric(apply(as.matrix(data %>% dplyr::select(contains("days_to_death"))), 1, function(x) max(na.omit(x))))
@@ -89,6 +92,7 @@ tibble.survfit <- function(data) {
 }
 
 #' progression free survival
+#' @export
 tibble.survfit.progression_free <- function(data) {
 
 	data$days.death <- as.numeric(apply(as.matrix(data %>% dplyr::select(contains("days_to_death"))), 1, function(x) max(na.omit(x))))
@@ -144,6 +148,7 @@ tibble.survfit.progression_free <- function(data) {
 }
 
 
+#' @export
 tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.surv=FALSE) {
 
 	names(clustering) <- unlist(lapply(strsplit(names(clustering), '-'), function(x) paste(x[1:3], collapse='-')))
@@ -178,6 +183,7 @@ tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.
 
 #' Get the set of optimal clusterings from the Silhouette results
 #' Find the one that optimizes survival
+#' @export
 get.best.clustering.supervised <- function(cluster.sweep=NULL, clinical.tibble, tissue, progression.free.surv=FALSE) {
 
 	##
@@ -238,6 +244,7 @@ get.best.clustering.supervised <- function(cluster.sweep=NULL, clinical.tibble, 
 }
 
 #' get the best and worst clustering solutions, just plot those
+#' @export
 survplot.best.v.worst <- function(clinical.tibble, clustering, output, title.print) {
 	
 	names(clustering) <- unlist(lapply(strsplit(names(clustering), '-'), function(x) paste(x[1:3], collapse='-')))

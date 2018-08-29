@@ -172,7 +172,7 @@ associate.events <- function(vipermat, events.mat, min.events=NA, whitelist=NA, 
 		return (NULL)
 	}
 
-	nes <- aREA.enrich(events.mat, vipermat)
+	nes <- moma::aREA.enrich(events.mat, vipermat)
 	nes
 }
 
@@ -195,7 +195,7 @@ get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alt="greater") 
 		null.VEC <- null.VEC[which(!is.na(null.VEC))]
 		# get empirical q-values for both upper and lower tails of NES 
 		# / DIGGIT statistics
-		qvals <- get.empirical.qvals(x, null.VEC)
+		qvals <- moma::get.empirical.qvals(x, null.VEC)
 		qvals
 	}, alternative=alt)
 
@@ -203,20 +203,22 @@ get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alt="greater") 
 	nes.em.qvals
 }
 
+#' 
+#' @export
 aREA.enrich <- function(events.mat, vipermat) {
 	
 	# Convert mutations into a regulon-like object
-	events.regulon<-apply(events.mat,1,function(x){
-				l<-names(x[which(x==TRUE)])
-				return(l)
-			})
+	events.regulon <- apply(events.mat,1,function(x){
+		l<-names(x[which(x==TRUE)])
+		return(l)
+	})
 
 	# Calculate raw enrichment scores: 
 	# each mutation against each TF
 	# columns are TFs, rownames are mutations
-	es <- rea(t(vipermat), events.regulon)
+	es <- moma::rea(t(vipermat), events.regulon)
 	# Analytical correction
-	dnull <- reaNULL(events.regulon)
+	dnull <- moma::reaNULL(events.regulon)
 	
 	# Calculate pvalue of ES
 	pval <- t(sapply(1:length(dnull), function(i, es, dnull) {
@@ -311,7 +313,7 @@ rea <- function(eset, regulon, minsize=1,maxsize=Inf) {
 #' @param regulon A list with genomic features as its names and samples as its entries
 #' @param minsize Minimum number of event (or size of regulon) to calculate the model with 
 #' @return A list of functions to compute NES and p-value
-#' @export 
+#' @export
 reaNULL <- function(regulon,minsize=1,maxsize=Inf) {
 	# Filter for minimum sizes
 	sizes<-sapply(regulon,length)
@@ -340,6 +342,8 @@ reaNULL <- function(regulon,minsize=1,maxsize=Inf) {
 }
 
 
+#'
+#' @export
 get.pvals.matrix <- function(corrected.scores) {
 	# order of VIPER proteins/TFs
 	tf.names.order <- names(corrected.scores[[1]]$qvals)
@@ -353,7 +357,8 @@ get.pvals.matrix <- function(corrected.scores) {
 	pvals.matrix
 }
 
-
+#'
+#' @export
 viper.getTFScores <- function(vipermat, fdr.thresh=0.05) {
 
 	# for each gene, count the number samples with scores for each, and weight 
@@ -386,6 +391,8 @@ viper.getTFScores <- function(vipermat, fdr.thresh=0.05) {
 	zscores 
 }
 
+#'
+#' @export
 viper.getSigTFS <- function(zscores, fdr.thresh=0.05) {
 
         # calculate pseudo-pvalues and look at just significant pvals/scores
@@ -398,6 +405,8 @@ viper.getSigTFS <- function(zscores, fdr.thresh=0.05) {
 	names(pvals)
 }
 
+#'
+#' @export
 samplename.filter <- function(mat) {
 	# filter down to sample Id without the 'A/B/C sample class'. 
 	sample.ids <- sapply(colnames(mat), function(x) substr(x, 1, 15))
@@ -405,6 +414,8 @@ samplename.filter <- function(mat) {
 	mat
 }
 
+#'
+#' @export
 get.empirical.qvals <- function(test.statistics, null.statistics, alternative='both') {
 
 	# calculate the upper and lower tail

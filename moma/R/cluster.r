@@ -1,6 +1,7 @@
 		
 
-
+#'
+#' @export
 cluster.sweep <- function() { 
 
 	dist.obj <- as.dist(viperSimilarity(w.vipermat, ws=2, method="two.sided"))
