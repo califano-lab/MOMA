@@ -15,6 +15,8 @@
 #' @import reshape2
 #' @import tidyverse
 #' @import MKmisc
+#' @import survival
+#' @import RColorBrewer
 #' @export
 momaRunner <- setRefClass("momaRunner", fields=
 	list(viper="matrix",
