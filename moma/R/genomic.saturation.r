@@ -8,7 +8,8 @@ is.entrezIDs <- function(vec) {
 }
 
 #' @param momaObj : numeric vector with cluster membership, names are samples
-#' @param clustering.solution : 
+#' @param viper.samples : calculate the genomic coverage only for these sample
+#' @param clustering.solution : a vector of numeric cluster membership values, named by sample IDs
 #' @export
 get.coverage <- function(momaObj, viper.samples, clustering.solution, topN=100, mutation.filter=NULL) {
 
