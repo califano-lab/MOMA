@@ -2,6 +2,9 @@
 library(qvalue)
 
 #'
+#' Use Stouffer's method to combine z-scores of DIGGIT interactions for each cMR protein.
+#' Combines only positively associated DIGGIT scores by default.  
+#' 
 #' @param interactions : list indexed by TF, includes z-scores or p-values for each interacting event
 #' @param from.p : integrate p-values or z-scores (default z-scores; from.p = FALSE)
 #' @param pos.nes.only : use only positive NES scores to rank proteins (default TRUE)
@@ -130,9 +133,13 @@ sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh
 
 
 #'
-#'
-#'
-#'
+#' Use 'aREA' to calculate the enrichment between each genomic event - VIPER inferred protein pair. 
+#' Requires pre-computed VIPER scores and a binary events matrix. Will use only samples in both event and VIPER matrices. 
+#' @param vipermat : pre-computed VIPER scores with samples as columns and proteins as rows 
+#' @param events.mat : binary 0/1 events matrix with samples as columns and genes or events as rows
+#' @param : whitelist : only compute associations for events in this list
+#' @param : blacklist : exclude associations for events in this list
+#' @param : min.events : only compute enrichment if the number of samples with these events is GTE to this
 #' @export
 associate.events <- function(vipermat, events.mat, min.events=NA, whitelist=NA, blacklist=NA) {
 
@@ -183,8 +190,10 @@ associate.events <- function(vipermat, events.mat, min.events=NA, whitelist=NA, 
 #' @param vipermat viper inferences matrix, samples are columns, rows are TF entrez gene IDs 
 #' @param nes scores for each mutation (rows) against each TF (columns) 
 #' @param null.TFs low-importance TFs used to calculate null distributions
+#' @param alt : alternative defaults to 'both' : significant p-values can come from both sides of the null distribution 
+#' @returns : a named list of qvalues for each TF/cMR protein. Each entry contains a vector of q-values for all associated events; names are gene ids 
 #' @export
-get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alt="greater") {
+get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alternative='both') {
 
 	# subset NES to Viper Proteins in the vipermat only
 	nes <- nes[,as.character(rownames(vipermat))]
@@ -195,15 +204,19 @@ get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alt="greater") 
 		null.VEC <- null.VEC[which(!is.na(null.VEC))]
 		# get empirical q-values for both upper and lower tails of NES 
 		# / DIGGIT statistics
-		qvals <- moma::get.empirical.qvals(x, null.VEC)
+		qvals <- moma::get.empirical.qvals(x, null.VEC, alternative)
 		qvals
-	}, alternative=alt)
+	}, alternative=alternative)
 
 	names(nes.em.qvals) <- rownames(nes)
 	nes.em.qvals
 }
 
 #' 
+#' Compute aREA enrichment between all pairwise combinations of VIPER proteins and events
+#' @param events.mat : a binary 0/1 matrix with samples as columns and rows as genes/events
+#' @param vipermat : a matrix of inferred VIPER activities with samples as columns and rows as proteins
+#' @returns a matrix of network enrichment scores (NES) with rows as event/gene names and columns as VIPER protein names
 #' @export
 aREA.enrich <- function(events.mat, vipermat) {
 	
@@ -437,6 +450,8 @@ get.empirical.qvals <- function(test.statistics, null.statistics, alternative='b
 		names(qvals) <- names(test.statistics)
 		names(em.pvals) <- names(test.statistics)
 		return (list(qvals=qvals, pvals=em.pvals)) 
+	} else {
+		stop(paste(" alternative ", alternative , " not implemented yet!"))
 	}
 }
 
