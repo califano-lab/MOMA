@@ -1,8 +1,7 @@
 Package: moma
 Title: Multi Omic Master Regulator Analysis
 Version: 0.0.0.9000
-Authors@R: c(person("Evan", "Paull", email = "evan.paull@gmail.com", role = c("aut", "cre")),
-	person("Sunny", "Jones", email = "sunnyjjones@gmail.com, role = c("aut", "cre")))
+Authors@R: c(person("Evan", "Paull", email = "evan.paull@gmail.com", role = c("aut", "cre")), person("Sunny", "Jones", email = "sunnyjjones@gmail.com", role = c("aut")))
 Description: Inference of candidate master regulator proteins from multi-omics' data
 Depends: R (>= 3.5.0)
 License: GPL Version 3 or later
