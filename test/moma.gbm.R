@@ -12,7 +12,7 @@ load('test/gbm/gbm-fCNV.rda')
 
 fusions <- as.matrix(read.table("test/gbm/gbm-fusions_PRADA-calls.txt", header=T, check.names=F, row.names=1))
 
-gene.loc.mapping <- read.table("metadata/name.loc.map.txt", header=T)
+gene.loc.mapping <- read.table("test/name.loc.map.txt", header=T)
 
 #  CINDY and PREPPI used here for ranking
 pathways = list()
