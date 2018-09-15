@@ -11,6 +11,5 @@ RoxygenNote: 6.1.0.9000
 Imports:
 	parallel (>= 3.5.0),
 	qvalue (>= 2.12.0),
-	atools (>= 1.19),
 	clusterpam (>= 0.1),
 	reshape2 (>= 1.4.3)

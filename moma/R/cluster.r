@@ -1,6 +1,8 @@
 		
 
 #'
+#' @import clusterpam
+#' @import parallel
 #' @export
 cluster.sweep <- function() { 
 

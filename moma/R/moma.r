@@ -10,7 +10,6 @@
 
 #' @import qvalue
 #' @import parallel
-#' @import atools
 #' @import clusterpam
 #' @import reshape2
 #' @import tidyverse
