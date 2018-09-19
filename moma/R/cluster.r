@@ -1,5 +1,6 @@
 		
-
+library(clusterpam)
+library(parallel)
 #'
 #' @import clusterpam
 #' @import parallel

@@ -2,8 +2,10 @@
 suppressMessages( library(tidyverse) )
 suppressMessages( library(survival) )
 suppressMessages( library(RColorBrewer) )
+suppressMessages( library(RColorBrewer) )
 
 #' parse the full clinical merged file from GDAC/Firehose and make a dlpyr tibble out of it
+#' @import 
 #' @export
 get.clin <- function(clin.file=NULL) {
 
