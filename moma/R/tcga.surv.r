@@ -17,11 +17,11 @@ get.clin <- function(clin.file=NULL) {
 		clin.file <- paste0(clin.dir, '/', tissue, '.clin.merged.txt')
 	}
 
-	data <- t(read_tsv(clin.file, col_names=FALSE))
+	data <- t(readr::read_tsv(clin.file, col_names=FALSE))
 	patient.barcodes <- as.character(data[,which(data[1,]=="patient.bcr_patient_barcode")])
 	rownames(data) <- patient.barcodes
 	colnames(data) <- data[1,]
-	clinical <- as_tibble(data)
+	clinical <- tibble::as_tibble(data)
 
 	clinical
 }
@@ -34,12 +34,12 @@ tibble.add_clusters <- function(data, clustering) {
 	data$samples <- toupper(data$patient.bcr_patient_barcode)
 
 	clusters <- data.frame(samples=names(clustering), cluster=clustering)
-	res <- inner_join(data, clusters, by=c("samples"="samples"))
+	res <- dplyr::inner_join(data, clusters, by=c("samples"="samples"))
 	if (length(res$cluster)==0) {
 		# likely that clustering names are not patient ids but full sample ids: remove the last -01 and it should work
 		names(clustering) <- unlist(lapply(strsplit(names(clustering), '-'), function(x) paste(x[1:3], collapse='-')))
 		clusters <- data.frame(samples=names(clustering), cluster=clustering)
-		res <- inner_join(data, clusters, by=c("samples"="samples"))
+		res <- dplyr::inner_join(data, clusters, by=c("samples"="samples"))
 		if (length(res$cluster)==0) {
 			print ("Failed to add clustering solution in tibble.add_clusters, sample names didn't match!")
 			q();
@@ -88,7 +88,7 @@ tibble.survfit <- function(data) {
 		q();
 	}
 	
-	data$survObj <- Surv(data$days.last_observed, data$vital_status.binary)
+	data$survObj <- survival::Surv(data$days.last_observed, data$vital_status.binary)
 
 	data
 }
@@ -144,7 +144,7 @@ tibble.survfit.progression_free <- function(data) {
 		q();
 	}
 	
-	data$survObj <- Surv(data$days.last_remission_free, data$remission_status_binary)
+	data$survObj <- survival::Surv(data$days.last_remission_free, data$remission_status_binary)
 
 	data
 }
@@ -162,7 +162,7 @@ tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.
 		clin.tibble <- tibble.survfit.progression_free(clin.tibble)
 	}
 	# Find the best and worst surviving clusters based on the statistics
-	SurvDiff <- survdiff(survObj ~ cluster, data=clin.tibble, rho=0)
+	SurvDiff <- survival::survdiff(survObj ~ cluster, data=clin.tibble, rho=0)
 	pval.overall <- 1 - pchisq(SurvDiff$chisq, length(SurvDiff$n) - 1)
 
 	survival.scores <- SurvDiff$obs/SurvDiff$exp
@@ -177,7 +177,7 @@ tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.
 	} else {
 		clin.subset <- tibble.survfit.progression_free(clin.subset)
 	}
-	SurvDiff.best_worst <- survdiff(survObj ~ cluster, data=clin.subset, rho=0)
+	SurvDiff.best_worst <- survival::survdiff(survObj ~ cluster, data=clin.subset, rho=0)
 	pval.best_worst <- 1 - pchisq(SurvDiff.best_worst$chisq, length(SurvDiff$n) - 1)
 	list(survObj = clin.tibble$survObj, pval.best_v_worst = pval.best_worst, pval.overall = pval.overall, 
 		best.clus = best.surv.cluster, worst.clus = worst.surv.cluster)

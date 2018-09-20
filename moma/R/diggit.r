@@ -437,10 +437,10 @@ get.empirical.qvals <- function(test.statistics, null.statistics, alternative='b
 		test.statistics <- sort(abs(test.statistics), dec=T)
 		null.statistics <- abs(null.statistics)
 
-		em.pvals <- empPvals(test.statistics, null.statistics)
+		em.pvals <- qvalue::empPvals(test.statistics, null.statistics)
 		qvals <- rep(1, length(em.pvals))
 		tryCatch({	
-			qvals <- qvalue(em.pvals)$qvalue
+			qvals <- qvalue::qvalue(em.pvals)$qvalue
 		}, error = function(e) {
 			# if pi0, the estimated proportion of true null 
 			# hypothesis <= 0, it might fail: in that case set to zero

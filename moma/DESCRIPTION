@@ -12,4 +12,6 @@ Imports:
 	parallel (>= 3.5.0),
 	qvalue (>= 2.12.0),
 	clusterpam (>= 0.1),
-	reshape2 (>= 1.4.3)
+	reshape2 (>= 1.4.3),
+	tidyverse (>= 1.2.0),
+	MKmisc (>= 1.1)

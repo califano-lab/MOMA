@@ -160,7 +160,7 @@ momaRunner <- setRefClass("momaRunner", fields=
                 	print ("using pearson correlation with weighted vipermat")
                 	dist.obj <- corDist(t(w.vipermat), method="pearson")
 			print ("testing clustering options, k = 2..15")
-			search.results <- clusterRange(dist.obj, range=as.numeric(c(2,15)), step=1, cores=2, method='pam')
+			search.results <- clusterpam::clusterRange(dist.obj, range=as.numeric(c(2,15)), step=1, cores=2, method='pam')
 			search.results
 		}, 
 		saturationPlots = function(clustering.solution=NULL, cov.fraction=0.85) {
@@ -281,7 +281,7 @@ moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist=
 #' @export
 pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only=TRUE) {
 
-	pathway.pvals <- mclapply(names(diggit.int), function(tf) {
+	pathway.pvals <- parallel::mclapply(names(diggit.int), function(tf) {
 
 		partners.pvals <- pathway[[as.character(tf)]]
 
