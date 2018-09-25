@@ -240,7 +240,7 @@ get.best.clustering.supervised <- function(cluster.sweep=NULL, clinical.tibble, 
 	# surv.res$worst.clus
 	# redo surv objets
 	
-	survplot.best.v.worst(clinical.tibble, clustering, 'results/survival.supervised.png', paste(toupper(tissue), " supervised clustering, best vs worst survival clusters"))
+	survplot.best.v.worst(clinical.tibble, clustering, 'survival.supervised.png', paste(toupper(tissue), " supervised clustering, best vs worst survival clusters"))
 
 	list(clustering=clustering, clustering.k=best.k, pval.overall=pvals.overall[1], pval.best_v_worst=pvals.best_v_worst[1], clus.choices=list('best'=surv.res$best.clus, 'worst'=surv.res$worst.clus))
 }
@@ -253,7 +253,7 @@ survplot.best.v.worst <- function(clinical.tibble, clustering, output, title.pri
 	clin.tibble <- tibble.add_clusters(clinical.tibble, clustering)
 	clin.tibble <- tibble.survfit(clin.tibble)
 	# Find the best and worst surviving clusters based on the statistics
-	SurvDiff <- survdiff(survObj ~ cluster, data=clin.tibble, rho=0)
+	SurvDiff <- survival::survdiff(survObj ~ cluster, data=clin.tibble, rho=0)
 	print (SurvDiff)
 	survival.scores <- SurvDiff$obs/SurvDiff$exp
 	best.surv.cluster <- strsplit(names(SurvDiff$n)[survival.scores==min(survival.scores)], '=')[[1]][2]
@@ -262,12 +262,12 @@ survplot.best.v.worst <- function(clinical.tibble, clustering, output, title.pri
 	# Redo the survival analysis difference between just these clusters
 	clin.subset <- clin.tibble %>% dplyr::filter(cluster %in% as.numeric(c(best.surv.cluster, worst.surv.cluster)))
 	clin.subset <- tibble.survfit(clin.subset)
-	SurvDiff <- survdiff(survObj ~ cluster, data=clin.subset, rho=0)
+	SurvDiff <- survival::survdiff(survObj ~ cluster, data=clin.subset, rho=0)
 	pval <- 1 - pchisq(SurvDiff$chisq, length(SurvDiff$n) - 1)
 
 	#import::from(survminer, ggsurvplot)
 
-	fit <- survfit(survObj ~ cluster, data=clin.subset)
+	fit <- survival::survfit(survObj ~ cluster, data=clin.subset)
 	#ggsurvplot(fit, conf.int=T, pval=TRUE, xlim=c(0,2000))
 	#ggsave(output)
 	colors <- colorRampPalette(brewer.pal(8,"Dark2"))(2)

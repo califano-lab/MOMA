@@ -1,6 +1,9 @@
 #!/usr/bin/env	Rscript
 
 library(moma)
+library(parallel)
+library(clusterpam)
+library(magrittr)
 
 # load data/analyses
 load('test/gbm/viper.rda')
@@ -37,6 +40,7 @@ res <- get.best.clustering.supervised(cluster.sweep=clustering.solutions, clinic
 momaObj$sample.clustering <- res$clustering
 # clustering -> pass to genomic coverage. 
 #  
+
 #save(momaObj, file='momaObj.rda')
 
 momaObj$saturationPlots()
@@ -58,3 +62,6 @@ res <- sapply(1:5, function(x) {
 	# return rank orders
 	momaObj$ranks$integrated
 })
+
+save(momaObj, file='momaObj.rda')
+
