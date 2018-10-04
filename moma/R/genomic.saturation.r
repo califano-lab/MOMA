@@ -253,7 +253,14 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 	mut.I <- subset.list.interactions(interactions[['mut']], mut.tfs)
 	del.I <- subset.list.interactions(interactions[['del']], del.tfs)
 	amp.I <- subset.list.interactions(interactions[['amp']], amp.tfs)
-	fus.I <- subset.list.interactions(interactions[['fus']], fus.tfs)
+	
+	# only subset if fusions exist
+	# fusions IDs are unique , nothing else necessary
+	if (length(fus.tfs) >= 1){
+	  fus.I <- subset.list.interactions(interactions[['fus']], fus.tfs)
+	  covered.fusions <- fus.I
+	}
+	
 
 	# Add cnv events to mutation coverage, as either copy number variation is 
 	# valid evidence for explaining a patient's mutation  
@@ -265,8 +272,7 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 	covered.amps <- merge.lists(amp.I, mut.I)
 	covered.dels <- merge.lists(del.I, mut.I)
 
-	# fusions IDs are unique , nothing else necessary
-	covered.fusions <- fus.I
+	
 
 	# create a new mapping from TF in Entrez -> event location
 	covered.amps.LOC <- lapply(names(covered.amps), function(x, I, cnv) {
@@ -301,8 +307,12 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 		print("Error: something went wrong when mapping deletion Entrez.IDs to Cytoband IDs. Quitting...")
 		quit(status=1)
 	}
-
-	return (list(mut=covered.mutations, amp=covered.amps.LOC, del=covered.dels.LOC, fus=covered.fusions))
+	
+	# don't incorporate fusions into final list object unless they exist 
+	if (length(fus.tfs) >= 1) {
+	  return (list(mut=covered.mutations, amp=covered.amps.LOC, del=covered.dels.LOC, fus=covered.fusions))
+	} else {
+	  return (list(mut=covered.mutations, amp=covered.amps.LOC, del=covered.dels.LOC)) }
 }
 
 #' helper function: subset a list to the set of keys supplied
