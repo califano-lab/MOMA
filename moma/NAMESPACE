@@ -3,6 +3,7 @@
 S3method(merge,lists)
 S3method(subset,list.interactions)
 export(aREA.enrich)
+export(aREA.regulon_enrich)
 export(associate.events)
 export(cluster.sweep)
 export(cnvScoreStouffer)
