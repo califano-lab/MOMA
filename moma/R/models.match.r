@@ -3,6 +3,9 @@
 ## Functions to match cell line and other model systems or cross-patient
 ## groups.
 ##
+library(RColorBrewer)
+fn1 <- colorRampPalette(c("#1E90FF", "#FFFFFF"))
+fn2 <- colorRampPalette(c("#FFFFFF", "#FF4500"))
 
 #' @import viper
 #' @import tidyverse
@@ -29,6 +32,33 @@ model_viperMatcher <- setRefClass("model_viperMatcher", fields=
 		similarity = function() {
 			joint.matrix <- as.matrix(cbind(patient.viper, model.viper))
 			vpsim <<- as.matrix(viperSimilarity(joint.matrix, ws=c(4, 2), method='two.sided'))
+		}, 
+		#' Plot the viper matrix of the best matching cell lines against the 
+		#' 
+		plot.bestMatch.heatmap = function(output.file) {
+
+			# features to select
+			features <- unlist(checkpoints)
+	
+			# for each patient cluster, match 
+
+
+			# select best match cell lines
+
+
+			pdf(output.file)
+			heatmap.2(clus.mat, 
+				col=c(fn1(25), fn2(25)), 
+				colsep=F, 
+				rowsep=F, 
+				distfun=corDist, 
+				tracecol=NA, 
+				dendrogram="col", 
+				Colv=FALSE, 
+				Rowv=FALSE, 
+			breaks=seq(-4,4, length.out=51))
+			dev.off()
+
 		}
 	)
 )

@@ -2,10 +2,8 @@
 # STES test dataset
 
 library(moma)
-source('moma/R/models.match.r')
 
-load('data/STES_vipermat.rda')
-load('data/ccle.large_intensine.rda')
+load('data/ccle.gbm.rda')
 
 patient.vipermat <- vipermat
 model.vipermat <- vpmat
@@ -15,7 +13,8 @@ STAD.checkpoint.entrezID <- as.character(read.table('data/stad.cMRs.txt', header
 checkpoints <- list()
 checkpoints[[1]] <- STAD.checkpoint.entrezID
 clusters <- list()
-clusters[[1]] <- colnames(patient.vipermat)
+clusters[[1]] <- colnames(patient.vipermat)[1:100]
+clusters[[2]] <- colnames(patient.vipermat)
 
 matchObj <- viperMatch.constructor(patient.viper=vipermat, 
 			model.viper=vpmat, 

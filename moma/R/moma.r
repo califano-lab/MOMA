@@ -32,6 +32,8 @@ momaRunner <- setRefClass("momaRunner", fields=
 	ranks="list",
 	hypotheses="list",
 	genomic.saturation="list",
+	coverage.summaryStats="list",
+	checkpoints="list",
 	sample.clustering="numeric"), # numbers are cluster assignments, names are sample ids matching other data
 	methods = list(
 		runDIGGIT = function(fCNV=NULL, cnvthr=0.5, min.events=4) {
@@ -174,12 +176,39 @@ momaRunner <- setRefClass("momaRunner", fields=
 			}
 			# get coverage for each subtype
 			coverage.subtypes <- list()
+			coverage.summaryStats <- list()
+			checkpoints <- list()
 			for (clus.id in unique(clustering.solution)) {
+
 				viper.samples <- colnames(viper[,names(clustering.solution[clustering.solution==clus.id])])
-				coverage.range <- get.coverage(.self, viper.samples, clustering.solution, topN=100)
+	
+				# Get subtype-specific rankings: use the main rank and include only those
+				# with high mean score
+				stouffer.zscores <- apply(viper[,viper.samples], 1, function(x) {
+					sum(na.omit(x))/sqrt(length(na.omit(x)))
+				})
+				pvals <- pnorm(sort(stouffer.zscores, dec=T), lower.tail=F)
+				sig.active.mrs <- names(pvals[p.adjust(pvals, method='bonferroni') < 0.01])
+				# ranked list of cMRs for this subtype
+				subtype.specific.MR_ranks <- sort(ranks[['integrated']][sig.active.mrs])
+
+				coverage.range <- get.coverage(.self, names(subtype.specific.MR_ranks), viper.samples, topN=100)
 				coverage.subtypes[[clus.id]] <- coverage.range
+
+				# 'solve' the checkpoint for each subtype
+
+				# 1) generate summary stats for mean fractional coverage
+				coverage.summaryStats[[clus.id]] <- merge.genomicSaturation(coverage.range, topN=100)
+				# compute best K based on fractional coverage
+				sweep <- coverage.summaryStats[[clus.id]]$fraction
+				names(sweep) <- coverage.summaryStats[[clus.id]]$k
+				best.k <- fit.curve.percent(sweep, frac=COV.FRACTION)
+				# pick the top cMRs based on this
+				checkpoints[[clus.id]] <- names(subtype.specific.MR_ranks[1:best.k])
 			}
 			genomic.saturation <<- coverage.subtypes
+			coverage.summaryStats <<- coverage.summaryStats
+			checkpoints <<- checkpoints
 		}
 	)
 )
