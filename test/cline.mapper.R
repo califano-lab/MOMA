@@ -3,23 +3,19 @@
 
 library(moma)
 
-load('data/ccle.gbm.rda')
+load('data/ccle.CNS.rda')
+load('momaObj.gbm.rda')
 
-patient.vipermat <- vipermat
+patient.vipermat <- momaObj$viper
 model.vipermat <- vpmat
 
-# test using a single checkpoint and single cluster that includes all patients
-STAD.checkpoint.entrezID <- as.character(read.table('data/stad.cMRs.txt', header=T)[,1])
-checkpoints <- list()
-checkpoints[[1]] <- STAD.checkpoint.entrezID
-clusters <- list()
-clusters[[1]] <- colnames(patient.vipermat)[1:100]
-clusters[[2]] <- colnames(patient.vipermat)
+checkpoints <- momaObj$checkpoints
+clusters <- momaObj$sample.clustering
 
-matchObj <- viperMatch.constructor(patient.viper=vipermat, 
-			model.viper=vpmat, 
+matchObj <- moma::viperMatch.constructor(patient.viper=patient.vipermat, 
+			model.viper=model.vipermat, 
 			checkpoints=checkpoints,
-			clusters=clusters)
+			clusters=lapply(unique(clusters), function(x) names(clusters[clusters==x])))
 
 matchObj$checkpoint.enrichments()
 matchObj$similarity()

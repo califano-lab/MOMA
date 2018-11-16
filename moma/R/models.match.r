@@ -4,6 +4,7 @@
 ## groups.
 ##
 library(RColorBrewer)
+library(gplots)
 fn1 <- colorRampPalette(c("#1E90FF", "#FFFFFF"))
 fn2 <- colorRampPalette(c("#FFFFFF", "#FF4500"))
 
@@ -31,7 +32,10 @@ model_viperMatcher <- setRefClass("model_viperMatcher", fields=
 		},
 		similarity = function() {
 			joint.matrix <- as.matrix(cbind(patient.viper, model.viper))
-			vpsim <<- as.matrix(viperSimilarity(joint.matrix, ws=c(4, 2), method='two.sided'))
+			res <- matrix(viperSimilarity(joint.matrix, ws=c(4, 2), method='two.sided'), ncol=ncol(joint.matrix))
+			rownames(res) <- colnames(joint.matrix)
+			colnames(res) <- colnames(joint.matrix)
+			vpsim <<- res
 		}, 
 		#' Plot the viper matrix of the best matching cell lines against the 
 		#' 
@@ -41,21 +45,49 @@ model_viperMatcher <- setRefClass("model_viperMatcher", fields=
 			features <- unlist(checkpoints)
 	
 			# for each patient cluster, match 
+			# determine sample order
+			data <- c()
+			for (clus.id in 1:length(clusters)) {
 
+				# patient samples
+				clus.samples <- clusters[[clus.id]]
+
+				# get mean match scores
+				model.scores <- sort(apply(vpsim[clus.samples,colnames(model.viper)], 2, mean), dec=T)
+
+				# significant matches to the checkpoint
+				cp.pvals <- 1-pnorm(matchObj$CP.enrichments[clus.id,])
+				cp.matches <- names(cp.pvals[p.adjust(cp.pvals, method='BH') < 0.05])
+				if (length(cp.matches)==0) {
+					print (paste("Warning, didn't find any matches to the checkpoint for cluster ", clus.id))
+					print ("Using viperSimilarity() only!")
+					selected.models <- names(sort(model.scores, dec=T))[1:3]
+				} else {
+					# get mean match scores
+					model.scores <- sort(apply(vpsim[clus.samples,colnames(model.viper)], 2, mean), dec=T)
+					selected.models <- names(sort(model.scores[cp.matches], dec=T)[1:min(3, length(cp.matches))])
+					# add the patient clusters and the selected models on the right
+				}
+				data <- cbind(data, patient.viper[features,clus.samples], model.viper[features, selected.models])
+			}
+
+			# hugo gene names	
+			rownames(data) <- map.entrez(rownames(data))
 
 			# select best match cell lines
 
 
-			pdf(output.file)
-			heatmap.2(clus.mat, 
+			pdf(output.file, width=16, height=16)
+			heatmap.2(data, 
 				col=c(fn1(25), fn2(25)), 
 				colsep=F, 
 				rowsep=F, 
 				distfun=corDist, 
 				tracecol=NA, 
-				dendrogram="col", 
 				Colv=FALSE, 
 				Rowv=FALSE, 
+				margins=c(10,5), 
+				keysize=0.5,
 			breaks=seq(-4,4, length.out=51))
 			dev.off()
 
