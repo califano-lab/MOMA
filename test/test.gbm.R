@@ -3,6 +3,9 @@
 source('moma/R/moma.r')
 source('moma/R/tcga.surv.r')
 
+library(clusterpam)
+library(MKmisc)
+
 # load data/analyses
 load('test/gbm/viper.rda')
 load('test/gbm/gbm-cindy.rda')
@@ -34,11 +37,11 @@ clustering.solutions <- momaObj$Cluster()
 # use clinical survival data to select the clustering solution / break ties in analytical solution. 
 # set the clustering variable to MOMA object
 clinical <- get.clin('test/gbm/GBM.clin.merged.txt')
-res <- get.best.clustering.supervised(cluster.sweep=clustering.solutions, clinical=clinical, tissue=tissue, progression.free.surv=TRUE)
+res <- get.best.clustering.supervised(cluster.sweep=clustering.solutions, clinical=clinical, tissue=tissue, progression.free.surv=FALSE)
 momaObj$sample.clustering <- res$clustering
 # clustering -> pass to genomic coverage. 
 #  
-#save(momaObj, file='momaObj.rda')
+save(momaObj, file='momaObj.gbm.rda')
 
 momaObj$saturationPlots()
 

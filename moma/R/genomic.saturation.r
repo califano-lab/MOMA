@@ -279,13 +279,15 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 		geneNames <- I[[as.character(x)]]
 		band.names <- unique(as.character(gene.loc.mapping[which(gene.loc.mapping$Entrez.IDs %in% geneNames),"Cytoband"]))
 		if (length(band.names)==0) {
-			print(paste("Error: could not map entrez IDs to Cytoband for IDS:"))
+			print(paste("Warning: could not map entrez IDs to Cytoband for IDS, skipping..."))
 			print(geneNames)
-			quit(status=1)
+			band.names <- NA
 		}
 		band.names
 	}, I=covered.amps, cnv=cnv)
 	names(covered.amps.LOC) <- names(covered.amps)
+	covered.amps.LOC <- covered.amps.LOC[!is.na(covered.amps.LOC)]
+
 	if (sum(sapply(covered.amps.LOC, function(x) length(x)))==0) {
 		print("Error: something went wrong when mapping amplification Entrez.IDs to Cytoband IDs. Quitting...")
 		quit(status=1)
@@ -296,13 +298,15 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 		geneNames <- I[[as.character(x)]]
 		band.names <- unique(as.character(gene.loc.mapping[which(gene.loc.mapping$Entrez.IDs %in% geneNames),"Cytoband"]))
 		if (length(band.names)==0) {
-			print(paste("Error: could not map entrez IDs to Cytoband for IDS:"))
+			print(paste("Warning: could not map entrez IDs to Cytoband for IDS, skipping..."))
 			print(geneNames)
-			quit(status=1)
+			band.names <- NA
 		}
 		band.names
 	}, I=covered.dels, cnv=cnv)
 	names(covered.dels.LOC) <- names(covered.dels)
+	covered.dels.LOC <- covered.dels.LOC[!is.na(covered.dels.LOC)]
+
 	if (sum(sapply(covered.amps.LOC, function(x) length(x)))==0) {
 		print("Error: something went wrong when mapping deletion Entrez.IDs to Cytoband IDs. Quitting...")
 		quit(status=1)
