@@ -212,11 +212,48 @@ get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alternative='bo
 	nes.em.qvals
 }
 
+
+
 #' 
-#' Compute aREA enrichment between all pairwise combinations of VIPER proteins and events
-#' @param events.mat : a binary 0/1 matrix with samples as columns and rows as genes/events
-#' @param vipermat : a matrix of inferred VIPER activities with samples as columns and rows as proteins
-#' @returns a matrix of network enrichment scores (NES) with rows as event/gene names and columns as VIPER protein names
+#' COMPUTE aREA enrichment for the proteins in a given regulon, against vipermat scores supplied
+#' @PARAM EVENTS.MAT : regulon, a list of gene sets
+#' @PARAM VIPERMAT : A MATRIX OF INFERRED VIPER ACTIVITIES WITH SAMPLES AS COLUMNS AND ROWS AS PROTEINS
+#' @RETURNS A MATRIX OF NETWORK ENRICHMENT SCORES (NES) WITH ROWS AS EVENT/GENE NAMES AND COLUMNS AS VIPER PROTEIN NAMES
+#' @export
+aREA.regulon_enrich <- function(regulon, vipermat) {
+
+	regulon <- lapply(regulon, function(x) as.character(x))	
+	# Calculate raw enrichment scores: 
+	# each mutation against each TF
+	# columns are TFs, rownames are mutations
+	es <- moma::rea(t(vipermat), regulon)
+	# Analytical correction
+	dnull <- moma::reaNULL(regulon)
+	
+	# Calculate pvalue of ES
+	pval <- t(sapply(1:length(dnull), function(i, es, dnull) {
+						dnull[[i]](es[i, ])$p.value
+					},
+					es=es$groups, dnull=dnull))
+
+	# Convert the pvalues into Normalized Enrichment Scores
+	nes <- qnorm(pval/2, lower.tail=FALSE)*es$ss
+	#print (dim(nes))
+	#print (length(regulon))
+	rownames(nes) <- names(regulon)
+	colnames(nes) <- rownames(vipermat)
+	dimnames(pval) <- dimnames(nes)
+	nes[is.na(nes)] <- 0
+	# columns are TFs, rows are genomic events
+	nes	
+}
+
+
+#' 
+#' COMPUTE AREA ENRICHMENT BETWEEN ALL PAIRWISE COMBINATIONS OF VIPER PROTEINS AND EVENTS
+#' @PARAM EVENTS.MAT : A BINARY 0/1 MATRIX WITH SAMPLES AS COLUMNS AND ROWS AS GENES/EVENTS
+#' @PARAM VIPERMAT : A MATRIX OF INFERRED VIPER ACTIVITIES WITH SAMPLES AS COLUMNS AND ROWS AS PROTEINS
+#' @RETURNS A MATRIX OF NETWORK ENRICHMENT SCORES (NES) WITH ROWS AS EVENT/GENE NAMES AND COLUMNS AS VIPER PROTEIN NAMES
 #' @export
 aREA.enrich <- function(events.mat, vipermat) {
 	

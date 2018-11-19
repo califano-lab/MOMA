@@ -32,6 +32,8 @@ momaRunner <- setRefClass("momaRunner", fields=
 	ranks="list",
 	hypotheses="list",
 	genomic.saturation="list",
+	coverage.summaryStats="list",
+	checkpoints="list",
 	sample.clustering="numeric"), # numbers are cluster assignments, names are sample ids matching other data
 	methods = list(
 		runDIGGIT = function(fCNV=NULL, cnvthr=0.5, min.events=4) {
@@ -73,15 +75,15 @@ momaRunner <- setRefClass("momaRunner", fields=
 			hypotheses <<- list('mut' = mut.hypotheses, 'del' = dels.hypotheses, 'amp' = amps.hypotheses)	
 
 			# do aREA association
-			nes.amps <- associate.events(viper, amps, min.events=min.events, blacklist=gene.blacklist)
-			nes.dels <- associate.events(viper, dels, min.events=min.events, blacklist=gene.blacklist)
-			nes.muts <- associate.events(viper, somut, min.events=min.events, blacklist=gene.blacklist)
+			nes.amps <- moma::associate.events(viper, amps, min.events=min.events, blacklist=gene.blacklist)
+			nes.dels <- moma::associate.events(viper, dels, min.events=min.events, blacklist=gene.blacklist)
+			nes.muts <- moma::associate.events(viper, somut, min.events=min.events, blacklist=gene.blacklist)
 
 			nes.fusions <- NULL
 			if (!is.null(fusions)) {
 				fus.hypotheses <- rownames(fusions[apply(fusions,1,sum,na.rm=TRUE)>=min.events,])
 				write.table(fus.hypotheses,file=paste0(output.folder, "/hypotheses.fusions.txt"), quote=F, sep="\t")
-				nes.fusions <- associate.events(viper, fusions, min.events=min.events, blacklist=gene.blacklist)
+				nes.fusions <- moma::associate.events(viper, fusions, min.events=min.events, blacklist=gene.blacklist)
 			}
 			
 			# Save aREA results
@@ -174,12 +176,39 @@ momaRunner <- setRefClass("momaRunner", fields=
 			}
 			# get coverage for each subtype
 			coverage.subtypes <- list()
+			tmp.summaryStats <- list()
+			tmp.checkpoints <- list()
 			for (clus.id in unique(clustering.solution)) {
+
 				viper.samples <- colnames(viper[,names(clustering.solution[clustering.solution==clus.id])])
-				coverage.range <- get.coverage(.self, viper.samples, clustering.solution, topN=100)
+	
+				# Get subtype-specific rankings: use the main rank and include only those
+				# with high mean score
+				stouffer.zscores <- apply(viper[,viper.samples], 1, function(x) {
+					sum(na.omit(x))/sqrt(length(na.omit(x)))
+				})
+				pvals <- pnorm(sort(stouffer.zscores, dec=T), lower.tail=F)
+				sig.active.mrs <- names(pvals[p.adjust(pvals, method='bonferroni') < 0.01])
+				# ranked list of cMRs for this subtype
+				subtype.specific.MR_ranks <- sort(ranks[['integrated']][sig.active.mrs])
+
+				coverage.range <- get.coverage(.self, names(subtype.specific.MR_ranks), viper.samples, topN=100)
 				coverage.subtypes[[clus.id]] <- coverage.range
+
+				# 'solve' the checkpoint for each subtype
+
+				# 1) generate summary stats for mean fractional coverage
+				tmp.summaryStats[[clus.id]] <- moma::merge.genomicSaturation(coverage.range, topN=100)
+				# compute best K based on fractional coverage
+				sweep <- tmp.summaryStats[[clus.id]]$fraction
+				names(sweep) <- tmp.summaryStats[[clus.id]]$k
+				best.k <- moma::fit.curve.percent(sweep, frac=cov.fraction)
+				# pick the top cMRs based on this
+				tmp.checkpoints[[clus.id]] <- names(subtype.specific.MR_ranks[1:best.k])
 			}
 			genomic.saturation <<- coverage.subtypes
+			coverage.summaryStats <<- tmp.summaryStats
+			checkpoints <<- tmp.checkpoints
 		}
 	)
 )
@@ -196,9 +225,9 @@ momaRunner <- setRefClass("momaRunner", fields=
 #' @return an instance of class momaRunner
 #' @export
 moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist=NULL, output.folder=NULL, gene.loc.mapping=NULL) {
-	viper <- samplename.filter(viper)
-	mut <- samplename.filter(mut)
-	cnv <- samplename.filter(cnv)
+	viper <- moma::samplename.filter(viper)
+	mut <- moma::samplename.filter(mut)
+	cnv <- moma::samplename.filter(cnv)
 
 	# validate viper matrix
 	if (ncol(viper) < 2) {
