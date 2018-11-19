@@ -9,9 +9,9 @@ is.entrezIDs <- function(vec) {
 
 #' @param momaObj : numeric vector with cluster membership, names are samples
 #' @param viper.samples : calculate the genomic coverage only for these sample
-#' @param clustering.solution : a vector of numeric cluster membership values, named by sample IDs
+#' @param cMR.ranking : a vector entrez IDs, in order
 #' @export
-get.coverage <- function(momaObj, viper.samples, clustering.solution, topN=100, mutation.filter=NULL) {
+get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN=100, mutation.filter=NULL) {
 
 	if (class(momaObj) != 'momaRunner') {
 		stop("Error: must have instantiated momaRunner class object passed!")
@@ -19,7 +19,7 @@ get.coverage <- function(momaObj, viper.samples, clustering.solution, topN=100, 
 
 	# select considered cMRs
 	print (paste("Top : ", topN, " regulators"))
-	selected.tfs <- names(sort(momaObj$ranks[['integrated']], dec=F)[1:topN])
+	selected.tfs <- cMR.ranking[1:topN]
 	if (!is.entrezIDs(selected.tfs)) {
 		stop("Error: tfs not in entrez ID format!")
 	}
@@ -279,13 +279,15 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 		geneNames <- I[[as.character(x)]]
 		band.names <- unique(as.character(gene.loc.mapping[which(gene.loc.mapping$Entrez.IDs %in% geneNames),"Cytoband"]))
 		if (length(band.names)==0) {
-			print(paste("Error: could not map entrez IDs to Cytoband for IDS:"))
+			print(paste("Warning: could not map entrez IDs to Cytoband for IDS, skipping..."))
 			print(geneNames)
-			quit(status=1)
+			band.names <- NA
 		}
 		band.names
 	}, I=covered.amps, cnv=cnv)
 	names(covered.amps.LOC) <- names(covered.amps)
+	covered.amps.LOC <- covered.amps.LOC[!is.na(covered.amps.LOC)]
+
 	if (sum(sapply(covered.amps.LOC, function(x) length(x)))==0) {
 		print("Error: something went wrong when mapping amplification Entrez.IDs to Cytoband IDs. Quitting...")
 		quit(status=1)
@@ -296,13 +298,15 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 		geneNames <- I[[as.character(x)]]
 		band.names <- unique(as.character(gene.loc.mapping[which(gene.loc.mapping$Entrez.IDs %in% geneNames),"Cytoband"]))
 		if (length(band.names)==0) {
-			print(paste("Error: could not map entrez IDs to Cytoband for IDS:"))
+			print(paste("Warning: could not map entrez IDs to Cytoband for IDS, skipping..."))
 			print(geneNames)
-			quit(status=1)
+			band.names <- NA
 		}
 		band.names
 	}, I=covered.dels, cnv=cnv)
 	names(covered.dels.LOC) <- names(covered.dels)
+	covered.dels.LOC <- covered.dels.LOC[!is.na(covered.dels.LOC)]
+
 	if (sum(sapply(covered.amps.LOC, function(x) length(x)))==0) {
 		print("Error: something went wrong when mapping deletion Entrez.IDs to Cytoband IDs. Quitting...")
 		quit(status=1)
@@ -349,5 +353,51 @@ merge.lists <- function(l1, l2) {
 		merged[[key]] <- l2[[key]]
 	}
 	return (merged)
+}
+	
+
+#'
+#' Create data frame from coverage data, including number of total events 'covered' and unique
+#' events
+#'
+#' 
+#' @export
+merge.genomicSaturation <- function(coverage.range, topN)  {
+	
+	data <- c()
+	for (i in 1:topN) {
+		# count for each sample
+		# $mut/amp/del all point to either a NA or a vector of names of the event. If NA the length will be zero
+		# so simply count the number of each type of event 
+		count <- unlist(lapply(coverage.range, function(x) {
+			num.events <- length(x[[i]]$mut)+length(x[[i]]$amp)+length(x[[i]]$del)
+		}))
+		count <- na.omit(count)
+
+		# apply over each sample, get the coverage for each
+		fraction <- unlist(lapply(coverage.range, function(x) {
+			# critically: must omit the NAs so they don't interfere with count
+			event.fractions <- x[[i]]$total.frac
+			event.fractions
+		}))
+		fraction <- na.omit(fraction)
+ 
+		all.events <- unlist(lapply(coverage.range, function(x) {
+			c(x[[i]]$mut, x[[i]]$amp, x[[i]]$del)
+		}))
+		all.events <- na.omit(all.events)
+		
+		data <- rbind(data, c(i, mean(count), mean(fraction), length(unique(all.events))))
+	}
+	df <- data.frame(mean=data[,2], k=data[,1], fraction=data[,3], unique.events=data[,4]) 
+	df	
+}
+
+#' fit based on fractional overall coverage
+fit.curve.percent <- function(sweep, frac=0.85) {
+
+	fractional <- as.numeric(as.character(sweep))/max(sweep)
+	best.k <- names(sweep[which(fractional >= frac)])[1]
+	as.numeric(best.k)
 }
 
