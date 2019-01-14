@@ -492,3 +492,42 @@ get.empirical.qvals <- function(test.statistics, null.statistics, alternative='b
 	}
 }
 
+
+overrep.analysis <- function(mat, inCluster.samples, type='binary') {
+
+	# proportion test for over/under representation
+	 prop.pvals <- apply(mat, 1, function(row, inCluster.samples) {
+		row <- na.omit(row)
+		if (all(row==0)) { return (1) }
+	
+		iC.vals <- na.omit(row[inCluster.samples])
+		oC.vals <- na.omit(row[setdiff(names(row), inCluster.samples)])
+
+		pval <- NULL
+		# consider only 0,1 values	
+		# look for over-representation
+		if (type == 'binary') {
+			tab <- rbind( 
+				c(length(which(iC.vals>0)), length(which(iC.vals==0)) ),
+				c(length(which(oC.vals>0)), length(which(oC.vals==0)) ) 
+			)
+			rownames(tab) <- c("in-cluster", "out-cluster")
+			pval <-	prop.test(tab, alternative='greater')$p.value
+		}
+		pval
+
+	}, inCluster.samples=inCluster.samples)
+	# anything marginally over represented
+	names(prop.pvals[which(prop.pvals < 0.5)])
+}
+
+
+filter.interaction.list <- function(ll, filter.partner) {
+	res <- lapply(names(ll), function(x) {
+		partners <- ll[[x]]
+		partners[names(partners) %in% as.character(filter.partner)]
+	})	
+	names(res) <- names(ll)
+	res[sapply(res, length)>0]
+}
+
