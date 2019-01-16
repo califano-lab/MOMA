@@ -154,51 +154,6 @@ momaRunner <- setRefClass("momaRunner", fields=
 			print ("Integrating all data in Bayesian conditional model...")
 			ranks[['integrated']] <<- conditional.model(viper.scores, integrated.z, pathway.z)
 		}, 
-		# re-rank each cluster. Use the specific genomic events to rank within this cluster and 
-		# re-define the checkpoint
-		Rank.byCluster = function(use.cindy=FALSE, genomic.event.types=c("amp", "del", "mut", "fus"), cnvthr=0.5, fCNV=NULL) {
-
-			cnv.local <- NULL
-			if (is.null(fCNV)) {
-				print ("Warning: no fCNV supplied, using no CNV filter!")
-				cnv.local <- cnv
-			} else {
-				cnv.local <- cnv[intersect(fCNV,rownames(cnv)),]
-			}
-		
-			somut <- mut
-		
-			# Define amplifications and deletions
-			amps <- dels <- cnv.local
-			amps[which(amps < cnvthr)] <- 0
-			amps[which(amps >= cnvthr)] <- 1
-			dels[which(dels > -cnvthr)] <- 0
-			dels[which(dels <= -cnvthr)] <- 1
-
-			for (cluster in unique(momaObj$sample.clustering)) {
-				inCluster.samples <- names(momaObj$sample.clustering[momaObj$sample.clustering==cluster])
-				# top cMRs by viper rank
-				viper.ranks <- sort(viper.getTFScores(viper[,inCluster.samples]), dec=T)
-				sig.tfs <- viper.getSigTFS(viper.ranks)
-
-				
-				# genomic events specific to this cluster: do over representation analysis
-				mut.genes.entrez <- overrep.analysis(mut, inCluster.samples)
-				amp.regions <- overrep.analysis(amps, inCluster.samples)
-				del.regions <- overrep.analysis(dels, inCluster.samples)
-				fus.regions <- overrep.analysis(fusions, inCluster.samples)
-
-				# trim the interactions down to those represented in this cluster 
-				filtered.mut.I <- filter.interaction.list(interactions$mut, mut.genes.entrez)
-				filtered.del.I <- filter.interaction.list(interactions$del, del.regions)
-				filtered.amp.I <- filter.interaction.list(interactions$amp, amp.regions)
-				filtered.fus.I <- filter.interaction.list(interactions$fus, fus.regions)
-
-				# integrate  
-				integrated.z[[type]] <- stouffer.integrate(interactions[[type]], gene.loc.mapping)
-				
-			}
-		}, 
 		Cluster = function() {
 			# do weighted pearson correlation, using the ranks as weights
 			weights <- log(ranks[['integrated']])^2
