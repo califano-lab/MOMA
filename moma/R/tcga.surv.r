@@ -1,11 +1,14 @@
 
-suppressMessages( library(tidyverse) )
-suppressMessages( library(survival) )
-suppressMessages( library(RColorBrewer) )
-suppressMessages( library(RColorBrewer) )
 
-#' parse the full clinical merged file from GDAC/Firehose and make a dlpyr tibble out of it
-#' @import 
+#' @import tidyverse
+#' @import survival
+#' @import RColorBrewer
+
+
+
+
+#' @title Parse the full clinical merged file from GDAC-Firehose and make a dlpyr tibble out of it
+#' 
 #' @export
 get.clin <- function(clin.file=NULL) {
 
@@ -26,7 +29,9 @@ get.clin <- function(clin.file=NULL) {
 	clinical
 }
 
-#' Add clustering solutions to the tibble dataset 'survObj' and return
+
+#' @title Add clustering solutions to the tibble dataset 'survObj' and return
+#' 
 #' @export
 tibble.add_clusters <- function(data, clustering) {
 
@@ -48,7 +53,9 @@ tibble.add_clusters <- function(data, clustering) {
 	res
 }
 
-#' Add a survival object to the tibble dataset 'survObj' and return
+
+#' @title Add a survival object to the tibble dataset 'survObj' and return
+#' 
 #' @export
 tibble.survfit <- function(data) {
 
@@ -93,7 +100,8 @@ tibble.survfit <- function(data) {
 	data
 }
 
-#' progression free survival
+#' @title progression free survival
+#' 
 #' @export
 tibble.survfit.progression_free <- function(data) {
 
@@ -150,6 +158,8 @@ tibble.survfit.progression_free <- function(data) {
 }
 
 
+#' @title Get survival based on clustering
+#' 
 #' @export
 tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.surv=FALSE) {
 
@@ -183,8 +193,9 @@ tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.
 		best.clus = best.surv.cluster, worst.clus = worst.surv.cluster)
 }
 
-#' Get the set of optimal clusterings from the Silhouette results
-#' Find the one that optimizes survival
+
+#' @title Get the set of optimal clusterings from the Silhouette results. Find the one that optimizes survival
+#' 
 #' @export
 get.best.clustering.supervised <- function(cluster.sweep=NULL, clinical.tibble, tissue, progression.free.surv=FALSE) {
 
@@ -232,7 +243,7 @@ get.best.clustering.supervised <- function(cluster.sweep=NULL, clinical.tibble, 
 
 	pvals.best_v_worst <- sort(sapply(survival.results, function(x) x$pval.best_v_worst), dec=F)
 
-	#' add clustering to 'alt.clusters' variable in tibble
+	#add clustering to 'alt.clusters' variable in tibble
 
 	clustering <- search.results[[(best.k-1)]]$clustering
 	surv.res <- survival.results[[as.character(best.k)]]
@@ -245,7 +256,9 @@ get.best.clustering.supervised <- function(cluster.sweep=NULL, clinical.tibble, 
 	list(clustering=clustering, clustering.k=best.k, pval.overall=pvals.overall[1], pval.best_v_worst=pvals.best_v_worst[1], clus.choices=list('best'=surv.res$best.clus, 'worst'=surv.res$worst.clus))
 }
 
-#' get the best and worst clustering solutions, just plot those
+
+#' @title get the best and worst clustering solutions, just plot those
+#' 
 #' @export
 survplot.best.v.worst <- function(clinical.tibble, clustering, output, title.print) {
 	
