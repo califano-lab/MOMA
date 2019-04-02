@@ -1,6 +1,4 @@
-		
-library(clusterpam)
-library(parallel)
+#' Generate clusters from viper values 
 #'
 #' @import clusterpam
 #' @import parallel
