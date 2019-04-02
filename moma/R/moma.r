@@ -8,6 +8,8 @@
 #source("R/conditional.model.r")
 #source("R/genomic.saturation.r")
 
+#' @title MOMA Runner
+#' @description Main class encapsulating the input data and logic of the MOMA algorithm
 #' @import qvalue
 #' @import parallel
 #' @import clusterpam
@@ -180,6 +182,7 @@ momaRunner <- setRefClass("momaRunner", fields=
 			tmp.checkpoints <- list()
 			for (clus.id in unique(clustering.solution)) {
 
+				print (paste0("Analyzing cluster ", clus.id))
 				viper.samples <- colnames(viper[,names(clustering.solution[clustering.solution==clus.id])])
 	
 				# Get subtype-specific rankings: use the main rank and include only those
@@ -187,7 +190,7 @@ momaRunner <- setRefClass("momaRunner", fields=
 				stouffer.zscores <- apply(viper[,viper.samples], 1, function(x) {
 					sum(na.omit(x))/sqrt(length(na.omit(x)))
 				})
-				pvals <- pnorm(sort(stouffer.zscores, dec=T), lower.tail=F)
+				pvals <- pnorm(sort(stouffer.zscores, decreasing=T), lower.tail=F)
 				sig.active.mrs <- names(pvals[p.adjust(pvals, method='bonferroni') < 0.01])
 				# ranked list of cMRs for this subtype
 				subtype.specific.MR_ranks <- sort(ranks[['integrated']][sig.active.mrs])
@@ -198,11 +201,11 @@ momaRunner <- setRefClass("momaRunner", fields=
 				# 'solve' the checkpoint for each subtype
 
 				# 1) generate summary stats for mean fractional coverage
-				tmp.summaryStats[[clus.id]] <- moma::merge.genomicSaturation(coverage.range, topN=100)
+				tmp.summaryStats[[clus.id]] <- merge.genomicSaturation(coverage.range, topN=100)
 				# compute best K based on fractional coverage
 				sweep <- tmp.summaryStats[[clus.id]]$fraction
 				names(sweep) <- tmp.summaryStats[[clus.id]]$k
-				best.k <- moma::fit.curve.percent(sweep, frac=cov.fraction)
+				best.k <- fit.curve.percent(sweep, frac=cov.fraction)
 				# pick the top cMRs based on this
 				tmp.checkpoints[[clus.id]] <- names(subtype.specific.MR_ranks[1:best.k])
 			}
@@ -215,8 +218,7 @@ momaRunner <- setRefClass("momaRunner", fields=
 
 
 
-#
-#' MOMA Constructor
+#' @title MOMA Constructor
 #' @param mut : an indicator matrix (0/1) of mutation events with samples as columns and genes as rows
 #' @param fusions : an indicator matrix (0/1) of fusion events with samples as columns and genes as rows
 #' @param cnv : a matrix of CNV scores (typically SNP6 array scores from TCGA) with samples as columns and genes as rows
@@ -365,7 +367,6 @@ pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only=TRUE) {
 }
 
 #' dispatch method for either CNV location corrected or SNV
-#' @export
 stouffer.integrate <- function(interactions, cytoband.map=NULL) {
 	z <- NULL
 	if (!is.null(cytoband.map)) {
@@ -378,3 +379,45 @@ stouffer.integrate <- function(interactions, cytoband.map=NULL) {
 	}
 	z
 }
+
+#' Create data frame from coverage data, including number of total events 'covered' and unique events
+merge.genomicSaturation <- function(coverage.range, topN)  {
+	
+	data <- c()
+	for (i in 1:topN) {
+		# count for each sample
+		# $mut/amp/del all point to either a NA or a vector of names of the event. If NA the length will be zero
+		# so simply count the number of each type of event 
+		count <- unlist(lapply(coverage.range, function(x) {
+			num.events <- length(x[[i]]$mut)+length(x[[i]]$amp)+length(x[[i]]$del)
+		}))
+		count <- na.omit(count)
+
+		# apply over each sample, get the coverage for each
+		fraction <- unlist(lapply(coverage.range, function(x) {
+			# critically: must omit the NAs so they don't interfere with count
+			event.fractions <- x[[i]]$total.frac
+			event.fractions
+		}))
+		fraction <- na.omit(fraction)
+ 
+		all.events <- unlist(lapply(coverage.range, function(x) {
+			c(x[[i]]$mut, x[[i]]$amp, x[[i]]$del)
+		}))
+		all.events <- na.omit(all.events)
+		
+		data <- rbind(data, c(i, mean(count), mean(fraction), length(unique(all.events))))
+	}
+	df <- data.frame(mean=data[,2], k=data[,1], fraction=data[,3], unique.events=data[,4]) 
+	df	
+}
+
+#' fit based on fractional overall coverage
+fit.curve.percent <- function(sweep, frac=0.85) {
+
+	fractional <- as.numeric(as.character(sweep))/max(sweep)
+	best.k <- names(sweep[which(fractional >= frac)])[1]
+	as.numeric(best.k)
+}
+
+

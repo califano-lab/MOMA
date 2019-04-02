@@ -2,10 +2,6 @@ suppressMessages(library(ggplot2))
 suppressMessages(library(reshape2))
 suppressMessages(library(RColorBrewer))
 
-is.entrezIDs <- function(vec) {
-	all(sapply(1:length(vec), function(i) as.numeric(vec)[i]==vec[i]))
-}
-
 #' Get coverage of interactions
 #' 
 #' @param momaObj : numeric vector with cluster membership, names are samples
@@ -21,8 +17,9 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN=100, mutation
 	# select considered cMRs
 	print (paste("Top : ", topN, " regulators"))
 	selected.tfs <- cMR.ranking[1:topN]
-	if (!is.entrezIDs(selected.tfs)) {
-		stop("Error: tfs not in entrez ID format!")
+	if (length(selected.tfs)==0) {
+		print ("Error: no TFs selected!")
+		q();
 	}
 	
 	# interactions
@@ -34,9 +31,8 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN=100, mutation
 	# another assert statment: make sure we have non-zero interactions for each
 	sapply(names(interaction.map), function(key) {
 		if (sum(sapply(interaction.map[[key]], function(x) length(x))) < 1) {
-			print(paste("Error: didn't find any positive DIGGIT associations for data type ", key))
-			print(paste("(this must be an error in data input/processing. Quitting...)"))
-			quit(status=1)
+			print(paste("Warning: didn't find any positive DIGGIT associations for data type ", key))
+			print(paste("(in subtype)"))
 		}
 	})
 
@@ -321,7 +317,6 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 
 #' helper function: subset a list to the set of keys supplied
 #' return the names of interactions with positive values, in a list structure
-#' @export
 subset.list.interactions <- function(int.l, keys) {
 
 	filtered.I <- lapply(keys, function(key, interactions) {
@@ -335,7 +330,6 @@ subset.list.interactions <- function(int.l, keys) {
 	filtered.I
 }
 
-#' @export
 merge.lists <- function(l1, l2) {
 
 	merged <- list()
@@ -355,49 +349,3 @@ merge.lists <- function(l1, l2) {
 	return (merged)
 }
 	
-
-#'
-#' Create data frame from coverage data, including number of total events 'covered' and unique
-#' events
-#'
-
-#' @export
-merge.genomicSaturation <- function(coverage.range, topN)  {
-	
-	data <- c()
-	for (i in 1:topN) {
-		# count for each sample
-		# $mut/amp/del all point to either a NA or a vector of names of the event. If NA the length will be zero
-		# so simply count the number of each type of event 
-		count <- unlist(lapply(coverage.range, function(x) {
-			num.events <- length(x[[i]]$mut)+length(x[[i]]$amp)+length(x[[i]]$del)
-		}))
-		count <- na.omit(count)
-
-		# apply over each sample, get the coverage for each
-		fraction <- unlist(lapply(coverage.range, function(x) {
-			# critically: must omit the NAs so they don't interfere with count
-			event.fractions <- x[[i]]$total.frac
-			event.fractions
-		}))
-		fraction <- na.omit(fraction)
- 
-		all.events <- unlist(lapply(coverage.range, function(x) {
-			c(x[[i]]$mut, x[[i]]$amp, x[[i]]$del)
-		}))
-		all.events <- na.omit(all.events)
-		
-		data <- rbind(data, c(i, mean(count), mean(fraction), length(unique(all.events))))
-	}
-	df <- data.frame(mean=data[,2], k=data[,1], fraction=data[,3], unique.events=data[,4]) 
-	df	
-}
-
-#' fit based on fractional overall coverage
-fit.curve.percent <- function(sweep, frac=0.85) {
-
-	fractional <- as.numeric(as.character(sweep))/max(sweep)
-	best.k <- names(sweep[which(fractional >= frac)])[1]
-	as.numeric(best.k)
-}
-

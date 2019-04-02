@@ -71,7 +71,7 @@ model_viperMatcher <- setRefClass("model_viperMatcher", fields=
 					length(pvals[which(pvals < match.threshold)])
 				})
 
-				ranked.models <- sort(number.patients.matched, dec=T)
+				ranked.models <- sort(number.patients.matched, decreasing=T)
 				best.cline.models[[clus.id]] <- ranked.models
 			}
 			models.match <<- best.cline.models
@@ -145,7 +145,7 @@ model_viperMatcher <- setRefClass("model_viperMatcher", fields=
 				clus.samples <- clusters[[clus.id]]
 
 				# get mean match scores
-				model.scores <- sort(apply(vpsim[clus.samples,colnames(model.viper)], 2, mean), dec=T)
+				model.scores <- sort(apply(vpsim[clus.samples,colnames(model.viper)], 2, mean), decreasing=T)
 
 				# significant matches to the checkpoint
 				cp.pvals <- 1-pnorm(matchObj$CP.enrichments[clus.id,])
@@ -153,11 +153,11 @@ model_viperMatcher <- setRefClass("model_viperMatcher", fields=
 				if (length(cp.matches)==0) {
 					print (paste("Warning, didn't find any matches to the checkpoint for cluster ", clus.id))
 					print ("Using viperSimilarity() only!")
-					selected.models <- names(sort(model.scores, dec=T))[1:3]
+					selected.models <- names(sort(model.scores, decreasing=T))[1:3]
 				} else {
 					# get mean match scores
-					model.scores <- sort(apply(vpsim[clus.samples,colnames(model.viper)], 2, mean), dec=T)
-					selected.models <- names(sort(model.scores[cp.matches], dec=T)[1:min(3, length(cp.matches))])
+					model.scores <- sort(apply(vpsim[clus.samples,colnames(model.viper)], 2, mean), decreasing=T)
+					selected.models <- names(sort(model.scores[cp.matches], decreasing=T)[1:min(3, length(cp.matches))])
 					# add the patient clusters and the selected models on the right
 				}
 				data <- cbind(data, patient.viper[features,clus.samples], model.viper[features, selected.models])

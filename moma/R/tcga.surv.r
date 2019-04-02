@@ -1,11 +1,7 @@
 
-
 #' @import tidyverse
 #' @import survival
 #' @import RColorBrewer
-
-
-
 
 #' @title Parse the full clinical merged file from GDAC-Firehose and make a dlpyr tibble out of it
 #' 
@@ -59,10 +55,10 @@ tibble.add_clusters <- function(data, clustering) {
 #' @export
 tibble.survfit <- function(data) {
 
-	data$days.death <- as.numeric(apply(as.matrix(data %>% dplyr::select(contains("days_to_death"))), 1, function(x) max(na.omit(x))))
-	data$days.last_followup <- as.numeric(apply(as.matrix(data %>% dplyr::select(contains("days_to_last_followup"))), 1, function(x) max(na.omit(x))))
+	data$days.death <- as.numeric(apply(as.matrix(data %>% dplyr::select(dplyr::contains("days_to_death"))), 1, function(x) max(na.omit(x))))
+	data$days.last_followup <- as.numeric(apply(as.matrix(data %>% dplyr::select(dplyr::contains("days_to_last_followup"))), 1, function(x) max(na.omit(x))))
 	# vital status summary
-	data$vital_stat_collapsed <- unlist(apply(as.matrix(data %>% dplyr::select(contains("vital_status"))), 1, function(x) {
+	data$vital_stat_collapsed <- unlist(apply(as.matrix(data %>% dplyr::select(dplyr::contains("vital_status"))), 1, function(x) {
 
 		x <- na.omit(x)
 		if (length(x)==0) {
@@ -105,12 +101,12 @@ tibble.survfit <- function(data) {
 #' @export
 tibble.survfit.progression_free <- function(data) {
 
-	data$days.death <- as.numeric(apply(as.matrix(data %>% dplyr::select(contains("days_to_death"))), 1, function(x) max(na.omit(x))))
-	data$days.last_followup <- as.numeric(apply(as.matrix(data %>% dplyr::select(contains("days_to_last_followup"))), 1, function(x) max(na.omit(x))))
-	data$days.new_tumor <- as.numeric(apply(as.matrix(data %>% dplyr::select(contains("days_to_new_tumor_event"))), 1, function(x) max(na.omit(x))))
+	data$days.death <- as.numeric(apply(as.matrix(data %>% dplyr::select(dplyr::contains("days_to_death"))), 1, function(x) max(na.omit(x))))
+	data$days.last_followup <- as.numeric(apply(as.matrix(data %>% dplyr::select(dplyr::contains("days_to_last_followup"))), 1, function(x) max(na.omit(x))))
+	data$days.new_tumor <- as.numeric(apply(as.matrix(data %>% dplyr::select(dplyr::contains("days_to_new_tumor_event"))), 1, function(x) max(na.omit(x))))
 
 	# vital status summary
-	data$vital_stat_collapsed <- unlist(apply(as.matrix(data %>% dplyr::select(contains("vital_status"))), 1, function(x) {
+	data$vital_stat_collapsed <- unlist(apply(as.matrix(data %>% dplyr::select(dplyr::contains("vital_status"))), 1, function(x) {
 
 		x <- na.omit(x)
 		if (length(x)==0) {
@@ -232,16 +228,16 @@ get.best.clustering.supervised <- function(cluster.sweep=NULL, clinical.tibble, 
 
 	# for each clustering, do survival analysis	
 	survival.results <- lapply(equiv.clusters, function(k) {
-		print (paste("Calculating survival separation on clustering k = ", k))
+		#print (paste("Calculating survival separation on clustering k = ", k))
 		clustering <- search.results[[(k-1)]]$clustering
 		res <- tibble.survfit_select(clustering, clinical.tibble, progression.free.surv)
 		res
 	})
 	names(survival.results) <- equiv.clusters
-	pvals.overall <- sort(sapply(survival.results, function(x) x$pval.overall), dec=F)
+	pvals.overall <- sort(sapply(survival.results, function(x) x$pval.overall), decreasing=F)
 	best.k <- as.numeric(names(pvals.overall[1]))
 
-	pvals.best_v_worst <- sort(sapply(survival.results, function(x) x$pval.best_v_worst), dec=F)
+	pvals.best_v_worst <- sort(sapply(survival.results, function(x) x$pval.best_v_worst), decreasing=F)
 
 	#add clustering to 'alt.clusters' variable in tibble
 
@@ -267,7 +263,7 @@ survplot.best.v.worst <- function(clinical.tibble, clustering, output, title.pri
 	clin.tibble <- tibble.survfit(clin.tibble)
 	# Find the best and worst surviving clusters based on the statistics
 	SurvDiff <- survival::survdiff(survObj ~ cluster, data=clin.tibble, rho=0)
-	print (SurvDiff)
+	#print (SurvDiff)
 	survival.scores <- SurvDiff$obs/SurvDiff$exp
 	best.surv.cluster <- strsplit(names(SurvDiff$n)[survival.scores==min(survival.scores)], '=')[[1]][2]
 	worst.surv.cluster <- strsplit(names(SurvDiff$n)[survival.scores==max(survival.scores)], '=')[[1]][2]

@@ -1,14 +1,17 @@
 Package: moma
 Title: Multi Omic Master Regulator Analysis
 Version: 0.2
-Authors@R: c(person("Evan", "Paull", email = "evan.paull@gmail.com", role = c("aut", "cre")), person("Sunny", "Jones", email = "sunnyjjones@gmail.com", role = c("aut")))
-Description: Inference of candidate master regulator proteins from multi-omics' data
-Depends: R (>= 3.5.0), parallel (>= 3.5.0), dplyr (>= 0.7), RColorBrewer (>= 1.0-5)
-License: GPL Version 3 or later
+Authors@R: c(person("Evan", "Paull", email = "evan.paull@gmail.com", role = c("aut", "cre")), person("Sunny", "Jones", email = "sunnyjjones@gmail.com", role = c("aut")), person("Mariano", "Alvarez", email = "reef103@gmail.com", role = c("aut")))
+Author: Evan Paull <evanpaull@gmail.com>
+Maintainer: Evan Paull <evanpaull@gmail.com>
+Description: This package implements the inference of candidate master regulator proteins from multi-omics' data (MOMA) algorithm, as well as ancillary analysis and visualization functions. 
+Depends: R (>= 3.5.0)
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
 Imports:
+	viper (>= 1.7.5),
 	parallel (>= 3.5.0),
 	qvalue (>= 2.12.0),
 	clusterpam (>= 0.1),

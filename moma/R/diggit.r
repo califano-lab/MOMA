@@ -121,7 +121,7 @@ sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh
 		nes.vec <- nes.vec[which(!is.na(nes.vec))]
 
 		#print (paste("num interactions:", length(nes.vec)))
-		nes.vec <- sort(nes.vec, dec=T)
+		nes.vec <- sort(nes.vec, decreasing=T)
 		nes.vec
 	})
 	names(viper.interactors) <- colnames(pvals.matrix)
@@ -398,6 +398,7 @@ get.pvals.matrix <- function(corrected.scores) {
 }
 
 #' @title Utility function
+#' @param vipermat - matrix of VIPER scores with columns as samples, rows as protein names
 #' @export
 viper.getTFScores <- function(vipermat, fdr.thresh=0.05) {
 
@@ -461,7 +462,7 @@ get.empirical.qvals <- function(test.statistics, null.statistics, alternative='b
 	# calculate the upper and lower tail
 	if (alternative=='both') {
 
-		test.statistics <- sort(abs(test.statistics), dec=T)
+		test.statistics <- sort(abs(test.statistics), decreasing=T)
 		null.statistics <- abs(null.statistics)
 
 		em.pvals <- qvalue::empPvals(test.statistics, null.statistics)
