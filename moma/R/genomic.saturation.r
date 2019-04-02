@@ -1,12 +1,14 @@
 
-suppressMessages(library(ggplot2))
-suppressMessages(library(reshape2))
-suppressMessages(library(RColorBrewer))
+# suppressMessages(library(ggplot2))
+# suppressMessages(library(reshape2))
+# suppressMessages(library(RColorBrewer))
 
 is.entrezIDs <- function(vec) {
 	all(sapply(1:length(vec), function(i) as.numeric(vec)[i]==vec[i]))
 }
 
+#' Get coverage of interactions
+#' 
 #' @param momaObj : numeric vector with cluster membership, names are samples
 #' @param viper.samples : calculate the genomic coverage only for these sample
 #' @param cMR.ranking : a vector entrez IDs, in order
@@ -47,16 +49,15 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN=100, mutation
 
 #' The core function to compute which sample-specific alterations overlap with genomic events that are explained 
 #' via DIGGIT. 
-#'
-#' @param : diggit.interactions - list indexed by viper protein, includes names of all 
-#' significant interactions
-#' @param : explain.with -- a set of admissable viper regulators who's diggit interactions may be used to explain
-#' significant interactions
-#' @param amp.I del.I : map MR names in entrez to genomic locations
-#' @param filter.priors : use only CHASM and Gistic validated events? Default TRUE
-#' mutation driver prediction based on the nucleotide change
+#' 
+#' @param momaObj : momaObj
+#' @param viper.samples : samples within the same cluster
+#' @param selected.tfs : tfs being analyzed
+#' @param interaction.map : list object of events 'covered' by the supplied interactions of type mut/amp/del/fus
 #' @param mutation.filter : a vector of whitelisted mutation events, in entrez gene IDs
+#' @param idx.range : number of tfs to check for genomic saturation calculation, default is 1253
 #' @export
+#' 
 sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map, cnv.threshold=0.5, mutation.filter=NULL, verbose=FALSE, idx.range=NULL) {
 
 	if (is.null(momaObj$hypotheses)) {
@@ -230,7 +231,7 @@ sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map
 #' Return a set of events 'covered' by specified cMR-event interactions 
 #' @param interactions : list indexed by amp/mut/del/fus - from cMRs to interacting events
 #' @param selected.tfs : for each event type list, search within only these cMRS
-#' @returns a list of events 'covered' by the supplied interactions of type mut/amp/del/fus
+#' @return a list of events 'covered' by the supplied interactions of type mut/amp/del/fus
 #' @export
 valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selected.tfs) {
 	
@@ -360,7 +361,7 @@ merge.lists <- function(l1, l2) {
 #' Create data frame from coverage data, including number of total events 'covered' and unique
 #' events
 #'
-#' 
+
 #' @export
 merge.genomicSaturation <- function(coverage.range, topN)  {
 	
