@@ -306,7 +306,7 @@ moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist=
 #' preppi: 3 columns, partner A, B and the p-value of the interaction
 #' @param : pathway - a list indexed by TF/MR entrez ID, contains the 
 #' 	named vector of p-values for interactions 
-#' @returns numeric vector, zscores for each TF/MR
+#' @return numeric vector, zscores for each TF/MR
 #' @export
 pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only=TRUE) {
 
