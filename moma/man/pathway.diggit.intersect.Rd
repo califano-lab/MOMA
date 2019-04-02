@@ -10,6 +10,9 @@ pathway.diggit.intersect(diggit.int, pathway, pos.nes.only = TRUE)
 \item{:}{pathway - a list indexed by TF/MR entrez ID, contains the 
 named vector of p-values for interactions}
 }
+\value{
+numeric vector, zscores for each TF/MR
+}
 \description{
 preppi: 3 columns, partner A, B and the p-value of the interaction
 }

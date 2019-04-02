@@ -10,18 +10,17 @@ sample.overlap(momaObj, viper.samples, selected.tfs, interaction.map,
   idx.range = NULL)
 }
 \arguments{
+\item{momaObj}{: momaObj}
+
+\item{viper.samples}{: samples within the same cluster}
+
+\item{selected.tfs}{: tfs being analyzed}
+
+\item{interaction.map}{: list object of events 'covered' by the supplied interactions of type mut/amp/del/fus}
+
 \item{mutation.filter}{: a vector of whitelisted mutation events, in entrez gene IDs}
 
-\item{:}{diggit.interactions - list indexed by viper protein, includes names of all 
-significant interactions}
-
-\item{:}{explain.with -- a set of admissable viper regulators who's diggit interactions may be used to explain
-significant interactions}
-
-\item{amp.I}{del.I : map MR names in entrez to genomic locations}
-
-\item{filter.priors}{: use only CHASM and Gistic validated events? Default TRUE
-mutation driver prediction based on the nucleotide change}
+\item{idx.range}{: number of tfs to check for genomic saturation calculation, default is 1253}
 }
 \description{
 The core function to compute which sample-specific alterations overlap with genomic events that are explained 

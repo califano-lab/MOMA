@@ -2,10 +2,10 @@
 % Please edit documentation in R/tcga.surv.r
 \name{get.clin}
 \alias{get.clin}
-\title{parse the full clinical merged file from GDAC/Firehose and make a dlpyr tibble out of it}
+\title{Parse the full clinical merged file from GDAC-Firehose and make a dlpyr tibble out of it}
 \usage{
 get.clin(clin.file = NULL)
 }
 \description{
-parse the full clinical merged file from GDAC/Firehose and make a dlpyr tibble out of it
+Parse the full clinical merged file from GDAC-Firehose and make a dlpyr tibble out of it
 }

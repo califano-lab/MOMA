@@ -1,7 +1,6 @@
-
-# suppressMessages(library(ggplot2))
-# suppressMessages(library(reshape2))
-# suppressMessages(library(RColorBrewer))
+suppressMessages(library(ggplot2))
+suppressMessages(library(reshape2))
+suppressMessages(library(RColorBrewer))
 
 is.entrezIDs <- function(vec) {
 	all(sapply(1:length(vec), function(i) as.numeric(vec)[i]==vec[i]))

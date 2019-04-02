@@ -1,7 +1,6 @@
 
 library(qvalue)
 
-#'
 #' @title Use Stouffer's method to combine z-scores of DIGGIT interactions for each cMR protein. Combines only positively associated DIGGIT scores by default.  
 #' 
 #' @param interactions : list indexed by TF, includes z-scores or p-values for each interacting event
@@ -246,9 +245,9 @@ aREA.regulon_enrich <- function(regulon, vipermat) {
 
 #' 
 #' COMPUTE AREA ENRICHMENT BETWEEN ALL PAIRWISE COMBINATIONS OF VIPER PROTEINS AND EVENTS
-#' @PARAM EVENTS.MAT : A BINARY 0/1 MATRIX WITH SAMPLES AS COLUMNS AND ROWS AS GENES/EVENTS
-#' @PARAM VIPERMAT : A MATRIX OF INFERRED VIPER ACTIVITIES WITH SAMPLES AS COLUMNS AND ROWS AS PROTEINS
-#' @RETURNS A MATRIX OF NETWORK ENRICHMENT SCORES (NES) WITH ROWS AS EVENT/GENE NAMES AND COLUMNS AS VIPER PROTEIN NAMES
+#' @param EVENTS.MAT : A BINARY 0/1 MATRIX WITH SAMPLES AS COLUMNS AND ROWS AS GENES/EVENTS
+#' @param VIPERMAT : A MATRIX OF INFERRED VIPER ACTIVITIES WITH SAMPLES AS COLUMNS AND ROWS AS PROTEINS
+#' @return A MATRIX OF NETWORK ENRICHMENT SCORES (NES) WITH ROWS AS EVENT/GENE NAMES AND COLUMNS AS VIPER PROTEIN NAMES
 #' @export
 aREA.enrich <- function(events.mat, vipermat) {
 	

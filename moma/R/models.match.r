@@ -8,6 +8,11 @@ library(gplots)
 fn1 <- colorRampPalette(c("#1E90FF", "#FFFFFF"))
 fn2 <- colorRampPalette(c("#FFFFFF", "#FF4500"))
 
+#' @title Encapsulates the logic needed to match patient samples to a set of cell-line or other models. 
+#' @param patient.viper - VIPER matrix of patient data (columns = patients; rows = entrez IDs)
+#' @param model.viper - VIPER matrix of model data (columns = model names; rows = entrez IDs)
+#' @param checkpoints - list of checkpoint definitions
+#' @param clusters - list of cluster definitions
 #' @import viper
 #' @import tidyverse
 #' @import RColorBrewer

@@ -2,8 +2,7 @@
 % Please edit documentation in R/diggit.r
 \name{rea}
 \alias{rea}
-\title{Rank Enrichment Analysis - treating NAs as no events
-Originally part of the 'citrus' package, written by Federico M. Giorgi - 2014-05-01 under GPL2}
+\title{This function calculates an Enrichment Score of Association based on how the features rank on the samples sorted by a specific gene}
 \usage{
 rea(eset, regulon, minsize = 1, maxsize = Inf)
 }

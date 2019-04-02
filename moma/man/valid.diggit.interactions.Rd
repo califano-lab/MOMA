@@ -12,6 +12,9 @@ valid.diggit.interactions(interactions, cnv, gene.loc.mapping,
 
 \item{selected.tfs}{: for each event type list, search within only these cMRS}
 }
+\value{
+a list of events 'covered' by the supplied interactions of type mut/amp/del/fus
+}
 \description{
 Return a set of events 'covered' by specified cMR-event interactions
 }

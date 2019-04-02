@@ -2,7 +2,7 @@
 % Please edit documentation in R/diggit.r
 \name{reaNULL}
 \alias{reaNULL}
-\title{Rank enrichment analysis - null model}
+\title{This function generates the NULL model function, which computes the normalized enrichment score and associated p-value}
 \usage{
 reaNULL(regulon, minsize = 1, maxsize = Inf)
 }

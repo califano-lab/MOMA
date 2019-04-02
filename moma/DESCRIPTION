@@ -1,13 +1,13 @@
 Package: moma
 Title: Multi Omic Master Regulator Analysis
-Version: 0.0.0.9000
+Version: 0.2
 Authors@R: c(person("Evan", "Paull", email = "evan.paull@gmail.com", role = c("aut", "cre")), person("Sunny", "Jones", email = "sunnyjjones@gmail.com", role = c("aut")))
 Description: Inference of candidate master regulator proteins from multi-omics' data
 Depends: R (>= 3.5.0), parallel (>= 3.5.0), dplyr (>= 0.7), RColorBrewer (>= 1.0-5)
 License: GPL Version 3 or later
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.0.9000
+RoxygenNote: 6.1.1
 Imports:
 	parallel (>= 3.5.0),
 	qvalue (>= 2.12.0),
