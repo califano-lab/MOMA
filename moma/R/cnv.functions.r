@@ -5,10 +5,10 @@ library(methods)
 #' 
 #' Map scores to cytoband location 
 #' 
-#' @param mapping: a named vector of genomic locations/cytoband IDs. 
+#' @param mapping a named vector of genomic locations/cytoband IDs. 
 #' names are the gene names for each--i.e. a many to one mapping from HUGO or entrez IDs to
 #' cytoband location
-#' @param diggit.interactions: list indexed by MR/TF name in Entrez Space
+#' @param diggit.interactions list indexed by MR/TF name in Entrez Space
 #' each points to a named vector of NES / z-scores associated with entrez IDs for each interacting event.
 #' @export
 mapScores.cnvBand <- function(mapping, diggit.interactions, from.p=FALSE, pos.nes.only=TRUE) {
@@ -89,11 +89,10 @@ mapScores.cnvBand <- function(mapping, diggit.interactions, from.p=FALSE, pos.ne
 #' 
 #' Integreate CNV scores 
 #' 
-#' @param mapping: a named vector of genomic locations/cytoband IDs. 
-#' names are the gene names for each--i.e. a many to one mapping from HUGO or entrez IDs to
-#' cytoband location
-#' @param diggit.interactions: list indexed by MR/TF name in Entrez Space
-#' 	each points to a named vector of NES / z-scores associated with entrez IDs for each interacting event. 
+#' @param mapping a named vector of genomic locations/cytoband IDs. 
+#' names are the gene names for each--i.e. a many to one mapping from HUGO or entrez IDs to cytoband location
+#' @param diggit.interactions list indexed by MR/TF name in Entrez Space each points to a named vector of NES / z-scores associated with entrez IDs for each interacting event. 
+#' @param cytoband Boolean to use cytoband locations for computing final integrated score
 #' @export
 cnvScoreStouffer <- function(mapping, diggit.interactions, cytoband=TRUE, from.p=FALSE, pos.nes.only=TRUE) {
 

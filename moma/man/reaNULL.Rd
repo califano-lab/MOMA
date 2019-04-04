@@ -10,6 +10,8 @@ reaNULL(regulon, minsize = 1, maxsize = Inf)
 \item{regulon}{A list with genomic features as its names and samples as its entries}
 
 \item{minsize}{Minimum number of event (or size of regulon) to calculate the model with}
+
+\item{maxsize}{Maximum number of event (or size of regulon) to calculate the model with}
 }
 \value{
 A list of functions to compute NES and p-value

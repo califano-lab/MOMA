@@ -133,11 +133,11 @@ sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh
 
 #'
 #' @title Use 'aREA' to calculate the enrichment between each genomic event - VIPER inferred protein pair. Requires pre-computed VIPER scores and a binary events matrix. Will use only samples in both event and VIPER matrices. 
-#' @param vipermat : pre-computed VIPER scores with samples as columns and proteins as rows 
-#' @param events.mat : binary 0/1 events matrix with samples as columns and genes or events as rows
-#' @param : whitelist : only compute associations for events in this list
-#' @param : blacklist : exclude associations for events in this list
-#' @param : min.events : only compute enrichment if the number of samples with these events is GTE to this
+#' @param vipermat Pre-computed VIPER scores with samples as columns and proteins as rows 
+#' @param events.mat Binary 0/1 events matrix with samples as columns and genes or events as rows
+#' @param whitelist Only compute associations for events in this list
+#' @param blacklist Exclude associations for events in this list
+#' @param min.events Only compute enrichment if the number of samples with these events is GTE to this
 #' @export
 associate.events <- function(vipermat, events.mat, min.events=NA, whitelist=NA, blacklist=NA) {
 

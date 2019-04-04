@@ -196,16 +196,9 @@ tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.
 #' @title Get the set of optimal clusterings from the Silhouette results. Find the one that optimizes survival
 #' 
 #' @export
-get.best.clustering.supervised <- function(cluster.sweep=NULL, clinical.tibble, tissue, progression.free.surv=FALSE) {
+get.best.clustering.supervised <- function(search.results, clinical.tibble, tissue, progression.free.surv=FALSE) {
 
-	##
-	## (1) Find maximal 
-	##
-	if (is.null(cluster.sweep)) {
-		load(cluster.sweep.rda)
-	} else {
-		search.results <- cluster.sweep
-	}
+	search.results
 
 	if (progression.free.surv) {
 		print ("Fitting as progression/disease - free survival...")
