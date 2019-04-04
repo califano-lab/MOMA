@@ -37,7 +37,9 @@ clustering.solutions <- momaObj$Cluster()
 # set the clustering variable to MOMA object
 clinical <- get.clin('test/gbm/GBM.clin.merged.txt')
 res <- get.best.clustering.supervised(cluster.sweep=clustering.solutions, clinical=clinical, tissue=tissue, progression.free.surv=TRUE)
-momaObj$sample.clustering <- res$clustering
+#momaObj$sample.clustering <- res$clustering
+momaObj$sample.clustering <- clustering.solutions[[4]]$clustering
+
 # clustering -> pass to genomic coverage. 
 #  
 
