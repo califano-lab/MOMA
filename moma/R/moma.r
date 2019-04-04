@@ -10,6 +10,7 @@
 
 #' @title MOMA Runner
 #' @description Main class encapsulating the input data and logic of the MOMA algorithm
+#' @import stats
 #' @import qvalue
 #' @import parallel
 #' @import clusterpam

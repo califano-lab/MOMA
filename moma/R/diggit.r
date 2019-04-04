@@ -3,6 +3,7 @@ library(qvalue)
 
 #' @title Use Stouffer's method to combine z-scores of DIGGIT interactions for each cMR protein. Combines only positively associated DIGGIT scores by default.  
 #' 
+#' @import stats
 #' @param interactions : list indexed by TF, includes z-scores or p-values for each interacting event
 #' @param from.p : integrate p-values or z-scores (default z-scores; from.p = FALSE)
 #' @param pos.nes.only : use only positive NES scores to rank proteins (default TRUE)
@@ -47,6 +48,7 @@ stouffer.integrate.diggit <- function(interactions, from.p=FALSE, pos.nes.only=T
 
 #' @title Filter interactions from NES (DIGGIT) scores and corresponding background-corrected scores. Use this version in the Bayes model to rank TFs
 #' 
+#' @import stats
 #' @param corrected.scores : a list indexed by the genomic event/gene with corresponding pvals and qvals for
 #' each TF
 #' @param nes.scores : matrix with tfs as columns, rows are genomic events
@@ -209,9 +211,9 @@ get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alternative='bo
 
 
 #' 
-#' @title COMPUTE aREA enrichment for the proteins in a given regulon, against vipermat scores supplied
-#' @param EVENTS.MAT : regulon, a list of gene sets
-#' @param VIPERMAT : A MATRIX OF INFERRED VIPER ACTIVITIES WITH SAMPLES AS COLUMNS AND ROWS AS PROTEINS
+#' @title Compute aREA enrichment for the proteins in a given regulon, against vipermat scores supplied
+#' @param regulon ARACNE regulon object
+#' @param vipermat A VIPER network of inferred activity scores with columns as patient samples, and rows as proteins
 #' @return A MATRIX OF NETWORK ENRICHMENT SCORES (NES) WITH ROWS AS EVENT/GENE NAMES AND COLUMNS AS VIPER PROTEIN NAMES
 #' @export
 aREA.regulon_enrich <- function(regulon, vipermat) {
@@ -245,8 +247,8 @@ aREA.regulon_enrich <- function(regulon, vipermat) {
 
 #' 
 #' COMPUTE AREA ENRICHMENT BETWEEN ALL PAIRWISE COMBINATIONS OF VIPER PROTEINS AND EVENTS
-#' @param EVENTS.MAT : A BINARY 0/1 MATRIX WITH SAMPLES AS COLUMNS AND ROWS AS GENES/EVENTS
-#' @param VIPERMAT : A MATRIX OF INFERRED VIPER ACTIVITIES WITH SAMPLES AS COLUMNS AND ROWS AS PROTEINS
+#' @param events.mat : A BINARY 0/1 MATRIX WITH SAMPLES AS COLUMNS AND ROWS AS GENES/EVENTS
+#' @param vipermat : A MATRIX OF INFERRED VIPER ACTIVITIES WITH SAMPLES AS COLUMNS AND ROWS AS PROTEINS
 #' @return A MATRIX OF NETWORK ENRICHMENT SCORES (NES) WITH ROWS AS EVENT/GENE NAMES AND COLUMNS AS VIPER PROTEIN NAMES
 #' @export
 aREA.enrich <- function(events.mat, vipermat) {
@@ -283,7 +285,6 @@ aREA.enrich <- function(events.mat, vipermat) {
 }
 
 
-#'
 #' @title This function calculates an Enrichment Score of Association based on how the features rank on the samples sorted by a specific gene
 #'
 #' @param eset Numerical matrix
@@ -352,6 +353,7 @@ rea <- function(eset, regulon, minsize=1,maxsize=Inf) {
 #'
 #' @param regulon A list with genomic features as its names and samples as its entries
 #' @param minsize Minimum number of event (or size of regulon) to calculate the model with 
+#' @param maxsize Maximum number of event (or size of regulon) to calculate the model with 
 #' @return A list of functions to compute NES and p-value
 #' @export
 reaNULL <- function(regulon,minsize=1,maxsize=Inf) {
@@ -383,6 +385,7 @@ reaNULL <- function(regulon,minsize=1,maxsize=Inf) {
 
 
 #' @title Utility function
+#' @param corrected.scores - corrected p-values processed by 'qvals' package
 #' @export
 get.pvals.matrix <- function(corrected.scores) {
 	# order of VIPER proteins/TFs
@@ -399,6 +402,7 @@ get.pvals.matrix <- function(corrected.scores) {
 
 #' @title Utility function
 #' @param vipermat - matrix of VIPER scores with columns as samples, rows as protein names
+#' @param fdr.thresh - BH-FDR threshold (default 0.05 FDR rate)
 #' @export
 viper.getTFScores <- function(vipermat, fdr.thresh=0.05) {
 

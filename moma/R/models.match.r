@@ -16,6 +16,8 @@ fn2 <- colorRampPalette(c("#FFFFFF", "#FF4500"))
 #' @import viper
 #' @import tidyverse
 #' @import RColorBrewer
+#' @importFrom methods new 
+#' @importFrom utils setTxtProgressBar txtProgressBar
 #' @export
 model_viperMatcher <- setRefClass("model_viperMatcher", fields=
 	list(patient.viper="matrix",

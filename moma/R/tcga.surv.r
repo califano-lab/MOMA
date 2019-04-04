@@ -1,6 +1,9 @@
 
 #' @import tidyverse
+#' @import dplyr
 #' @import survival
+#' @import grDevices
+#' @import graphics
 #' @import RColorBrewer
 
 #' @title Parse the full clinical merged file from GDAC-Firehose and make a dlpyr tibble out of it
