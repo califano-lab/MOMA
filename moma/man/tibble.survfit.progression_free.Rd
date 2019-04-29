@@ -6,6 +6,9 @@
 \usage{
 tibble.survfit.progression_free(data)
 }
+\arguments{
+\item{data}{Clinical survival data in tibble format, processed from TCGA GDAC / Firehose}
+}
 \description{
 progression free survival
 }

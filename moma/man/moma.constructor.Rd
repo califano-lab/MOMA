@@ -9,15 +9,21 @@ moma.constructor(viper, mut, cnv, fusions, pathways,
   gene.loc.mapping = NULL)
 }
 \arguments{
-\item{mut}{: an indicator matrix (0/1) of mutation events with samples as columns and genes as rows}
+\item{viper}{VIPER protein activity matrix with samples as columns and rows as protein IDs}
 
-\item{cnv}{: a matrix of CNV scores (typically SNP6 array scores from TCGA) with samples as columns and genes as rows}
+\item{mut}{An indicator matrix (0/1) of mutation events with samples as columns and genes as rows}
 
-\item{fusions}{: an indicator matrix (0/1) of fusion events with samples as columns and genes as rows}
+\item{cnv}{A matrix of CNV scores (typically SNP6 array scores from TCGA) with samples as columns and genes as rows}
 
-\item{pathways}{: a named list of lists. Each named list represents interactions between proteins (keys) and their associated partners}
+\item{fusions}{An indicator matrix (0/1) of fusion events with samples as columns and genes as rows}
 
-\item{cytoband.mapping}{: vector of band locations, names are Entrez IDs}
+\item{pathways}{A named list of lists. Each named list represents interactions between proteins (keys) and their associated partners}
+
+\item{gene.blacklist}{A vector of genes to exclude from mutational/CNV/fusion analysis}
+
+\item{output.folder}{Location to store output and intermediate results}
+
+\item{gene.loc.mapping}{A data.frame of band locations and Entrez IDs}
 }
 \value{
 an instance of class momaRunner

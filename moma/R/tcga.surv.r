@@ -2,6 +2,7 @@
 #' @title get.clin Parse the full clinical merged file from GDAC-Firehose and make a dlpyr tibble out of it
 #' @import tibble
 #' @importFrom dplyr inner_join select contains 
+#' @importFrom readr read_tsv
 #' @import survival
 #' @import grDevices
 #' @import graphics
@@ -29,7 +30,8 @@ get.clin <- function(clin.file=NULL) {
 
 
 #' @title Add clustering solutions to the tibble dataset 'survObj' and return
-#' 
+#' @param data Clinical survival data in tibble format, processed from TCGA GDAC / Firehose
+#' @param clustering Clustering solution with numeric values as cluster ID, named by samples
 #' @export
 tibble.add_clusters <- function(data, clustering) {
 
@@ -53,7 +55,7 @@ tibble.add_clusters <- function(data, clustering) {
 
 
 #' @title Add a survival object to the tibble dataset 'survObj' and return
-#' 
+#' @param data Clinical survival data in tibble format, processed from TCGA GDAC / Firehose
 #' @export
 tibble.survfit <- function(data) {
 
@@ -99,7 +101,7 @@ tibble.survfit <- function(data) {
 }
 
 #' @title progression free survival
-#' 
+#' @param data Clinical survival data in tibble format, processed from TCGA GDAC / Firehose
 #' @export
 tibble.survfit.progression_free <- function(data) {
 
@@ -157,7 +159,9 @@ tibble.survfit.progression_free <- function(data) {
 
 
 #' @title Get survival based on clustering
-#' 
+#' @param clustering Clustering solution with numeric values as cluster ID, named by samples
+#' @param clinical.tibble Clinical data from TCGA GDAC / Firehose in tibble format
+#' @param progression.free.surv Compute progression-free survival only? (default=FALSE)
 #' @export
 tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.surv=FALSE) {
 
@@ -193,7 +197,10 @@ tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.
 
 
 #' @title Get the set of optimal clusterings from the Silhouette results. Find the one that optimizes survival
-#' 
+#' @param search.results Multi-k clustering solution, including analytical cluster silhouette scores
+#' @param clinical.tibble Clinical data from TCGA GDAC / Firehose in tibble format
+#' @param tissue TCGA tissue type
+#' @param progression.free.surv Compute progression-free survival only? (default=FALSE)
 #' @export
 get.best.clustering.supervised <- function(search.results, clinical.tibble, tissue, progression.free.surv=FALSE) {
 
@@ -249,7 +256,10 @@ get.best.clustering.supervised <- function(search.results, clinical.tibble, tiss
 
 
 #' @title get the best and worst clustering solutions, just plot those
-#' 
+#' @param clinical.tibble Clinical data from TCGA GDAC / Firehose in tibble format
+#' @param clustering Clustering solution with numeric values as cluster ID, named by samples
+#' @param output Output .png file for Kaplan-Meyer plot
+#' @param title.print Plot title
 #' @export
 survplot.best.v.worst <- function(clinical.tibble, clustering, output, title.print) {
 	

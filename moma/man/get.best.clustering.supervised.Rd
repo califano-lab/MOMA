@@ -7,6 +7,15 @@
 get.best.clustering.supervised(search.results, clinical.tibble, tissue,
   progression.free.surv = FALSE)
 }
+\arguments{
+\item{search.results}{Multi-k clustering solution, including analytical cluster silhouette scores}
+
+\item{clinical.tibble}{Clinical data from TCGA GDAC / Firehose in tibble format}
+
+\item{tissue}{TCGA tissue type}
+
+\item{progression.free.surv}{Compute progression-free survival only? (default=FALSE)}
+}
 \description{
 Get the set of optimal clusterings from the Silhouette results. Find the one that optimizes survival
 }

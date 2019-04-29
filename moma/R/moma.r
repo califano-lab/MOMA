@@ -211,11 +211,14 @@ momaRunner <- setRefClass("momaRunner", fields=
 
 
 #' @title MOMA Constructor
-#' @param mut : an indicator matrix (0/1) of mutation events with samples as columns and genes as rows
-#' @param fusions : an indicator matrix (0/1) of fusion events with samples as columns and genes as rows
-#' @param cnv : a matrix of CNV scores (typically SNP6 array scores from TCGA) with samples as columns and genes as rows
-#' @param pathways : a named list of lists. Each named list represents interactions between proteins (keys) and their associated partners
-#' @param cytoband.mapping : vector of band locations, names are Entrez IDs
+#' @param viper VIPER protein activity matrix with samples as columns and rows as protein IDs
+#' @param mut An indicator matrix (0/1) of mutation events with samples as columns and genes as rows
+#' @param fusions An indicator matrix (0/1) of fusion events with samples as columns and genes as rows
+#' @param cnv A matrix of CNV scores (typically SNP6 array scores from TCGA) with samples as columns and genes as rows
+#' @param pathways A named list of lists. Each named list represents interactions between proteins (keys) and their associated partners
+#' @param gene.loc.mapping A data.frame of band locations and Entrez IDs
+#' @param output.folder Location to store output and intermediate results 
+#' @param gene.blacklist A vector of genes to exclude from mutational/CNV/fusion analysis
 #' @return an instance of class momaRunner
 #' @export
 moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist=NULL, output.folder=NULL, gene.loc.mapping=NULL) {
@@ -298,8 +301,9 @@ moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist=
 
 
 #' preppi: 3 columns, partner A, B and the p-value of the interaction
-#' @param : pathway - a list indexed by TF/MR entrez ID, contains the 
-#' 	named vector of p-values for interactions 
+#' @param diggit.int List of interactions between MRs - Genomic events, inferred by DIGGIT
+#' @param pathway - a list indexed by TF/MR entrez ID, contains the named vector of p-values for interactions 
+#' @param pos.nes.only Only use positive associations between MR activity and presence of events (default = True)
 #' @return numeric vector, zscores for each TF/MR
 #' @export
 pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only=TRUE) {
@@ -359,6 +363,8 @@ pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only=TRUE) {
 }
 
 #' dispatch method for either CNV location corrected or SNV
+#' @param interactions List of MR - Genomic Event interactions, inferred by DIGGIT
+#' @param cytoband.map Data.frame mapping Entrez.IDs to cytoband locations
 stouffer.integrate <- function(interactions, cytoband.map=NULL) {
 	z <- NULL
 	if (!is.null(cytoband.map)) {
@@ -372,7 +378,9 @@ stouffer.integrate <- function(interactions, cytoband.map=NULL) {
 	z
 }
 
-#' Create data frame from coverage data, including number of total events 'covered' and unique events
+#' @title merge.genomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events
+#' @param coverage.range List indexed by sample, then sub-indexed by # of master regulators, then by event type (mut/amp/del/fus). Holds all events by sample
+#' @param topN Maximum number of master regulators to compute coverage
 merge.genomicSaturation <- function(coverage.range, topN)  {
 	
 	data <- c()
@@ -405,11 +413,14 @@ merge.genomicSaturation <- function(coverage.range, topN)  {
 }
 
 #' @title fit.curve.percent Fit based on fractional overall coverage of genomic events
+#' @param sweep Numeric vector of genomic coverage values, named by 'k' threshold 
+#' @param frac Fraction of coverage to use as a threshold (default .85 = 85%)
 fit.curve.percent <- function(sweep, frac=0.85) {
 
 	fractional <- as.numeric(as.character(sweep))/max(sweep)
 	best.k <- names(sweep[which(fractional >= frac)])[1]
 	as.numeric(best.k)
+
 }
 
 

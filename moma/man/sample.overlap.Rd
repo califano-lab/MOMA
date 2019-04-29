@@ -10,17 +10,21 @@ sample.overlap(momaObj, viper.samples, selected.tfs, interaction.map,
   idx.range = NULL)
 }
 \arguments{
-\item{momaObj}{: momaObj}
+\item{momaObj}{Object reference of momaRunner class}
 
-\item{viper.samples}{: samples within the same cluster}
+\item{viper.samples}{Sample vector to restrict sample-specific analysis to}
 
-\item{selected.tfs}{: tfs being analyzed}
+\item{selected.tfs}{Transcription factors being analyzed}
 
-\item{interaction.map}{: list object of events 'covered' by the supplied interactions of type mut/amp/del/fus}
+\item{interaction.map}{List object of events 'covered' by the supplied interactions of type mut/amp/del/fus}
 
-\item{mutation.filter}{: a vector of whitelisted mutation events, in entrez gene IDs}
+\item{cnv.threshold}{Numeric absolute value to threshold SNP6 and/or GISTIC or other CNV scores at. Above that absolute value is considered a positive event.}
 
-\item{idx.range}{: number of tfs to check for genomic saturation calculation, default is 1253}
+\item{mutation.filter}{A vector of whitelisted mutation events, in entrez gene IDs}
+
+\item{verbose}{Output status during the run (default=FALSE)}
+
+\item{idx.range}{Number of tfs to check for genomic saturation calculation, default is 1253}
 }
 \description{
 The core function to compute which sample-specific alterations overlap with genomic events that are explained 

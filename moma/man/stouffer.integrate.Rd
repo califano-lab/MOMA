@@ -6,6 +6,11 @@
 \usage{
 stouffer.integrate(interactions, cytoband.map = NULL)
 }
+\arguments{
+\item{interactions}{List of MR - Genomic Event interactions, inferred by DIGGIT}
+
+\item{cytoband.map}{Data.frame mapping Entrez.IDs to cytoband locations}
+}
 \description{
 dispatch method for either CNV location corrected or SNV
 }

@@ -8,6 +8,8 @@ library(reshape)
 #' names are the gene names for each--i.e. a many to one mapping from HUGO or entrez IDs to
 #' cytoband location
 #' @param diggit.interactions list indexed by MR/TF name in Entrez Space
+#' @param from.p DIGGIT interactions are in p-value format instead of z-score (default=FALSE)
+#' @param pos.nes.only Only consider positive associations with NES scores (default=TRUE)
 #' each points to a named vector of NES / z-scores associated with entrez IDs for each interacting event.
 #' @export
 mapScores.cnvBand <- function(mapping, diggit.interactions, from.p=FALSE, pos.nes.only=TRUE) {

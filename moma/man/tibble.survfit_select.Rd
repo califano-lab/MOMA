@@ -7,6 +7,13 @@
 tibble.survfit_select(clustering, clinical.tibble,
   progression.free.surv = FALSE)
 }
+\arguments{
+\item{clustering}{Clustering solution with numeric values as cluster ID, named by samples}
+
+\item{clinical.tibble}{Clinical data from TCGA GDAC / Firehose in tibble format}
+
+\item{progression.free.surv}{Compute progression-free survival only? (default=FALSE)}
+}
 \description{
 Get survival based on clustering
 }

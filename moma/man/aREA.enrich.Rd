@@ -2,18 +2,18 @@
 % Please edit documentation in R/diggit.r
 \name{aREA.enrich}
 \alias{aREA.enrich}
-\title{COMPUTE AREA ENRICHMENT BETWEEN ALL PAIRWISE COMBINATIONS OF VIPER PROTEINS AND EVENTS}
+\title{aREA.enrich Compute aREA enrichment between all pairwise combinations of VIPER proteins and gene-level events}
 \usage{
 aREA.enrich(events.mat, vipermat)
 }
 \arguments{
-\item{events.mat}{: A BINARY 0/1 MATRIX WITH SAMPLES AS COLUMNS AND ROWS AS GENES/EVENTS}
+\item{events.mat}{A Binary 0/1 matrix with columns as samples, and rows as proteins}
 
-\item{vipermat}{: A MATRIX OF INFERRED VIPER ACTIVITIES WITH SAMPLES AS COLUMNS AND ROWS AS PROTEINS}
+\item{vipermat}{A VIPER network of inferred activity scores with columns as samples, and rows as proteins}
 }
 \value{
-A MATRIX OF NETWORK ENRICHMENT SCORES (NES) WITH ROWS AS EVENT/GENE NAMES AND COLUMNS AS VIPER PROTEIN NAMES
+A matrix of enrichment scores with rows as event/gene names and columns as VIPER protein names
 }
 \description{
-COMPUTE AREA ENRICHMENT BETWEEN ALL PAIRWISE COMBINATIONS OF VIPER PROTEINS AND EVENTS
+aREA.enrich Compute aREA enrichment between all pairwise combinations of VIPER proteins and gene-level events
 }

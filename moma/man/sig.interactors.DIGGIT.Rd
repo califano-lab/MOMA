@@ -8,10 +8,16 @@ sig.interactors.DIGGIT(corrected.scores, nes.scores, cindy,
   p.thresh = 0.05, cindy.only = TRUE)
 }
 \arguments{
-\item{corrected.scores}{: a list indexed by the genomic event/gene with corresponding pvals and qvals for
+\item{corrected.scores}{A list indexed by the genomic event/gene with corresponding pvals and qvals for
 each TF}
 
-\item{nes.scores}{: matrix with tfs as columns, rows are genomic events}
+\item{nes.scores}{Matrix with tfs as columns, rows are genomic events}
+
+\item{cindy}{CINDy algorithm output matrix}
+
+\item{p.thresh}{P-value threshold (default=0.05)}
+
+\item{cindy.only}{Consider only CINDy validated interactions (default=TRUE)}
 }
 \value{
 a list (indexed by VIPER protein) of significant genomic interactions 

@@ -4,13 +4,14 @@
 \alias{valid.diggit.interactions}
 \title{Return a set of events 'covered' by specified cMR-event interactions}
 \usage{
-valid.diggit.interactions(interactions, cnv, gene.loc.mapping,
-  selected.tfs)
+valid.diggit.interactions(interactions, gene.loc.mapping, selected.tfs)
 }
 \arguments{
-\item{interactions}{: list indexed by amp/mut/del/fus - from cMRs to interacting events}
+\item{interactions}{List indexed by amp/mut/del/fus - from cMRs to interacting events}
 
-\item{selected.tfs}{: for each event type list, search within only these cMRS}
+\item{gene.loc.mapping}{Data.frame mapping entrezIDs to cytoband locations}
+
+\item{selected.tfs}{For each event type list, search within only these cMRS}
 }
 \value{
 a list of events 'covered' by the supplied interactions of type mut/amp/del/fus

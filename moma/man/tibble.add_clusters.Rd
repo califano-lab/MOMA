@@ -6,6 +6,11 @@
 \usage{
 tibble.add_clusters(data, clustering)
 }
+\arguments{
+\item{data}{Clinical survival data in tibble format, processed from TCGA GDAC / Firehose}
+
+\item{clustering}{Clustering solution with numeric values as cluster ID, named by samples}
+}
 \description{
 Add clustering solutions to the tibble dataset 'survObj' and return
 }

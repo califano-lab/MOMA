@@ -4,9 +4,11 @@ suppressMessages(library(RColorBrewer))
 
 #' Get coverage of interactions
 #' 
-#' @param momaObj : numeric vector with cluster membership, names are samples
-#' @param viper.samples : calculate the genomic coverage only for these sample
-#' @param cMR.ranking : a vector entrez IDs, in order
+#' @param momaObj A numeric vector with cluster membership, names are samples
+#' @param viper.samples Calculate the genomic coverage only for these sample
+#' @param cMR.ranking A vector entrez IDs, in order
+#' @param topN Compute coverage for only the top -N- Master Regulators
+#' @param mutation.filter Retain only mutation events in this (positive) list
 #' @export
 get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN=100, mutation.filter=NULL) {
 
@@ -26,7 +28,7 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN=100, mutation
 	# makeInteractions = function(genomic.event.types=c("amp", "del", "mut", "fus"), cindy.only=TRUE) { 
 	# interactions: 
 	# 	mut : named by Entrez ID
-	interaction.map <- valid.diggit.interactions(momaObj$interactions, momaObj$cnv, momaObj$gene.loc.mapping, selected.tfs)
+	interaction.map <- valid.diggit.interactions(momaObj$interactions, momaObj$gene.loc.mapping, selected.tfs)
 	
 	# another assert statment: make sure we have non-zero interactions for each
 	sapply(names(interaction.map), function(key) {
@@ -45,12 +47,14 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN=100, mutation
 #' The core function to compute which sample-specific alterations overlap with genomic events that are explained 
 #' via DIGGIT. 
 #' 
-#' @param momaObj : momaObj
-#' @param viper.samples : samples within the same cluster
-#' @param selected.tfs : tfs being analyzed
-#' @param interaction.map : list object of events 'covered' by the supplied interactions of type mut/amp/del/fus
-#' @param mutation.filter : a vector of whitelisted mutation events, in entrez gene IDs
-#' @param idx.range : number of tfs to check for genomic saturation calculation, default is 1253
+#' @param momaObj Object reference of momaRunner class
+#' @param viper.samples Sample vector to restrict sample-specific analysis to
+#' @param selected.tfs Transcription factors being analyzed
+#' @param interaction.map List object of events 'covered' by the supplied interactions of type mut/amp/del/fus
+#' @param mutation.filter A vector of whitelisted mutation events, in entrez gene IDs
+#' @param idx.range Number of tfs to check for genomic saturation calculation, default is 1253
+#' @param cnv.threshold Numeric absolute value to threshold SNP6 and/or GISTIC or other CNV scores at. Above that absolute value is considered a positive event. 
+#' @param verbose Output status during the run (default=FALSE)
 #' @export
 #' 
 sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map, cnv.threshold=0.5, mutation.filter=NULL, verbose=FALSE, idx.range=NULL) {
@@ -224,11 +228,12 @@ sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map
 }
 
 #' Return a set of events 'covered' by specified cMR-event interactions 
-#' @param interactions : list indexed by amp/mut/del/fus - from cMRs to interacting events
-#' @param selected.tfs : for each event type list, search within only these cMRS
+#' @param interactions List indexed by amp/mut/del/fus - from cMRs to interacting events
+#' @param selected.tfs For each event type list, search within only these cMRS
+#' @param gene.loc.mapping Data.frame mapping entrezIDs to cytoband locations
 #' @return a list of events 'covered' by the supplied interactions of type mut/amp/del/fus
 #' @export
-valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selected.tfs) {
+valid.diggit.interactions <- function(interactions, gene.loc.mapping, selected.tfs) {
 	
 	if (length(selected.tfs)==0) {
 		stop("No TFs input to diggit function")
@@ -271,7 +276,7 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 	
 
 	# create a new mapping from TF in Entrez -> event location
-	covered.amps.LOC <- lapply(names(covered.amps), function(x, I, cnv) {
+	covered.amps.LOC <- lapply(names(covered.amps), function(x, I) {
 		geneNames <- I[[as.character(x)]]
 		band.names <- unique(as.character(gene.loc.mapping[which(gene.loc.mapping$Entrez.IDs %in% geneNames),"Cytoband"]))
 		if (length(band.names)==0) {
@@ -280,7 +285,7 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 			band.names <- NA
 		}
 		band.names
-	}, I=covered.amps, cnv=cnv)
+	}, I=covered.amps)
 	names(covered.amps.LOC) <- names(covered.amps)
 	covered.amps.LOC <- covered.amps.LOC[!is.na(covered.amps.LOC)]
 
@@ -290,7 +295,7 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 	}
 
 	# create a new mapping from TF in Entrez -> event location
-	covered.dels.LOC <- lapply(names(covered.dels), function(x, I, cnv) {
+	covered.dels.LOC <- lapply(names(covered.dels), function(x, I) {
 		geneNames <- I[[as.character(x)]]
 		band.names <- unique(as.character(gene.loc.mapping[which(gene.loc.mapping$Entrez.IDs %in% geneNames),"Cytoband"]))
 		if (length(band.names)==0) {
@@ -299,7 +304,7 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 			band.names <- NA
 		}
 		band.names
-	}, I=covered.dels, cnv=cnv)
+	}, I=covered.dels)
 	names(covered.dels.LOC) <- names(covered.dels)
 	covered.dels.LOC <- covered.dels.LOC[!is.na(covered.dels.LOC)]
 
@@ -315,8 +320,9 @@ valid.diggit.interactions <- function(interactions, cnv, gene.loc.mapping, selec
 	  return (list(mut=covered.mutations, amp=covered.amps.LOC, del=covered.dels.LOC)) }
 }
 
-#' helper function: subset a list to the set of keys supplied
-#' return the names of interactions with positive values, in a list structure
+#' @title Helper function: subset a list to the set of keys supplied return the names of interactions with positive values, in a list structure
+#' @param int.l List of interactions, at each index this is a numeric named vector
+#' @param keys Keys used to reduce interactions
 subset.list.interactions <- function(int.l, keys) {
 
 	filtered.I <- lapply(keys, function(key, interactions) {

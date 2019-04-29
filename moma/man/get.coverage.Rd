@@ -8,11 +8,15 @@ get.coverage(momaObj, cMR.ranking, viper.samples, topN = 100,
   mutation.filter = NULL)
 }
 \arguments{
-\item{momaObj}{: numeric vector with cluster membership, names are samples}
+\item{momaObj}{A numeric vector with cluster membership, names are samples}
 
-\item{cMR.ranking}{: a vector entrez IDs, in order}
+\item{cMR.ranking}{A vector entrez IDs, in order}
 
-\item{viper.samples}{: calculate the genomic coverage only for these sample}
+\item{viper.samples}{Calculate the genomic coverage only for these sample}
+
+\item{topN}{Compute coverage for only the top -N- Master Regulators}
+
+\item{mutation.filter}{Retain only mutation events in this (positive) list}
 }
 \description{
 Get coverage of interactions

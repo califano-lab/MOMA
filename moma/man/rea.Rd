@@ -11,7 +11,9 @@ rea(eset, regulon, minsize = 1, maxsize = Inf)
 
 \item{regulon}{A list with genomic features as its names and samples as its entries, indicating presence of event}
 
-\item{minsize}{The minimum number of events to calculate enrichment from}
+\item{minsize}{The minimum number of events to use when calculating enrichment}
+
+\item{maxsize}{The maximum number of events to use when calculating enrichment}
 }
 \value{
 A list containing two elements:

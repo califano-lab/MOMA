@@ -2,10 +2,15 @@
 % Please edit documentation in R/moma.r
 \name{merge.genomicSaturation}
 \alias{merge.genomicSaturation}
-\title{Create data frame from coverage data, including number of total events 'covered' and unique events}
+\title{merge.genomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events}
 \usage{
 \method{merge}{genomicSaturation}(coverage.range, topN)
 }
+\arguments{
+\item{coverage.range}{List indexed by sample, then sub-indexed by # of master regulators, then by event type (mut/amp/del/fus). Holds all events by sample}
+
+\item{topN}{Maximum number of master regulators to compute coverage}
+}
 \description{
-Create data frame from coverage data, including number of total events 'covered' and unique events
+merge.genomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events
 }

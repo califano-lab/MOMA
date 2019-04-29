@@ -12,7 +12,7 @@ aREA.regulon_enrich(regulon, vipermat)
 \item{vipermat}{A VIPER network of inferred activity scores with columns as patient samples, and rows as proteins}
 }
 \value{
-A MATRIX OF NETWORK ENRICHMENT SCORES (NES) WITH ROWS AS EVENT/GENE NAMES AND COLUMNS AS VIPER PROTEIN NAMES
+A matrix of enrichment scores with rows as event/gene names and columns as VIPER protein names
 }
 \description{
 Compute aREA enrichment for the proteins in a given regulon, against vipermat scores supplied

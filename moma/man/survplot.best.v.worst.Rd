@@ -6,6 +6,15 @@
 \usage{
 survplot.best.v.worst(clinical.tibble, clustering, output, title.print)
 }
+\arguments{
+\item{clinical.tibble}{Clinical data from TCGA GDAC / Firehose in tibble format}
+
+\item{clustering}{Clustering solution with numeric values as cluster ID, named by samples}
+
+\item{output}{Output .png file for Kaplan-Meyer plot}
+
+\item{title.print}{Plot title}
+}
 \description{
 get the best and worst clustering solutions, just plot those
 }

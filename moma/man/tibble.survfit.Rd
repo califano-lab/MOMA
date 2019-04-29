@@ -6,6 +6,9 @@
 \usage{
 tibble.survfit(data)
 }
+\arguments{
+\item{data}{Clinical survival data in tibble format, processed from TCGA GDAC / Firehose}
+}
 \description{
 Add a survival object to the tibble dataset 'survObj' and return
 }

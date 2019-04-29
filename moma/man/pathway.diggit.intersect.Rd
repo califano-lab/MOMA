@@ -7,8 +7,11 @@
 pathway.diggit.intersect(diggit.int, pathway, pos.nes.only = TRUE)
 }
 \arguments{
-\item{:}{pathway - a list indexed by TF/MR entrez ID, contains the 
-named vector of p-values for interactions}
+\item{diggit.int}{List of interactions between MRs - Genomic events, inferred by DIGGIT}
+
+\item{pathway}{- a list indexed by TF/MR entrez ID, contains the named vector of p-values for interactions}
+
+\item{pos.nes.only}{Only use positive associations between MR activity and presence of events (default = True)}
 }
 \value{
 numeric vector, zscores for each TF/MR

@@ -2,12 +2,15 @@
 % Please edit documentation in R/genomic.saturation.r
 \name{subset.list.interactions}
 \alias{subset.list.interactions}
-\title{helper function: subset a list to the set of keys supplied
-return the names of interactions with positive values, in a list structure}
+\title{Helper function: subset a list to the set of keys supplied return the names of interactions with positive values, in a list structure}
 \usage{
 \method{subset}{list.interactions}(int.l, keys)
 }
+\arguments{
+\item{int.l}{List of interactions, at each index this is a numeric named vector}
+
+\item{keys}{Keys used to reduce interactions}
+}
 \description{
-helper function: subset a list to the set of keys supplied
-return the names of interactions with positive values, in a list structure
+Helper function: subset a list to the set of keys supplied return the names of interactions with positive values, in a list structure
 }
