@@ -2,7 +2,7 @@
 % Please edit documentation in R/moma.r
 \name{pathway.diggit.intersect}
 \alias{pathway.diggit.intersect}
-\title{preppi: 3 columns, partner A, B and the p-value of the interaction}
+\title{Combine DIGGIT inferences with pathway knowledge}
 \usage{
 pathway.diggit.intersect(diggit.int, pathway, pos.nes.only = TRUE)
 }
@@ -17,5 +17,5 @@ pathway.diggit.intersect(diggit.int, pathway, pos.nes.only = TRUE)
 numeric vector, zscores for each TF/MR
 }
 \description{
-preppi: 3 columns, partner A, B and the p-value of the interaction
+Combine DIGGIT inferences with pathway knowledge
 }

@@ -2,15 +2,18 @@
 % Please edit documentation in R/moma.r
 \name{fit.curve.percent}
 \alias{fit.curve.percent}
-\title{fit.curve.percent Fit based on fractional overall coverage of genomic events}
+\title{Fit based on fractional overall coverage of genomic events}
 \usage{
 fit.curve.percent(sweep, frac = 0.85)
 }
 \arguments{
-\item{sweep}{Numeric vector of genomic coverage values, named by 'k' threshold}
+\item{sweep}{Numeric vector of genomic coverage values, named by k threshold}
 
-\item{frac}{Fraction of coverage to use as a threshold (default .85 = 85%)}
+\item{frac}{Fraction of coverage to use as a threshold (default .85 = 85 percent)}
+}
+\value{
+The k integer where coverage is acheived
 }
 \description{
-fit.curve.percent Fit based on fractional overall coverage of genomic events
+Fit based on fractional overall coverage of genomic events
 }

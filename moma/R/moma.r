@@ -1,5 +1,4 @@
 
-
 #' @title MOMA Runner
 #' @description Main class encapsulating the input data and logic of the MOMA algorithm
 #' @import stats
@@ -300,7 +299,7 @@ moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist=
 }
 
 
-#' preppi: 3 columns, partner A, B and the p-value of the interaction
+#' @title Combine DIGGIT inferences with pathway knowledge 
 #' @param diggit.int List of interactions between MRs - Genomic events, inferred by DIGGIT
 #' @param pathway - a list indexed by TF/MR entrez ID, contains the named vector of p-values for interactions 
 #' @param pos.nes.only Only use positive associations between MR activity and presence of events (default = True)
@@ -362,7 +361,7 @@ pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only=TRUE) {
 	#list(pvals=integrated.p, zscores=integrated.z, pathway.pvals=pathway.pvals)
 }
 
-#' dispatch method for either CNV location corrected or SNV
+#' @title dispatch method for either CNV location corrected or SNV
 #' @param interactions List of MR - Genomic Event interactions, inferred by DIGGIT
 #' @param cytoband.map Data.frame mapping Entrez.IDs to cytoband locations
 stouffer.integrate <- function(interactions, cytoband.map=NULL) {
@@ -377,6 +376,17 @@ stouffer.integrate <- function(interactions, cytoband.map=NULL) {
 	}
 	z
 }
+
+#' @title Fit based on fractional overall coverage of genomic events
+#' @param sweep Numeric vector of genomic coverage values, named by -k- threshold 
+#' @param frac Fraction of coverage to use as a threshold (default .85 = 85 percent)
+#' @return The -k- integer where coverage is acheived
+fit.curve.percent <- function(sweep, frac=0.85) {
+	fractional <- as.numeric(as.character(sweep))/max(sweep)
+	best.k <- names(sweep[which(fractional >= frac)])[1]
+	return (as.numeric(best.k))
+}
+
 
 #' @title merge.genomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events
 #' @param coverage.range List indexed by sample, then sub-indexed by # of master regulators, then by event type (mut/amp/del/fus). Holds all events by sample
@@ -411,16 +421,4 @@ merge.genomicSaturation <- function(coverage.range, topN)  {
 	df <- data.frame(mean=data[,2], k=data[,1], fraction=data[,3], unique.events=data[,4]) 
 	df	
 }
-
-#' @title fit.curve.percent Fit based on fractional overall coverage of genomic events
-#' @param sweep Numeric vector of genomic coverage values, named by 'k' threshold 
-#' @param frac Fraction of coverage to use as a threshold (default .85 = 85%)
-fit.curve.percent <- function(sweep, frac=0.85) {
-
-	fractional <- as.numeric(as.character(sweep))/max(sweep)
-	best.k <- names(sweep[which(fractional >= frac)])[1]
-	as.numeric(best.k)
-
-}
-
 
