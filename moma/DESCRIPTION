@@ -16,9 +16,9 @@ Imports:
 	qvalue (>= 2.12.0),
 	clusterpam (>= 0.1),
 	reshape2 (>= 1.4.3),
-	tidyverse (>= 1.2.0),
+	ggplot2 (>= 3.0.0),
 	MKmisc (>= 1.1),
-	magrittr (>= 1.0),
+	tibble (>= 2.1.1),
 	dplyr (>= 0.7),
 	survival (>= 2.40-1),
 	RColorBrewer (>= 1.0-5)

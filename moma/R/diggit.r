@@ -436,7 +436,8 @@ viper.getTFScores <- function(vipermat, fdr.thresh=0.05) {
 	zscores 
 }
 
-#'
+#' @param zscores Vector of normally distributed z-scores representing protein activities. 
+#' @param fdr.thresh Threshold for false discovery rate, default is 0.05
 #' @export
 viper.getSigTFS <- function(zscores, fdr.thresh=0.05) {
 
@@ -450,7 +451,7 @@ viper.getSigTFS <- function(zscores, fdr.thresh=0.05) {
 	names(pvals)
 }
 
-#'
+#' @param mat Matrix of expression or protein activity scores. Columns are sample names, rows are genes
 #' @export
 samplename.filter <- function(mat) {
 	# filter down to sample Id without the 'A/B/C sample class'. 
@@ -459,7 +460,10 @@ samplename.filter <- function(mat) {
 	mat
 }
 
-#'
+#' @title get.empirical.qvals
+#' @param test.statistics P-values generated from the test comparisons
+#' @param null.statistics P-values generated under the null (permutation) model
+#' @param alternative Optional : 1 or 2 tails used to generate the p-value (default='both')
 #' @export
 get.empirical.qvals <- function(test.statistics, null.statistics, alternative='both') {
 

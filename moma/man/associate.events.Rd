@@ -8,15 +8,15 @@ associate.events(vipermat, events.mat, min.events = NA, whitelist = NA,
   blacklist = NA)
 }
 \arguments{
-\item{vipermat}{: pre-computed VIPER scores with samples as columns and proteins as rows}
+\item{vipermat}{Pre-computed VIPER scores with samples as columns and proteins as rows}
 
-\item{events.mat}{: binary 0/1 events matrix with samples as columns and genes or events as rows}
+\item{events.mat}{Binary 0/1 events matrix with samples as columns and genes or events as rows}
 
-\item{:}{whitelist : only compute associations for events in this list}
+\item{min.events}{Only compute enrichment if the number of samples with these events is GTE to this}
 
-\item{:}{blacklist : exclude associations for events in this list}
+\item{whitelist}{Only compute associations for events in this list}
 
-\item{:}{min.events : only compute enrichment if the number of samples with these events is GTE to this}
+\item{blacklist}{Exclude associations for events in this list}
 }
 \description{
 Use 'aREA' to calculate the enrichment between each genomic event - VIPER inferred protein pair. Requires pre-computed VIPER scores and a binary events matrix. Will use only samples in both event and VIPER matrices.

@@ -4,8 +4,8 @@
 \alias{get.best.clustering.supervised}
 \title{Get the set of optimal clusterings from the Silhouette results. Find the one that optimizes survival}
 \usage{
-get.best.clustering.supervised(cluster.sweep = NULL, clinical.tibble,
-  tissue, progression.free.surv = FALSE)
+get.best.clustering.supervised(search.results, clinical.tibble, tissue,
+  progression.free.surv = FALSE)
 }
 \description{
 Get the set of optimal clusterings from the Silhouette results. Find the one that optimizes survival

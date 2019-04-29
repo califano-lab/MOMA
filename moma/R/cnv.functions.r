@@ -1,6 +1,5 @@
 
 library(reshape)
-library(methods)
 
 #' 
 #' Map scores to cytoband location 
@@ -93,6 +92,8 @@ mapScores.cnvBand <- function(mapping, diggit.interactions, from.p=FALSE, pos.ne
 #' names are the gene names for each--i.e. a many to one mapping from HUGO or entrez IDs to cytoband location
 #' @param diggit.interactions list indexed by MR/TF name in Entrez Space each points to a named vector of NES / z-scores associated with entrez IDs for each interacting event. 
 #' @param cytoband Boolean to use cytoband locations for computing final integrated score
+#' @param from.p Boolean, set TRUE if diggit.interaction values are p-values instead of z-scores
+#' @param pos.nes.only Boolean, only consider positive DIGGIT association scores when ranking candidate MRs (default=TRUE)
 #' @export
 cnvScoreStouffer <- function(mapping, diggit.interactions, cytoband=TRUE, from.p=FALSE, pos.nes.only=TRUE) {
 

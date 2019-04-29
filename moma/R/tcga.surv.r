@@ -1,13 +1,12 @@
 
-#' @import tidyverse
-#' @import dplyr
+#' @title get.clin Parse the full clinical merged file from GDAC-Firehose and make a dlpyr tibble out of it
+#' @import tibble
+#' @importFrom dplyr inner_join select contains 
 #' @import survival
 #' @import grDevices
 #' @import graphics
 #' @import RColorBrewer
-
-#' @title Parse the full clinical merged file from GDAC-Firehose and make a dlpyr tibble out of it
-#' 
+#' @param clin.file Clinical Merge file from TCGA
 #' @export
 get.clin <- function(clin.file=NULL) {
 

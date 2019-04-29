@@ -14,7 +14,6 @@ fn2 <- colorRampPalette(c("#FFFFFF", "#FF4500"))
 #' @param checkpoints - list of checkpoint definitions
 #' @param clusters - list of cluster definitions
 #' @import viper
-#' @import tidyverse
 #' @import RColorBrewer
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @export

@@ -1,22 +1,12 @@
 
-##
-## Interface definitions section:
-##
-
-#source("R/cnv.functions.r")
-#source("R/diggit.r")
-#source("R/conditional.model.r")
-#source("R/genomic.saturation.r")
 
 #' @title MOMA Runner
 #' @description Main class encapsulating the input data and logic of the MOMA algorithm
 #' @import stats
-#' @import methods
 #' @import qvalue
 #' @import parallel
-#' @import clusterpam
+#' @importFrom clusterpam clusterRange
 #' @import reshape2
-#' @import tidyverse
 #' @import MKmisc
 #' @import survival
 #' @import RColorBrewer
@@ -414,7 +404,7 @@ merge.genomicSaturation <- function(coverage.range, topN)  {
 	df	
 }
 
-#' fit based on fractional overall coverage
+#' @title fit.curve.percent Fit based on fractional overall coverage of genomic events
 fit.curve.percent <- function(sweep, frac=0.85) {
 
 	fractional <- as.numeric(as.character(sweep))/max(sweep)

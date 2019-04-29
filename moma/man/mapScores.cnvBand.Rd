@@ -8,11 +8,11 @@ mapScores.cnvBand(mapping, diggit.interactions, from.p = FALSE,
   pos.nes.only = TRUE)
 }
 \arguments{
-\item{mapping:}{a named vector of genomic locations/cytoband IDs. 
+\item{mapping}{a named vector of genomic locations/cytoband IDs. 
 names are the gene names for each--i.e. a many to one mapping from HUGO or entrez IDs to
 cytoband location}
 
-\item{diggit.interactions:}{list indexed by MR/TF name in Entrez Space
+\item{diggit.interactions}{list indexed by MR/TF name in Entrez Space
 each points to a named vector of NES / z-scores associated with entrez IDs for each interacting event.}
 }
 \description{
