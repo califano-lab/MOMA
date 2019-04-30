@@ -14,6 +14,9 @@ tibble.survfit_select(clustering, clinical.tibble,
 
 \item{progression.free.surv}{Compute progression-free survival only? (default=FALSE)}
 }
+\value{
+A list containing the survObj, and associated p-values between the best-worst surviving clustrers, as well as overall stratification based on a COX PH model.
+}
 \description{
 Get survival based on clustering
 }

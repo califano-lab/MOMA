@@ -16,6 +16,9 @@ get.best.clustering.supervised(search.results, clinical.tibble, tissue,
 
 \item{progression.free.surv}{Compute progression-free survival only? (default=FALSE)}
 }
+\value{
+A list containing the best clustering solution and associated survival separation p-value. Also includes the best and worst surviving clusters
+}
 \description{
 Get the set of optimal clusterings from the Silhouette results. Find the one that optimizes survival
 }

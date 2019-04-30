@@ -11,6 +11,9 @@ tibble.add_clusters(data, clustering)
 
 \item{clustering}{Clustering solution with numeric values as cluster ID, named by samples}
 }
+\value{
+The same tibble with an additional 'clusters' variable added
+}
 \description{
 Add clustering solutions to the tibble dataset 'survObj' and return
 }

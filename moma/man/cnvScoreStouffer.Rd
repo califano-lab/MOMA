@@ -19,6 +19,9 @@ names are the gene names for each--i.e. a many to one mapping from HUGO or entre
 
 \item{pos.nes.only}{Boolean, only consider positive DIGGIT association scores when ranking candidate MRs (default=TRUE)}
 }
+\value{
+A vector of z-scores, named by the Master Regulators in 'diggit.interactions'
+}
 \description{
 Integreate CNV scores
 }

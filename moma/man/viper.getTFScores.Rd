@@ -11,6 +11,9 @@ viper.getTFScores(vipermat, fdr.thresh = 0.05)
 
 \item{fdr.thresh}{- BH-FDR threshold (default 0.05 FDR rate)}
 }
+\value{
+A vector of normalized z-scores, named by TF id
+}
 \description{
 Utility function
 }

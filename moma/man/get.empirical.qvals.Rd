@@ -14,6 +14,9 @@ get.empirical.qvals(test.statistics, null.statistics,
 
 \item{alternative}{Optional : 1 or 2 tails used to generate the p-value (default='both')}
 }
+\value{
+A list with both the qvalues and empirical p-values from the supplied test and null stats
+}
 \description{
 get.empirical.qvals
 }

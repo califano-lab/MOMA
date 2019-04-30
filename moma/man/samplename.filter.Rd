@@ -9,6 +9,9 @@ samplename.filter(mat)
 \arguments{
 \item{mat}{Matrix of expression or protein activity scores. Columns are sample names, rows are genes}
 }
+\value{
+An identical matrix with new (shorter) column names
+}
 \description{
 Retain TCGA sample ids without the final letter designation ('A/B/C')
 }

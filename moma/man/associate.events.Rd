@@ -18,6 +18,9 @@ associate.events(vipermat, events.mat, min.events = NA, whitelist = NA,
 
 \item{blacklist}{Exclude associations for events in this list}
 }
+\value{
+A matrix of aREA scores, dimensions are nrow(events.mat) x nrow(vipermat)
+}
 \description{
 Use 'aREA' to calculate the enrichment between each genomic event - VIPER inferred protein pair. Requires pre-computed VIPER scores and a binary events matrix. Will use only samples in both event and VIPER matrices.
 }

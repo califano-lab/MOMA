@@ -8,6 +8,7 @@
 #' @import graphics
 #' @import RColorBrewer
 #' @param clin.file Clinical Merge file from TCGA
+#' @return Returns a tibble data.frame of the clinical data. Rows are patient.bcr_patient_barcode IDs
 #' @export
 get.clin <- function(clin.file=NULL) {
 
@@ -32,6 +33,7 @@ get.clin <- function(clin.file=NULL) {
 #' @title Add clustering solutions to the tibble dataset 'survObj' and return
 #' @param data Clinical survival data in tibble format, processed from TCGA GDAC / Firehose
 #' @param clustering Clustering solution with numeric values as cluster ID, named by samples
+#' @return The same tibble with an additional 'clusters' variable added
 #' @export
 tibble.add_clusters <- function(data, clustering) {
 
@@ -56,6 +58,7 @@ tibble.add_clusters <- function(data, clustering) {
 
 #' @title Add a survival object to the tibble dataset 'survObj' and return
 #' @param data Clinical survival data in tibble format, processed from TCGA GDAC / Firehose
+#' @return The original tibble with a 'survObj' added to the data frame
 #' @export
 tibble.survfit <- function(data) {
 
@@ -162,6 +165,7 @@ tibble.survfit.progression_free <- function(data) {
 #' @param clustering Clustering solution with numeric values as cluster ID, named by samples
 #' @param clinical.tibble Clinical data from TCGA GDAC / Firehose in tibble format
 #' @param progression.free.surv Compute progression-free survival only? (default=FALSE)
+#' @return A list containing the survObj, and associated p-values between the best-worst surviving clustrers, as well as overall stratification based on a COX PH model.
 #' @export
 tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.surv=FALSE) {
 
@@ -200,6 +204,7 @@ tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.
 #' @param clinical.tibble Clinical data from TCGA GDAC / Firehose in tibble format
 #' @param tissue TCGA tissue type
 #' @param progression.free.surv Compute progression-free survival only? (default=FALSE)
+#' @return A list containing the best clustering solution and associated survival separation p-value. Also includes the best and worst surviving clusters
 #' @export
 get.best.clustering.supervised <- function(search.results, clinical.tibble, tissue, progression.free.surv=FALSE) {
 
@@ -254,11 +259,12 @@ get.best.clustering.supervised <- function(search.results, clinical.tibble, tiss
 }
 
 
-#' @title get the best and worst clustering solutions, just plot those
+#' @title Get the best and worst clustering solutions, plot the Kaplan-Meyer of those populations
 #' @param clinical.tibble Clinical data from TCGA GDAC / Firehose in tibble format
 #' @param clustering Clustering solution with numeric values as cluster ID, named by samples
 #' @param output Output .png file for Kaplan-Meyer plot
 #' @param title.print Plot title
+#' @return Nothing, writes the plot to the supplied .png output file
 #' @export
 survplot.best.v.worst <- function(clinical.tibble, clustering, output, title.print) {
 	

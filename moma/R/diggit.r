@@ -135,6 +135,7 @@ sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh
 #' @param whitelist Only compute associations for events in this list
 #' @param blacklist Exclude associations for events in this list
 #' @param min.events Only compute enrichment if the number of samples with these events is GTE to this
+#' @return A matrix of aREA scores, dimensions are nrow(events.mat) x nrow(vipermat) 
 associate.events <- function(vipermat, events.mat, min.events=NA, whitelist=NA, blacklist=NA) {
 
 	if (is.null(events.mat)) {
@@ -375,6 +376,7 @@ reaNULL <- function(regulon,minsize=1,maxsize=Inf) {
 
 #' @title Utility function
 #' @param corrected.scores - corrected p-values processed by 'qvals' package
+#' @return A matrix of p-values for scores between genes/events (rows) and TFs (columns)
 get.pvals.matrix <- function(corrected.scores) {
 	# order of VIPER proteins/TFs
 	tf.names.order <- names(corrected.scores[[1]]$qvals)
@@ -391,6 +393,7 @@ get.pvals.matrix <- function(corrected.scores) {
 #' @title Utility function
 #' @param vipermat - matrix of VIPER scores with columns as samples, rows as protein names
 #' @param fdr.thresh - BH-FDR threshold (default 0.05 FDR rate)
+#' @return A vector of normalized z-scores, named by TF id
 viper.getTFScores <- function(vipermat, fdr.thresh=0.05) {
 
 	# for each gene, count the number samples with scores for each, and weight 
@@ -440,6 +443,7 @@ viper.getSigTFS <- function(zscores, fdr.thresh=0.05) {
 
 #' @title Retain TCGA sample ids without the final letter designation ('A/B/C')
 #' @param mat Matrix of expression or protein activity scores. Columns are sample names, rows are genes
+#' @return An identical matrix with new (shorter) column names
 samplename.filter <- function(mat) {
 	# filter down to sample Id without the 'A/B/C sample class'. 
 	sample.ids <- vapply(colnames(mat), function(x) substr(x, 1, 15), FUN.VALUE=character(1))
@@ -451,6 +455,7 @@ samplename.filter <- function(mat) {
 #' @param test.statistics P-values generated from the test comparisons
 #' @param null.statistics P-values generated under the null (permutation) model
 #' @param alternative Optional : 1 or 2 tails used to generate the p-value (default='both')
+#' @return A list with both the qvalues and empirical p-values from the supplied test and null stats
 get.empirical.qvals <- function(test.statistics, null.statistics, alternative='both') {
 
 	# calculate the upper and lower tail

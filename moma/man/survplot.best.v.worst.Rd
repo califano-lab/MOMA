@@ -2,7 +2,7 @@
 % Please edit documentation in R/tcga.surv.r
 \name{survplot.best.v.worst}
 \alias{survplot.best.v.worst}
-\title{get the best and worst clustering solutions, just plot those}
+\title{Get the best and worst clustering solutions, plot the Kaplan-Meyer of those populations}
 \usage{
 survplot.best.v.worst(clinical.tibble, clustering, output, title.print)
 }
@@ -15,6 +15,9 @@ survplot.best.v.worst(clinical.tibble, clustering, output, title.print)
 
 \item{title.print}{Plot title}
 }
+\value{
+Nothing, writes the plot to the supplied .png output file
+}
 \description{
-get the best and worst clustering solutions, just plot those
+Get the best and worst clustering solutions, plot the Kaplan-Meyer of those populations
 }

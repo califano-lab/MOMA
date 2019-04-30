@@ -9,6 +9,9 @@ get.clin(clin.file = NULL)
 \arguments{
 \item{clin.file}{Clinical Merge file from TCGA}
 }
+\value{
+Returns a tibble data.frame of the clinical data. Rows are patient.bcr_patient_barcode IDs
+}
 \description{
 get.clin Parse the full clinical merged file from GDAC-Firehose and make a dlpyr tibble out of it
 }

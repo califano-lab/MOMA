@@ -95,6 +95,7 @@ mapScores.cnvBand <- function(mapping, diggit.interactions, from.p=FALSE, pos.ne
 #' @param cytoband Boolean to use cytoband locations for computing final integrated score
 #' @param from.p Boolean, set TRUE if diggit.interaction values are p-values instead of z-scores
 #' @param pos.nes.only Boolean, only consider positive DIGGIT association scores when ranking candidate MRs (default=TRUE)
+#' @return A vector of z-scores, named by the Master Regulators in 'diggit.interactions' 
 cnvScoreStouffer <- function(mapping, diggit.interactions, cytoband=TRUE, from.p=FALSE, pos.nes.only=TRUE) {
 
 	mapped.diggit <- mapScores.cnvBand(mapping, diggit.interactions, from.p=FALSE, pos.nes.only=TRUE)
