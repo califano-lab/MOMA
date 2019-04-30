@@ -28,7 +28,7 @@ mapScores.cnvBand <- function(mapping, diggit.interactions, from.p=FALSE, pos.ne
 		if (length(x) == 1) {
 			score <- 0
 			if (from.p) {
-				score <- qnorm(min(x), lower.tail=F)
+				score <- qnorm(min(x), lower.tail=FALSE)
 			} else {
 				if (pos.nes.only) {
 					# Only include positive scores
@@ -63,7 +63,7 @@ mapScores.cnvBand <- function(mapping, diggit.interactions, from.p=FALSE, pos.ne
 				if (length(scores.thisLoc) == 0) { return (NA) }
 				score <- NULL
 				if (from.p) {
-					score <- qnorm(min(scores.thisLoc), lower.tail=F)
+					score <- qnorm(min(scores.thisLoc), lower.tail=FALSE)
 				} else {
 					if (pos.nes.only) {
 						# Only include positive scores

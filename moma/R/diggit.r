@@ -123,7 +123,7 @@ sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh
 		nes.vec <- nes.vec[which(!is.na(nes.vec))]
 
 		#print (paste("num interactions:", length(nes.vec)))
-		nes.vec <- sort(nes.vec, decreasing=T)
+		nes.vec <- sort(nes.vec, decreasing=TRUE)
 		nes.vec
 	})
 	names(viper.interactors) <- colnames(pvals.matrix)
@@ -224,7 +224,7 @@ aREA.regulon_enrich <- function(regulon, vipermat) {
 	dnull <- moma::reaNULL(regulon)
 	
 	# Calculate pvalue of ES
-	pval <- t(sapply(1:length(dnull), function(i, es, dnull) {
+	pval <- t(vapply(1:length(dnull), function(i, es, dnull) {
 						dnull[[i]](es[i, ])$p.value
 					},
 					es=es$groups, dnull=dnull))
@@ -263,7 +263,7 @@ aREA.enrich <- function(events.mat, vipermat) {
 	dnull <- moma::reaNULL(events.regulon)
 	
 	# Calculate pvalue of ES
-	pval <- t(sapply(1:length(dnull), function(i, es, dnull) {
+	pval <- t(vapply(1:length(dnull), function(i, es, dnull) {
 						dnull[[i]](es[i, ])$p.value
 					},
 					es=es$groups, dnull=dnull))
@@ -295,9 +295,9 @@ aREA.enrich <- function(events.mat, vipermat) {
 #' @export 
 rea <- function(eset, regulon, minsize=1,maxsize=Inf) {
 	# Filter for minimum sizes
-	sizes<-sapply(regulon,length)
+	sizes<-vapply(regulon, length, FUN.VALUE=numeric(1))
 	regulon<-regulon[sizes>=minsize]
-	sizes<-sapply(regulon,length)
+	sizes<-vapply(regulon,length, FUN.VALUE=numeric(1))
 	regulon<-regulon[sizes<=maxsize]
 	
 	temp <- unique(unlist(regulon))
@@ -338,8 +338,8 @@ rea <- function(eset, regulon, minsize=1,maxsize=Inf) {
 			}, regulon=regulon, pb=pb, t1=t1, t2=t2, tw=tw)
 	names(temp) <- names(regulon)
 	message("\nProcess ended at ", date())
-	es <- t(sapply(temp, function(x) x$es))
-	ss <- t(sapply(temp, function(x) x$ss))
+	es <- t(vapply(temp, function(x) x$es))
+	ss <- t(vapply(temp, function(x) x$ss))
 	colnames(es)<-colnames(ss)<-colnames(eset)
 	return(list(groups=es, ss=ss))
 }
@@ -354,9 +354,9 @@ rea <- function(eset, regulon, minsize=1,maxsize=Inf) {
 #' @export
 reaNULL <- function(regulon,minsize=1,maxsize=Inf) {
 	# Filter for minimum sizes
-	sizes<-sapply(regulon,length)
+	sizes<-vapply(regulon,length,FUN.VALUE=numeric(1))
 	regulon<-regulon[sizes>=minsize]
-	sizes<-sapply(regulon,length)
+	sizes<-vapply(regulon,length,FUN.VALUE=numeric(1))
 	regulon<-regulon[sizes<=maxsize]
 	# complete list of all genes in any regulon
 	temp <- unique(unlist(regulon))
@@ -389,7 +389,7 @@ get.pvals.matrix <- function(corrected.scores) {
 	pvals.matrix <- matrix(unlist(lapply(corrected.scores, function(x) {
    		pvals <- x$pvals[tf.names.order]
    		pvals
-		})), byrow=T, ncol=length(tf.names.order))
+		})), byrow=TRUE, ncol=length(tf.names.order))
 
 	colnames(pvals.matrix) <- tf.names.order
 	rownames(pvals.matrix) <- names(corrected.scores)
@@ -439,7 +439,7 @@ viper.getTFScores <- function(vipermat, fdr.thresh=0.05) {
 viper.getSigTFS <- function(zscores, fdr.thresh=0.05) {
 
         # calculate pseudo-pvalues and look at just significant pvals/scores
-        pvals <- -pnorm(abs(zscores), log.p=T)*2
+        pvals <- -pnorm(abs(zscores), log.p=TRUE)*2
         pvals[which(pvals > 1)] <- 1
         # correct unless option is NULL
         sig.idx <- which(p.adjust(pvals, method='BH') < fdr.thresh)
@@ -453,7 +453,7 @@ viper.getSigTFS <- function(zscores, fdr.thresh=0.05) {
 #' @export
 samplename.filter <- function(mat) {
 	# filter down to sample Id without the 'A/B/C sample class'. 
-	sample.ids <- sapply(colnames(mat), function(x) substr(x, 1, 15))
+	sample.ids <- vapply(colnames(mat), function(x) substr(x, 1, 15), FUN.VALUE=character(1))
 	colnames(mat) <- sample.ids
 	mat
 }
@@ -468,7 +468,7 @@ get.empirical.qvals <- function(test.statistics, null.statistics, alternative='b
 	# calculate the upper and lower tail
 	if (alternative=='both') {
 
-		test.statistics <- sort(abs(test.statistics), decreasing=T)
+		test.statistics <- sort(abs(test.statistics), decreasing=TRUE)
 		null.statistics <- abs(null.statistics)
 
 		em.pvals <- qvalue::empPvals(test.statistics, null.statistics)

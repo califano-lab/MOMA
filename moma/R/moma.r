@@ -266,7 +266,7 @@ moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist=
 
 	if (!is.null(gene.loc.mapping)) {
 		# verify the 
-		if (!class(gene.loc.mapping)=='data.frame') {
+		if (!is(gene.loc.mapping)=='data.frame') {
 			stop("Error: gene location mapping supplied is not a data.frame!")
 		} else if (!("Entrez.IDs" %in% colnames(gene.loc.mapping))) {
 			stop("Error: gene location mapping supplied does not have 'Entrez.IDs' attribute!")

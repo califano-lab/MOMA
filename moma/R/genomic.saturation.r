@@ -11,7 +11,7 @@ suppressMessages(library(RColorBrewer))
 #' @export
 get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN=100, mutation.filter=NULL) {
 
-	if (class(momaObj) != 'momaRunner') {
+	if (is(momaObj) != 'momaRunner') {
 		stop("Error: must have instantiated momaRunner class object passed!")
 	}
 

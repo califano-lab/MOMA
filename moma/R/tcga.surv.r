@@ -59,10 +59,10 @@ tibble.add_clusters <- function(data, clustering) {
 #' @export
 tibble.survfit <- function(data) {
 
-	data$days.death <- as.numeric(apply(as.matrix(data %>% dplyr::select(dplyr::contains("days_to_death"))), 1, function(x) max(na.omit(x))))
-	data$days.last_followup <- as.numeric(apply(as.matrix(data %>% dplyr::select(dplyr::contains("days_to_last_followup"))), 1, function(x) max(na.omit(x))))
+	data$days.death <- as.numeric(apply(as.matrix(dplyr::select(data, dplyr::contains("days_to_death"))), 1, function(x) max(na.omit(x))))
+	data$days.last_followup <- as.numeric(apply(as.matrix(dplyr::select(data, dplyr::contains("days_to_last_followup"))), 1, function(x) max(na.omit(x))))
 	# vital status summary
-	data$vital_stat_collapsed <- unlist(apply(as.matrix(data %>% dplyr::select(dplyr::contains("vital_status"))), 1, function(x) {
+	data$vital_stat_collapsed <- unlist(apply(as.matrix(dplyr::select(data, dplyr::contains("vital_status"))), 1, function(x) {
 
 		x <- na.omit(x)
 		if (length(x)==0) {
@@ -105,12 +105,12 @@ tibble.survfit <- function(data) {
 #' @export
 tibble.survfit.progression_free <- function(data) {
 
-	data$days.death <- as.numeric(apply(as.matrix(data %>% dplyr::select(dplyr::contains("days_to_death"))), 1, function(x) max(na.omit(x))))
-	data$days.last_followup <- as.numeric(apply(as.matrix(data %>% dplyr::select(dplyr::contains("days_to_last_followup"))), 1, function(x) max(na.omit(x))))
-	data$days.new_tumor <- as.numeric(apply(as.matrix(data %>% dplyr::select(dplyr::contains("days_to_new_tumor_event"))), 1, function(x) max(na.omit(x))))
+	data$days.death <- as.numeric(apply(as.matrix(dplyr::select(data, dplyr::contains("days_to_death"))), 1, function(x) max(na.omit(x))))
+	data$days.last_followup <- as.numeric(apply(as.matrix(dplyr::select(data, dplyr::contains("days_to_last_followup"))), 1, function(x) max(na.omit(x))))
+	data$days.new_tumor <- as.numeric(apply(as.matrix(dplyr::select(data, dplyr::contains("days_to_new_tumor_event"))), 1, function(x) max(na.omit(x))))
 
 	# vital status summary
-	data$vital_stat_collapsed <- unlist(apply(as.matrix(data %>% dplyr::select(dplyr::contains("vital_status"))), 1, function(x) {
+	data$vital_stat_collapsed <- unlist(apply(as.matrix(dplyr::select(data, dplyr::contains("vital_status"))), 1, function(x) {
 
 		x <- na.omit(x)
 		if (length(x)==0) {
@@ -182,8 +182,7 @@ tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.
 	worst.surv.cluster <- strsplit(names(SurvDiff$n)[survival.scores==max(survival.scores)], '=')[[1]][2]
 
 	# Redo the survival analysis difference between just these clusters
-	clin.tibble %>% dplyr::filter(cluster %in% as.numeric(c(best.surv.cluster, worst.surv.cluster)))
-	clin.subset <- clin.tibble %>% dplyr::filter(cluster %in% as.numeric(c(best.surv.cluster, worst.surv.cluster)))
+	clin.subset <- dplyr::filter(clin.tibble, cluster %in% as.numeric(c(best.surv.cluster, worst.surv.cluster)))
 	if (!progression.free.surv) {
 		clin.subset <- tibble.survfit(clin.subset)
 	} else {
@@ -236,10 +235,10 @@ get.best.clustering.supervised <- function(search.results, clinical.tibble, tiss
 		res
 	})
 	names(survival.results) <- equiv.clusters
-	pvals.overall <- sort(sapply(survival.results, function(x) x$pval.overall), decreasing=F)
+	pvals.overall <- sort(sapply(survival.results, function(x) x$pval.overall), decreasing=FALSE)
 	best.k <- as.numeric(names(pvals.overall[1]))
 
-	pvals.best_v_worst <- sort(sapply(survival.results, function(x) x$pval.best_v_worst), decreasing=F)
+	pvals.best_v_worst <- sort(sapply(survival.results, function(x) x$pval.best_v_worst), decreasing=FALSE)
 
 	#add clustering to 'alt.clusters' variable in tibble
 
@@ -274,7 +273,7 @@ survplot.best.v.worst <- function(clinical.tibble, clustering, output, title.pri
 	worst.surv.cluster <- strsplit(names(SurvDiff$n)[survival.scores==max(survival.scores)], '=')[[1]][2]
 
 	# Redo the survival analysis difference between just these clusters
-	clin.subset <- clin.tibble %>% dplyr::filter(cluster %in% as.numeric(c(best.surv.cluster, worst.surv.cluster)))
+	clin.subset <- dplyr::filter(clin.tibble, cluster %in% as.numeric(c(best.surv.cluster, worst.surv.cluster)))
 	clin.subset <- tibble.survfit(clin.subset)
 	SurvDiff <- survival::survdiff(survObj ~ cluster, data=clin.subset, rho=0)
 	pval <- 1 - pchisq(SurvDiff$chisq, length(SurvDiff$n) - 1)
@@ -282,8 +281,6 @@ survplot.best.v.worst <- function(clinical.tibble, clustering, output, title.pri
 	#import::from(survminer, ggsurvplot)
 
 	fit <- survival::survfit(survObj ~ cluster, data=clin.subset)
-	#ggsurvplot(fit, conf.int=T, pval=TRUE, xlim=c(0,2000))
-	#ggsave(output)
 	colors <- colorRampPalette(brewer.pal(8,"Dark2"))(2)
 	png(output, width=700, height=500)
 	par(mar=c(c(10,10,10,10)))
@@ -301,7 +298,7 @@ survplot.best.v.worst <- function(clinical.tibble, clustering, output, title.pri
 #
 	mtext(pval.print, pos=2)
 	legend.labels <- unique(clin.subset$cluster)
-	legend("top", legend=legend.labels, col=colors, lty=1:2, lwd=3, horiz=F)
+	legend("top", legend=legend.labels, col=colors, lty=1:2, lwd=3, horiz=FALSE)
 	dev.off()
 }
 
