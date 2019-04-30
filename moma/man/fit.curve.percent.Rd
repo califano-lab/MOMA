@@ -7,12 +7,12 @@
 fit.curve.percent(sweep, frac = 0.85)
 }
 \arguments{
-\item{sweep}{Numeric vector of genomic coverage values, named by k threshold}
+\item{sweep}{Numeric vector of genomic coverage values, named by -k- threshold}
 
 \item{frac}{Fraction of coverage to use as a threshold (default .85 = 85 percent)}
 }
 \value{
-The k integer where coverage is acheived
+The -k- integer where coverage is acheived
 }
 \description{
 Fit based on fractional overall coverage of genomic events

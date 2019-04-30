@@ -9,6 +9,7 @@
 #' @import MKmisc
 #' @import survival
 #' @import RColorBrewer
+#' @import methods
 #' @export
 momaRunner <- setRefClass("momaRunner", fields=
 	list(viper="matrix",
