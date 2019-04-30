@@ -8,14 +8,14 @@ stouffer.integrate.diggit(interactions, from.p = FALSE,
   pos.nes.only = TRUE)
 }
 \arguments{
-\item{interactions}{: list indexed by TF, includes z-scores or p-values for each interacting event}
+\item{interactions}{A list indexed by TF, includes z-scores or p-values for each interacting event}
 
-\item{from.p}{: integrate p-values or z-scores (default z-scores; from.p = FALSE)}
+\item{from.p}{Integrate p-values or z-scores (default z-scores; from.p = FALSE)}
 
-\item{pos.nes.only}{: use only positive NES scores to rank proteins (default TRUE)}
+\item{pos.nes.only}{Use only positive NES scores to rank proteins (default TRUE)}
 }
 \value{
-list indexed by TF, a stouffer integrated z-score
+A list indexed by TF, a stouffer integrated z-score
 }
 \description{
 Use Stouffer's method to combine z-scores of DIGGIT interactions for each cMR protein. Combines only positively associated DIGGIT scores by default.

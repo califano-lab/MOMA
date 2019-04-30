@@ -69,15 +69,15 @@ momaRunner <- setRefClass("momaRunner", fields=
 			hypotheses <<- list('mut' = mut.hypotheses, 'del' = dels.hypotheses, 'amp' = amps.hypotheses)	
 
 			# do aREA association
-			nes.amps <- moma::associate.events(viper, amps, min.events=min.events, blacklist=gene.blacklist)
-			nes.dels <- moma::associate.events(viper, dels, min.events=min.events, blacklist=gene.blacklist)
-			nes.muts <- moma::associate.events(viper, somut, min.events=min.events, blacklist=gene.blacklist)
+			nes.amps <- associate.events(viper, amps, min.events=min.events, blacklist=gene.blacklist)
+			nes.dels <- associate.events(viper, dels, min.events=min.events, blacklist=gene.blacklist)
+			nes.muts <- associate.events(viper, somut, min.events=min.events, blacklist=gene.blacklist)
 
 			nes.fusions <- NULL
 			if (!is.null(fusions)) {
 				fus.hypotheses <- rownames(fusions[apply(fusions,1,sum,na.rm=TRUE)>=min.events,])
 				write.table(fus.hypotheses,file=paste0(output.folder, "/hypotheses.fusions.txt"), quote=F, sep="\t")
-				nes.fusions <- moma::associate.events(viper, fusions, min.events=min.events, blacklist=gene.blacklist)
+				nes.fusions <- associate.events(viper, fusions, min.events=min.events, blacklist=gene.blacklist)
 			}
 			
 			# Save aREA results
@@ -222,9 +222,9 @@ momaRunner <- setRefClass("momaRunner", fields=
 #' @return an instance of class momaRunner
 #' @export
 moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist=NULL, output.folder=NULL, gene.loc.mapping=NULL) {
-	viper <- moma::samplename.filter(viper)
-	mut <- moma::samplename.filter(mut)
-	cnv <- moma::samplename.filter(cnv)
+	viper <- samplename.filter(viper)
+	mut <- samplename.filter(mut)
+	cnv <- samplename.filter(cnv)
 
 	# validate viper matrix
 	if (ncol(viper) < 2) {
@@ -266,7 +266,7 @@ moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist=
 
 	if (!is.null(gene.loc.mapping)) {
 		# verify the 
-		if (!is(gene.loc.mapping)=='data.frame') {
+		if (!is(gene.loc.mapping, 'data.frame')) {
 			stop("Error: gene location mapping supplied is not a data.frame!")
 		} else if (!("Entrez.IDs" %in% colnames(gene.loc.mapping))) {
 			stop("Error: gene location mapping supplied does not have 'Entrez.IDs' attribute!")
@@ -305,7 +305,6 @@ moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist=
 #' @param pathway - a list indexed by TF/MR entrez ID, contains the named vector of p-values for interactions 
 #' @param pos.nes.only Only use positive associations between MR activity and presence of events (default = True)
 #' @return numeric vector, zscores for each TF/MR
-#' @export
 pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only=TRUE) {
 
 	pathway.pvals <- parallel::mclapply(names(diggit.int), function(tf) {

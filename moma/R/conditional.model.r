@@ -1,12 +1,10 @@
 
 
 #'
-#' Get the empirical p-value from a distribution (vector)
-#' 
+#' @title Get the empirical p-value from a distribution (vector)
 #' @param gene.name Character
 #' @param x named Vector of scores for the distribution
 #' @return a numeric p-value between 0 and 1
-#' @export
 empirical.p <- function(gene.name, x) {
 
 	# unranked genes in either distribution should get no score from this
@@ -18,13 +16,11 @@ empirical.p <- function(gene.name, x) {
 }
 
 #'
-#' Get the conditional p-value of a gene 
-#' 
+#' @title Get the conditional p-value of a gene 
 #' @param gene.name Character
 #' @param condition.on named Vector of scores for the distribution we are conditioning ON
 #' @param x named Vector of scores for the dependent distribution
 #' @return a numeric p-value between 0 and 1
-#' @export
 conditional.p <- function(gene.name, condition.on, x) {
 
 	# null ranks for all: return NA
@@ -52,7 +48,6 @@ conditional.p <- function(gene.name, condition.on, x) {
 #' @param pathway.scores List , double indexed by each pathway dataset, then with type char. Each points to a numeric score vectors in [0,R+] for each
 #' @param diggit.scores List indexed by type char, with numeric score vectors in [0,R+] for each
 #' @return a named vector of empirical p-values for each protein/candidate Master Regulator
-#' @export
 conditional.model <- function(viper.scores, diggit.scores, pathway.scores) {
 
 	integrated.pvals <- unlist(lapply(names(viper.scores), function(VIP) {

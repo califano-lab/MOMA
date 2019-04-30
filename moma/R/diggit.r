@@ -3,11 +3,10 @@ library(qvalue)
 
 #' @title Use Stouffer's method to combine z-scores of DIGGIT interactions for each cMR protein. Combines only positively associated DIGGIT scores by default.  
 #' @import stats
-#' @param interactions : list indexed by TF, includes z-scores or p-values for each interacting event
-#' @param from.p : integrate p-values or z-scores (default z-scores; from.p = FALSE)
-#' @param pos.nes.only : use only positive NES scores to rank proteins (default TRUE)
-#' @return list indexed by TF, a stouffer integrated z-score
-#' @export
+#' @param interactions A list indexed by TF, includes z-scores or p-values for each interacting event
+#' @param from.p Integrate p-values or z-scores (default z-scores; from.p = FALSE)
+#' @param pos.nes.only Use only positive NES scores to rank proteins (default TRUE)
+#' @return A list indexed by TF, a stouffer integrated z-score
 stouffer.integrate.diggit <- function(interactions, from.p=FALSE, pos.nes.only=TRUE) {
 
 	##
@@ -54,7 +53,6 @@ stouffer.integrate.diggit <- function(interactions, from.p=FALSE, pos.nes.only=T
 #' @param cindy.only Consider only CINDy validated interactions (default=TRUE)
 #' @return a list (indexed by VIPER protein) of significant genomic interactions 
 #' and associated pvals over the background (null TF) model, and NES scores
-#' @export
 sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh=0.05, cindy.only=TRUE) {
 
 	pvals.matrix <- get.pvals.matrix(corrected.scores)
@@ -137,7 +135,6 @@ sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh
 #' @param whitelist Only compute associations for events in this list
 #' @param blacklist Exclude associations for events in this list
 #' @param min.events Only compute enrichment if the number of samples with these events is GTE to this
-#' @export
 associate.events <- function(vipermat, events.mat, min.events=NA, whitelist=NA, blacklist=NA) {
 
 	if (is.null(events.mat)) {
@@ -176,7 +173,7 @@ associate.events <- function(vipermat, events.mat, min.events=NA, whitelist=NA, 
 		return (NULL)
 	}
 
-	nes <- moma::aREA.enrich(events.mat, vipermat)
+	nes <- aREA.enrich(events.mat, vipermat)
 	nes
 }
 
@@ -186,7 +183,6 @@ associate.events <- function(vipermat, events.mat, min.events=NA, whitelist=NA, 
 #' @param null.TFs low-importance TFs used to calculate null distributions
 #' @param alternative Alternative defaults to 'both' : significant p-values can come from both sides of the null distribution 
 #' @return A named list of qvalues for each TF/cMR protein. Each entry contains a vector of q-values for all associated events; names are gene ids 
-#' @export
 get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alternative='both') {
 
 	# subset NES to Viper Proteins in the vipermat only
@@ -198,7 +194,7 @@ get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alternative='bo
 		null.VEC <- null.VEC[which(!is.na(null.VEC))]
 		# get empirical q-values for both upper and lower tails of NES 
 		# / DIGGIT statistics
-		qvals <- moma::get.empirical.qvals(x, null.VEC, alternative)
+		qvals <- get.empirical.qvals(x, null.VEC, alternative)
 		qvals
 	}, alternative=alternative)
 
@@ -212,22 +208,21 @@ get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alternative='bo
 #' @param regulon ARACNE regulon object
 #' @param vipermat A VIPER network of inferred activity scores with columns as patient samples, and rows as proteins
 #' @return A matrix of enrichment scores with rows as event/gene names and columns as VIPER protein names
-#' @export
 aREA.regulon_enrich <- function(regulon, vipermat) {
 
 	regulon <- lapply(regulon, function(x) as.character(x))	
 	# Calculate raw enrichment scores: 
 	# each mutation against each TF
 	# columns are TFs, rownames are mutations
-	es <- moma::rea(t(vipermat), regulon)
+	es <- rea(t(vipermat), regulon)
 	# Analytical correction
-	dnull <- moma::reaNULL(regulon)
+	dnull <- reaNULL(regulon)
 	
 	# Calculate pvalue of ES
 	pval <- t(vapply(1:length(dnull), function(i, es, dnull) {
 						dnull[[i]](es[i, ])$p.value
 					},
-					es=es$groups, dnull=dnull))
+					es=es$groups, dnull=dnull, FUN.VALUE=numeric(ncol(es$groups))))
 
 	# Convert the pvalues into Normalized Enrichment Scores
 	nes <- qnorm(pval/2, lower.tail=FALSE)*es$ss
@@ -258,15 +253,15 @@ aREA.enrich <- function(events.mat, vipermat) {
 	# Calculate raw enrichment scores: 
 	# each mutation against each TF
 	# columns are TFs, rownames are mutations
-	es <- moma::rea(t(vipermat), events.regulon)
+	es <- rea(t(vipermat), events.regulon)
 	# Analytical correction
-	dnull <- moma::reaNULL(events.regulon)
+	dnull <- reaNULL(events.regulon)
 	
 	# Calculate pvalue of ES
 	pval <- t(vapply(1:length(dnull), function(i, es, dnull) {
 						dnull[[i]](es[i, ])$p.value
 					},
-					es=es$groups, dnull=dnull))
+					es=es$groups, dnull=dnull, FUN.VALUE=numeric(ncol(es$groups))))
 
 	# Convert the pvalues into Normalized Enrichment Scores
 	nes <- qnorm(pval/2, lower.tail=FALSE)*es$ss
@@ -292,7 +287,6 @@ aREA.enrich <- function(events.mat, vipermat) {
 #' \item{groups}{Regulon-specific NULL model containing the enrichment scores}
 #' \item{ss}{Direction of the regulon-specific NULL model}
 #' }
-#' @export 
 rea <- function(eset, regulon, minsize=1,maxsize=Inf) {
 	# Filter for minimum sizes
 	sizes<-vapply(regulon, length, FUN.VALUE=numeric(1))
@@ -338,8 +332,8 @@ rea <- function(eset, regulon, minsize=1,maxsize=Inf) {
 			}, regulon=regulon, pb=pb, t1=t1, t2=t2, tw=tw)
 	names(temp) <- names(regulon)
 	message("\nProcess ended at ", date())
-	es <- t(vapply(temp, function(x) x$es))
-	ss <- t(vapply(temp, function(x) x$ss))
+	es <- t(vapply(temp, function(x) x$es, FUN.VALUE=numeric(length(temp[[1]][[1]]))))
+	ss <- t(vapply(temp, function(x) x$ss, FUN.VALUE=numeric(length(temp[[1]][[1]]))))
 	colnames(es)<-colnames(ss)<-colnames(eset)
 	return(list(groups=es, ss=ss))
 }
@@ -351,7 +345,6 @@ rea <- function(eset, regulon, minsize=1,maxsize=Inf) {
 #' @param minsize Minimum number of event (or size of regulon) to calculate the model with 
 #' @param maxsize Maximum number of event (or size of regulon) to calculate the model with 
 #' @return A list of functions to compute NES and p-value
-#' @export
 reaNULL <- function(regulon,minsize=1,maxsize=Inf) {
 	# Filter for minimum sizes
 	sizes<-vapply(regulon,length,FUN.VALUE=numeric(1))
@@ -382,7 +375,6 @@ reaNULL <- function(regulon,minsize=1,maxsize=Inf) {
 
 #' @title Utility function
 #' @param corrected.scores - corrected p-values processed by 'qvals' package
-#' @export
 get.pvals.matrix <- function(corrected.scores) {
 	# order of VIPER proteins/TFs
 	tf.names.order <- names(corrected.scores[[1]]$qvals)
@@ -399,7 +391,6 @@ get.pvals.matrix <- function(corrected.scores) {
 #' @title Utility function
 #' @param vipermat - matrix of VIPER scores with columns as samples, rows as protein names
 #' @param fdr.thresh - BH-FDR threshold (default 0.05 FDR rate)
-#' @export
 viper.getTFScores <- function(vipermat, fdr.thresh=0.05) {
 
 	# for each gene, count the number samples with scores for each, and weight 
@@ -435,7 +426,6 @@ viper.getTFScores <- function(vipermat, fdr.thresh=0.05) {
 #' @title Calculate p-values from pseudo zscores / VIPER aREA scores, threshold
 #' @param zscores Vector of normally distributed z-scores representing protein activities. 
 #' @param fdr.thresh Threshold for false discovery rate, default is 0.05
-#' @export
 viper.getSigTFS <- function(zscores, fdr.thresh=0.05) {
 
         # calculate pseudo-pvalues and look at just significant pvals/scores
@@ -450,7 +440,6 @@ viper.getSigTFS <- function(zscores, fdr.thresh=0.05) {
 
 #' @title Retain TCGA sample ids without the final letter designation ('A/B/C')
 #' @param mat Matrix of expression or protein activity scores. Columns are sample names, rows are genes
-#' @export
 samplename.filter <- function(mat) {
 	# filter down to sample Id without the 'A/B/C sample class'. 
 	sample.ids <- vapply(colnames(mat), function(x) substr(x, 1, 15), FUN.VALUE=character(1))
@@ -462,7 +451,6 @@ samplename.filter <- function(mat) {
 #' @param test.statistics P-values generated from the test comparisons
 #' @param null.statistics P-values generated under the null (permutation) model
 #' @param alternative Optional : 1 or 2 tails used to generate the p-value (default='both')
-#' @export
 get.empirical.qvals <- function(test.statistics, null.statistics, alternative='both') {
 
 	# calculate the upper and lower tail
