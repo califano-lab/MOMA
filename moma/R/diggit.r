@@ -282,6 +282,7 @@ aREA.enrich <- function(events.mat, vipermat) {
 
 
 #' @title This function calculates an Enrichment Score of Association based on how the features rank on the samples sorted by a specific gene
+#' @importFrom utils setTxtProgressBar txtProgressBar
 #' @param eset Numerical matrix
 #' @param regulon A list with genomic features as its names and samples as its entries, indicating presence of event
 #' @param minsize The minimum number of events to use when calculating enrichment
