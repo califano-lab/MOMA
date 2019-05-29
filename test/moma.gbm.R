@@ -26,7 +26,7 @@ momaObj$Rank(use.cindy=TRUE)
 clustering.solutions <- momaObj$Cluster()
 # use clinical survival data to select the clustering solution / break ties in analytical solution. 
 # set the clustering variable to MOMA object
-res <- get.best.clustering.supervised(clustering.solutions, clinical, tissue, progression.free.surv=TRUE)
+#res <- get.best.clustering.supervised(clustering.solutions, clinical, tissue, progression.free.surv=TRUE)
 momaObj$sample.clustering <- clustering.solutions[[4]]$clustering
 
 momaObj$saturationPlots()
