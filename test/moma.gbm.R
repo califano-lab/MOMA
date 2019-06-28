@@ -1,9 +1,9 @@
 #!/usr/bin/env	Rscript
 
 library(moma)
-library(parallel)
-library(clusterpam)
-library(magrittr)
+#library(parallel)
+#library(clusterpam)
+#library(magrittr)
 
 # load data/analyses
 load('test/gbm/gbm.data.rda')
@@ -24,33 +24,10 @@ momaObj$Rank(use.cindy=TRUE)
 
 # cluster
 clustering.solutions <- momaObj$Cluster()
-# use clinical survival data to select the clustering solution / break ties in analytical solution. 
-# set the clustering variable to MOMA object
-#res <- get.best.clustering.supervised(clustering.solutions, clinical, tissue, progression.free.surv=TRUE)
+# Pick the k=5 cluster and save this to the moma Object
 momaObj$sample.clustering <- clustering.solutions[[4]]$clustering
-
+# generate genomic saturation statistics and plot data
 momaObj$saturationPlots()
 
 cluster1.checkpoint <- momaObj$checkpoints[[1]]
-
-print (map.entrez(cluster1.checkpoint))
-#res <- sapply(1:5, function(x) {
-#	print (paste("Running iteration ", x))
-#
-#	set.seed(x)
-#	viper.submat <- vipermat[,sample(colnames(vipermat), length(colnames(vipermat))*.8)]
-#
-#	momaObj <- moma.constructor(viper.submat, rawsnp, rawcnv, fusions, pathways, 
-#		gene.blacklist='test/mutSig_blacklist.entrezID.txt', 
-#		output.folder='gbm-test/',
-#		gene.loc.mapping=gene.loc.mapping)
-#	momaObj$runDIGGIT(fCNV=fCNV)
-#	momaObj$makeInteractions(cindy.only=FALSE)
-#	momaObj$Rank(use.cindy=TRUE)
-#
-##	# return rank orders
-#	momaObj$ranks$integrated
-##})
-##
-#save(momaObj, file='momaObj.rda')
 

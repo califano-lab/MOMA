@@ -1,0 +1,82 @@
+\documentclass{article}
+\usepackage{fullpage}
+\usepackage{hyperref}
+\usepackage{authblk}
+%\VignetteIndexEntry{Using MOMA}
+
+\title{Using MOMA, a package for inference of Master Regulators proteins using multi-omic data}
+\author[1]{Evan O. Paull}
+\author[1]{Sunny Jones}
+\author[1,2]{Mariano J. Alvarez}
+\author[1]{Federico Giorgi}
+\author[1]{Andrea Califano}
+\affil[1]{Department of Systems Biology, Columbia University, 1130 St. Nicholas Ave., New York}
+\affil[2]{DarwinHealth Inc, 3960 Broadway, New York}
+\date{\today}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\maketitle
+
+%-----------
+\section{Overview of MOMA}\label{sec:overview}
+
+%--------
+\section{Citation}
+Alvarez MJ, Shen Y, Giorgi FM, Lachmann A, Ding BB, Ye BH \& Califano, A. 
+%--------
+\section{Installation of \emph{viper} package}
+MOMA requires the R-system (\url{http://www.r-project.org}), the \emph{parallel}, \emph{clusterpam} , \emph{qvalue} packages. 
+
+%----
+\section{Getting started}
+First load the library into the R session:
+<<echo=TRUE, results=hide>>=
+library(moma)
+@
+
+%--------
+\section{Generating the \emph{moma} object}
+
+<<echo=TRUE, results=hide>>=
+regul <- aracne2regulon(adjfile, dset, verbose = FALSE)
+@
+<<echo=TRUE, results=verbatim>>=
+print(regul)
+@
+
+%-------
+\section{MOMA Analysis on GBM Data}
+
+\subsection{Generating the gene expression signatures}
+
+<<echo=TRUE, results=hide>>=
+@
+
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=.6\textwidth]{viper-sigviper}
+  \end{center}
+  \caption{\label{fig:sigviper}Heatmap showing the similarity between the samples (red indicated highly-similar samples) as measured by \emph{viperSimilarity} between the VIPER-inferred regulatory protein activity profiles. The samples (M: memory B-cells, CB: centroblasts, CC: centrocytes) were arranged according to average-linkage hierarchical cluster analysis.}
+\end{figure}
+%-----------
+\begin{thebibliography}{99}
+\bibitem{Basso2005} Basso, K. et al. Reverse engineering of regulatory networks in human B cells. Nat. Genet. 37, 382-90 (2005).
+\bibitem{Gautier2004} Gautier, L., Cope, L., Bolstad, B. M., and Irizarry, R. A. 2004. affy---analysis of Affymetrix GeneChip data at the probe level. Bioinformatics 20, 3 (Feb. 2004), 307-315.
+\bibitem{Alvarez2009} Alvarez, M. J., Sumazin, P., Rajbhandari, P. \& Califano, A. Correlating measurements across samples improves accuracy of large-scale expression profile experiments. Genome Biol. 10, R143 (2009).
+\bibitem{Lefebvre2010} Lefebvre, C. et al. A human B-cell interactome identifies MYB and FOXM1 as master regulators of proliferation in germinal centers. Mol. Syst. Biol. 6, 377 (2010).
+\bibitem{Jiang2007a} Jiang, Z. \& Gentleman, R. Extensions to gene set enrichment. Bioinformatics (Oxford, England) 23, 306-13 (2007).
+\bibitem{Carro2010b} Carro, M. S. et al. The transcriptional network for mesenchymal transformation of brain tumours. Nature 463, 318-25 (2010).
+\bibitem{Julio2011} Julio, M. K. -d. et al. Regulation of extra-embryonic endoderm stem cell differentiation by Nodal and Cripto signaling. Development 138, 3885-3895 (2011).
+\bibitem{Klein2003} Klein, U. et al. Transcriptional analysis of the B cell germinal center reaction. Proc. Natl. Acad. Sci. USA. 100, 2639-44 (2003).
+\bibitem{Tothill2008} Tothill, R. W. et al. Novel molecular subtypes of serous and endometrioid ovarian cancer linked to clinical outcome. Clin. Cancer Res. 14, 5198-208 (2008).
+\bibitem{Bozovic2012} Bozovic, A. \& Kulasingam, V. Quantitative mass spectrometry-based assay development and validation: From small molecules to proteins. Clin. Biochem. 46, 444-455 (2012).
+\bibitem{Wolf-Yadlin2009} Wolf-Yadlin, A., Sevecka, M. \& MacBeath, G. Dissecting protein function and signaling using protein microarrays. Curr. Opin. Chem. Biol. 13, 398-405 (2009).
+\bibitem{Alvarez2013} Alvarez MJ, Shen Y, Giorgi FM, Lachmann A, Ding BB, Ye BH \& Califano, A. Functional characterization of somatic mutations in cancer using network-based inference of protein activity. Nature Genetics (In press) (2016).
+\bibitem{Margolin2006} Margolin, A. A. et al. ARACNE: an algorithm for the reconstruction of gene regulatory networks in a mammalian cellular context. BMC Bioinformatics 7 Suppl 1, S7 (2006).
+\bibitem{Subramanian2005} Subramanian, A. et al. Gene set enrichment analysis: a knowledge-based approach for interpreting genome-wide expression profiles. Proc. Natl. Acad. Sci. USA 102, 15545-50 (2005).
+
+\end{thebibliography}
+%----------
+\end{document}
