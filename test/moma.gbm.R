@@ -31,6 +31,9 @@ momaObj$sample.clustering <- clustering.solutions[[4]]$clustering
 
 momaObj$saturationPlots()
 
+cluster1.checkpoint <- momaObj$checkpoints[[1]]
+
+print (map.entrez(cluster1.checkpoint))
 #res <- sapply(1:5, function(x) {
 #	print (paste("Running iteration ", x))
 #
