@@ -11,6 +11,9 @@ viper.getSigTFS(zscores, fdr.thresh = 0.05)
 
 \item{fdr.thresh}{Threshold for false discovery rate, default is 0.05}
 }
+\value{
+Get the names of proteins with significant z-scores, after multi-hypothesis correction
+}
 \description{
 Calculate p-values from pseudo zscores / VIPER aREA scores, threshold
 }

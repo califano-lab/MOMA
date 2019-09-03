@@ -11,6 +11,9 @@
 
 \item{topN}{Maximum number of master regulators to compute coverage}
 }
+\value{
+A data frame with summary statistics for genomic saturation at each 'k'
+}
 \description{
 merge.genomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events
 }

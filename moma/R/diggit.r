@@ -429,6 +429,7 @@ viper.getTFScores <- function(vipermat, fdr.thresh=0.05) {
 #' @title Calculate p-values from pseudo zscores / VIPER aREA scores, threshold
 #' @param zscores Vector of normally distributed z-scores representing protein activities. 
 #' @param fdr.thresh Threshold for false discovery rate, default is 0.05
+#' @return Get the names of proteins with significant z-scores, after multi-hypothesis correction
 viper.getSigTFS <- function(zscores, fdr.thresh=0.05) {
 
         # calculate pseudo-pvalues and look at just significant pvals/scores

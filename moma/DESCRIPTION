@@ -27,3 +27,5 @@ Imports:
 	graphics (>= 3.5.0),
 	stats (>= 3.5.0),
 	utils (>= 3.5.0)
+Suggests: 
+    testthat (>= 2.1.0)

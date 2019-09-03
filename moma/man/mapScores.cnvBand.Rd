@@ -19,6 +19,9 @@ cytoband location}
 \item{pos.nes.only}{Only consider positive associations with NES scores (default=TRUE)
 each points to a named vector of NES / z-scores associated with entrez IDs for each interacting event.}
 }
+\value{
+A list of input scores, now named by cytoband location
+}
 \description{
 Map scores to cytoband location
 }

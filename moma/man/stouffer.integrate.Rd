@@ -11,6 +11,9 @@ stouffer.integrate(interactions, cytoband.map = NULL)
 
 \item{cytoband.map}{Data.frame mapping Entrez.IDs to cytoband locations}
 }
+\value{
+Z-scores for each MR
+}
 \description{
 dispatch method for either CNV location corrected or SNV
 }

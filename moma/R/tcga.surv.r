@@ -60,6 +60,7 @@ tibble.add_clusters <- function(data, clustering) {
 #' @param data Clinical survival data in tibble format, processed from TCGA GDAC / Firehose
 #' @return The original tibble with a 'survObj' added to the data frame
 #' @export
+#' @return A copy of the input tibble with a '$survObj' attached
 tibble.survfit <- function(data) {
 
 	data$days.death <- as.numeric(apply(as.matrix(dplyr::select(data, dplyr::contains("days_to_death"))), 1, function(x) max(na.omit(x))))
@@ -105,6 +106,7 @@ tibble.survfit <- function(data) {
 
 #' @title progression free survival
 #' @param data Clinical survival data in tibble format, processed from TCGA GDAC / Firehose
+#' @return A copy of the input tibble with a $survObj attached
 #' @export
 tibble.survfit.progression_free <- function(data) {
 

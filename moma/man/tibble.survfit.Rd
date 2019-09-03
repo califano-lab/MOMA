@@ -11,6 +11,8 @@ tibble.survfit(data)
 }
 \value{
 The original tibble with a 'survObj' added to the data frame
+
+A copy of the input tibble with a '$survObj' attached
 }
 \description{
 Add a survival object to the tibble dataset 'survObj' and return

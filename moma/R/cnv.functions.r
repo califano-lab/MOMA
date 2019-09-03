@@ -11,6 +11,7 @@ library(reshape)
 #' @param from.p DIGGIT interactions are in p-value format instead of z-score (default=FALSE)
 #' @param pos.nes.only Only consider positive associations with NES scores (default=TRUE)
 #' each points to a named vector of NES / z-scores associated with entrez IDs for each interacting event.
+#' @return A list of input scores, now named by cytoband location
 mapScores.cnvBand <- function(mapping, diggit.interactions, from.p=FALSE, pos.nes.only=TRUE) {
 
 	# apply over each TF/MR:

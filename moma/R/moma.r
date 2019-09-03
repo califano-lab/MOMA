@@ -364,6 +364,7 @@ pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only=TRUE) {
 #' @title dispatch method for either CNV location corrected or SNV
 #' @param interactions List of MR - Genomic Event interactions, inferred by DIGGIT
 #' @param cytoband.map Data.frame mapping Entrez.IDs to cytoband locations
+#' @return Z-scores for each MR
 stouffer.integrate <- function(interactions, cytoband.map=NULL) {
 	z <- NULL
 	if (!is.null(cytoband.map)) {
@@ -391,6 +392,7 @@ fit.curve.percent <- function(sweep, frac=0.85) {
 #' @title merge.genomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events
 #' @param coverage.range List indexed by sample, then sub-indexed by # of master regulators, then by event type (mut/amp/del/fus). Holds all events by sample
 #' @param topN Maximum number of master regulators to compute coverage
+#' @return A data frame with summary statistics for genomic saturation at each 'k'
 merge.genomicSaturation <- function(coverage.range, topN)  {
 	
 	data <- c()

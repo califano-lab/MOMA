@@ -26,6 +26,9 @@ sample.overlap(momaObj, viper.samples, selected.tfs, interaction.map,
 
 \item{idx.range}{Number of tfs to check for genomic saturation calculation, default is 1253}
 }
+\value{
+A list of lists, indexed by sample name, with coverage statistics/data for each sample
+}
 \description{
 The core function to compute which sample-specific alterations overlap with genomic events that are explained 
 via DIGGIT.

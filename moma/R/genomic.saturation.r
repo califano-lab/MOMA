@@ -8,6 +8,7 @@ suppressMessages(library(RColorBrewer))
 #' @param cMR.ranking A vector entrez IDs, in order
 #' @param topN Compute coverage for only the top -N- Master Regulators
 #' @param mutation.filter Retain only mutation events in this (positive) list
+#' @return A list of lists, indexed by sample name, with coverage statistics/data for each sample
 get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN=100, mutation.filter=NULL) {
 
 	if (!is(momaObj, 'momaRunner')) {
@@ -53,6 +54,7 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN=100, mutation
 #' @param idx.range Number of tfs to check for genomic saturation calculation, default is 1253
 #' @param cnv.threshold Numeric absolute value to threshold SNP6 and/or GISTIC or other CNV scores at. Above that absolute value is considered a positive event. 
 #' @param verbose Output status during the run (default=FALSE)
+#' @return A list of lists, indexed by sample name, with coverage statistics/data for each sample
 sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map, cnv.threshold=0.5, mutation.filter=NULL, verbose=FALSE, idx.range=NULL) {
 
 	if (is.null(momaObj$hypotheses)) {
@@ -318,6 +320,7 @@ valid.diggit.interactions <- function(interactions, gene.loc.mapping, selected.t
 #' @title Helper function: subset a list to the set of keys supplied return the names of interactions with positive values, in a list structure
 #' @param int.l List of interactions, at each index this is a numeric named vector
 #' @param keys Keys used to reduce interactions
+#' @return Returns a filtered list of interactions in the same format as the input
 subset.list.interactions <- function(int.l, keys) {
 
 	filtered.I <- lapply(keys, function(key, interactions) {
