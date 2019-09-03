@@ -2,7 +2,6 @@
 
 library(moma)
 #library(parallel)
-#library(clusterpam)
 #library(magrittr)
 
 # load data/analyses
@@ -12,6 +11,8 @@ load('test/gbm/gbm.data.rda')
 pathways = list()
 pathways[['cindy']] = cindy
 pathways[['preppi']] = pval.map
+
+mutsig.blacklist <- as.character(read.table('test/mutSig_blacklist.entrezID.txt', header=F)[,1])
 
 momaObj <- moma.constructor(vipermat, rawsnp, rawcnv, fusions, pathways, 
 	gene.blacklist=mutsig.blacklist,

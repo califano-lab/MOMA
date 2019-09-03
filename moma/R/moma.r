@@ -4,7 +4,6 @@
 #' @import stats
 #' @import qvalue
 #' @import parallel
-#' @importFrom clusterpam clusterRange
 #' @import reshape2
 #' @import MKmisc
 #' @import survival
@@ -156,7 +155,7 @@ momaRunner <- setRefClass("momaRunner", fields=
                 	print ("using pearson correlation with weighted vipermat")
                 	dist.obj <- corDist(t(w.vipermat), method="pearson")
 			print ("testing clustering options, k = 2..15")
-			search.results <- clusterpam::clusterRange(dist.obj, range=as.numeric(c(2,15)), step=1, cores=2, method='pam')
+			search.results <- clusterRange(dist.obj, range=as.numeric(c(2,15)), step=1, cores=2, method='pam')
 			search.results
 		}, 
 		saturationPlots = function(clustering.solution=NULL, cov.fraction=0.85) {
