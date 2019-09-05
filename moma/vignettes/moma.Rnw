@@ -1,0 +1,162 @@
+\documentclass{article}
+\usepackage{fullpage}
+\usepackage{hyperref}
+\usepackage{authblk}
+
+\title{Using MOMA, a package for inference of Master Regulators proteins using multi-omic data}
+\author[1]{Evan O. Paull}
+\author[1]{Sunny Jones}
+\author[2]{Mariano J. Alvarez}
+\author[1]{Andrea Califano}
+\affil[1]{Department of Systems Biology, Columbia University, 1130 St. Nicholas Ave., New York}
+\affil[2]{DarwinHealth Inc, New York, NY, USA}
+\date{\today}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+%-----------
+\section{Overview of MOMA}\label{sec:overview}
+
+%--------
+\section{Citation}
+
+
+%--------
+\section{Installation of \emph{moma} package}
+MOMA requires the R-system (\url{http://www.r-project.org}), and the following R packges for full functionality, including graphics and plotting functions. 
+
+\begin{itemize}
+\item dplyr
+\item grDevices
+\item graphics
+\item MKmisc
+\item methods
+\item parallel
+\item readr
+\item reshape2
+\item RColorBrewer
+\item survival
+\item stats
+\item tibble
+\item utils
+\end{itemize}
+
+%----
+\section{Getting started}
+First load the library into the R session:
+<<echo=TRUE, results=hide>>=
+library(moma)
+@
+
+\par
+\linebreak
+
+Explore the test data, and confirm that we have 100 test samples and 2506 VIPER \cite{viper} inferred proteins in the test viper matrix. 
+
+<<echo=TRUE, results=tex>>=
+names(gbm.example)
+
+dim(gbm.example$vipermat)
+dim(gbm.example$rawsnp)
+@
+
+
+\par
+\linebreak
+
+Next, we determine the biological pathways we'd like to use to aid in our inference task. In this case, we're using the CINDy algorithm as well as protein-protein interactions predicted by the PrePPI structure-based algorithm. 
+<<echo=TRUE, results=hide>>=
+pathways <- list()
+pathways[['cindy']] = gbm.example$cindy
+pathways[['preppi']] = gbm.example$pval.map
+@
+
+
+%--------
+\section{Generating the \emph{moma} object}
+\linebreak
+
+Generate the MOMA object from the input data we have. Note that we need:
+
+\begin{itemize}
+\item VIPER matrix, continuous values
+\item SNP matrix, binary 0/1 values
+\item CNV matrix, continuous values
+\item Fusion matrix, binary 0/1 values
+\item pathway list
+\item Gene blacklist
+\item output folder
+\end{itemize}
+
+\par 
+\linebreak
+
+<<echo=TRUE, results=hide>>=
+momaObj <- moma.constructor(gbm.example$vipermat, gbm.example$rawsnp,
+        gbm.example$rawcnv, gbm.example$fusions, pathways,
+        gene.blacklist=gbm.example$mutSig,
+        output.folder='gbm-test/',
+        gene.loc.mapping=gbm.example$gene.loc.mapping)
+@
+
+%-------
+\section{MOMA Analysis on GBM Data}
+
+The first step, 'runDIGGIT()'  will run the DIGGIT inference algorithm \cite{diggit} to find
+statistical interactions between VIPER-inferred proteins and genomic events.
+
+\par
+\linebreak
+
+The 'makeInteractions()' function will infer robust computational predictions
+using all the provided data, including the Conditional Inference of Network Dynamics 
+(CINDy) algorithm \cite{cindy}.
+The option 'cindy.only=FALSE' will allow interactions without evidence from CINDy, but 
+with strong evidence from other
+sources, to be used.
+
+\par
+\linebreak
+
+The 'Rank()' function will create a final ranking of candidate Master Regulators for this cohort of patient samples.
+
+<<echo=TRUE, results=hide>>=
+momaObj$runDIGGIT(fCNV=gbm.example$fCNV)
+momaObj$makeInteractions(cindy.only=FALSE)
+momaObj$Rank(use.cindy=TRUE)
+@
+
+\par
+\linebreak
+
+Clustering of the samples, using the protein ranks computed in the last step, can then be performed. Multiple cluster solutions will be calculated, ranging from 2 to 10 clusters by default. The silhouette or reliability score of each can be assessed to determine an optimal 'k'; here, we are selecting the k=5 solution. Genomic saturation analysis is then performed on each cluster with the 'saturationPlots()' function, allowing us to find the key proteins that explain the majority of genomic events supplied in the SNP/CNV and Fusion matrices.
+
+\par
+\linebreak
+
+<<echo=TRUE, results=tex>>=
+clustering.solutions <- momaObj$Cluster()
+# Pick the k=5 cluster and save this to the moma Object
+momaObj$sample.clustering <- clustering.solutions[[4]]$clustering
+# generate genomic saturation statistics and plot data
+momaObj$saturationPlots()
+cluster1.checkpoint <- momaObj$checkpoints[[1]]
+print (cluster1.checkpoint[1:10])
+@
+
+
+%-----------
+\begin{thebibliography}{99}
+\bibliographystyle{plain}
+\bibitem{cindy}
+Giorgi, Federico M., et al. "Inferring protein modulation from gene expression data using conditional mutual information." PloS one 9.10 (2014): e109569.
+\bibitem{diggit}
+ Chen, James C., et al. "Identification of causal genetic drivers of human disease through systems-level analysis of regulatory networks." Cell 159.2 (2014): 402-414.
+\bibitem{viper}
+Alvarez, Mariano J., et al. "Functional characterization of somatic mutations in cancer using network-based inference of protein activity." Nature genetics 48.8 (2016): 838.
+\end{thebibliography}
+
+\end{document}
