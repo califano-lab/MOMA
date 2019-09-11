@@ -17,3 +17,7 @@ A matrix of enrichment scores with rows as event/gene names and columns as VIPER
 \description{
 aREA.enrich Compute aREA enrichment between all pairwise combinations of VIPER proteins and gene-level events
 }
+\examples{
+nes <- aREA.enrich(moma$gbm.example[['rawsnp']], moma$gbm.example[['vipermat']])
+dim(nes)  
+}

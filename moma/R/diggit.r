@@ -243,6 +243,9 @@ aREA.regulon_enrich <- function(regulon, vipermat) {
 #' @param events.mat A Binary 0/1 matrix with columns as samples, and rows as proteins
 #' @param vipermat A VIPER network of inferred activity scores with columns as samples, and rows as proteins
 #' @return A matrix of enrichment scores with rows as event/gene names and columns as VIPER protein names
+#' @examples 
+#' nes <- aREA.enrich(moma$gbm.example[['rawsnp']], moma$gbm.example[['vipermat']])
+#' dim(nes)  
 #' @export
 aREA.enrich <- function(events.mat, vipermat) {
 	

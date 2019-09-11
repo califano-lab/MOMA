@@ -134,7 +134,7 @@ momaObj$Rank(use.cindy=TRUE)
 \par
 \linebreak
 
-Clustering of the samples, using the protein ranks computed in the last step, can then be performed. Multiple cluster solutions will be calculated, ranging from 2 to 10 clusters by default. The silhouette or reliability score of each can be assessed to determine an optimal 'k'; here, we are selecting the k=5 solution. Genomic saturation analysis is then performed on each cluster with the 'saturationPlots()' function, allowing us to find the key proteins that explain the majority of genomic events supplied in the SNP/CNV and Fusion matrices.
+Clustering of the samples, using the protein ranks computed in the last step, can then be performed. Multiple cluster solutions will be calculated, ranging from 2 to 10 clusters by default. The silhouette or reliability score of each can be assessed to determine an optimal 'k'; here, we are selecting the k=2 solution. Genomic saturation analysis is then performed on each cluster with the 'saturationPlots()' function, allowing us to find the key proteins that explain the majority of genomic events supplied in the SNP/CNV and Fusion matrices.
 
 \par
 \linebreak
@@ -142,7 +142,7 @@ Clustering of the samples, using the protein ranks computed in the last step, ca
 <<echo=TRUE, results=tex>>=
 clustering.solutions <- momaObj$Cluster()
 # Pick the k=5 cluster and save this to the moma Object
-momaObj$sample.clustering <- clustering.solutions[[4]]$clustering
+momaObj$sample.clustering <- clustering.solutions[[1]]$clustering
 # generate genomic saturation statistics and plot data
 momaObj$saturationPlots()
 cluster1.checkpoint <- momaObj$checkpoints[[1]]
