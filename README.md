@@ -20,3 +20,13 @@ Build check:
 	R CMD build moma
 	R CMD CHECK 	moma_1.0.0.tar.gz
 	R CMD BiocCheck moma_1.0.0.tar.gz
+
+
+Running unit tests:
+
+	Install the package
+
+	library(moma)
+	library(devtools)
+	devtools::test("moma")
+

@@ -7,9 +7,11 @@
 \author[1]{Evan O. Paull}
 \author[1]{Sunny Jones}
 \author[2]{Mariano J. Alvarez}
+\author[2]{Federico M. Giorgi}
 \author[1]{Andrea Califano}
 \affil[1]{Department of Systems Biology, Columbia University, 1130 St. Nicholas Ave., New York}
 \affil[2]{DarwinHealth Inc, New York, NY, USA}
+\affil[3]{Department of Pharmacy and Biotechnology, University of Bologna, Via Selmi 3, Bologna Italy}
 \date{\today}
 
 \begin{document}
