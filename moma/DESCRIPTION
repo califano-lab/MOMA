@@ -15,6 +15,7 @@ LazyData: true
 RoxygenNote: 6.1.1
 biocViews: Software, NetworkEnrichment, NetworkInference, Network, FeatureExtraction, Clustering, FunctionalGenomics, Transcriptomics, SystemsBiology
 Imports:
+	cluster (>= 2.0.0),
 	dplyr (>= 0.7),
 	graphics (>= 3.5.0),
 	grDevices (>= 3.5.0),
