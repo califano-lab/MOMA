@@ -2,7 +2,7 @@
 % Please edit documentation in R/diggit.r
 \name{stouffer.integrate.diggit}
 \alias{stouffer.integrate.diggit}
-\title{Use Stouffer's method to combine z-scores of DIGGIT interactions for each cMR protein. Combines only positively associated DIGGIT scores by default.}
+\title{Use Stouffer's method to combine z-scores of DIGGIT interactions for each cMR protein.}
 \usage{
 stouffer.integrate.diggit(interactions, from.p = FALSE,
   pos.nes.only = TRUE)
@@ -18,5 +18,5 @@ stouffer.integrate.diggit(interactions, from.p = FALSE,
 A list indexed by TF, a stouffer integrated z-score
 }
 \description{
-Use Stouffer's method to combine z-scores of DIGGIT interactions for each cMR protein. Combines only positively associated DIGGIT scores by default.
+This function combines only positively associated DIGGIT scores by default to create a culmulative DIGGIT score for each cMR.
 }

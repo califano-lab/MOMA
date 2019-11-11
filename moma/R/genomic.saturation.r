@@ -1,6 +1,3 @@
-suppressMessages(library(reshape2))
-suppressMessages(library(RColorBrewer))
-
 #' Get coverage of interactions
 #' 
 #' @param momaObj A numeric vector with cluster membership, names are samples

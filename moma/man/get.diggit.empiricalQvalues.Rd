@@ -2,7 +2,7 @@
 % Please edit documentation in R/diggit.r
 \name{get.diggit.empiricalQvalues}
 \alias{get.diggit.empiricalQvalues}
-\title{Compute the empirical q-values of each genomic-event/VIPER gene pair against the background distribution of associations with a given set of 'null' VIPER genes (i.e. low activity TFs)}
+\title{Compute the empirical q-values of each genomic-event/VIPER gene pair}
 \usage{
 get.diggit.empiricalQvalues(vipermat, nes, null.TFs,
   alternative = "both")
@@ -20,5 +20,5 @@ get.diggit.empiricalQvalues(vipermat, nes, null.TFs,
 A named list of qvalues for each TF/cMR protein. Each entry contains a vector of q-values for all associated events; names are gene ids
 }
 \description{
-Compute the empirical q-values of each genomic-event/VIPER gene pair against the background distribution of associations with a given set of 'null' VIPER genes (i.e. low activity TFs)
+Use against the background distribution of associations with a given set of 'null' VIPER genes (i.e. low activity TFs)
 }

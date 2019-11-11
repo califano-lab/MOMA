@@ -2,7 +2,7 @@
 % Please edit documentation in R/diggit.r
 \name{sig.interactors.DIGGIT}
 \alias{sig.interactors.DIGGIT}
-\title{Filter interactions from NES (DIGGIT) scores and corresponding background-corrected scores. Use this version in the Bayes model to rank TFs}
+\title{Filter interactions from NES (DIGGIT) scores and corresponding background-corrected scores.}
 \usage{
 sig.interactors.DIGGIT(corrected.scores, nes.scores, cindy,
   p.thresh = 0.05, cindy.only = TRUE)
@@ -24,5 +24,5 @@ a list (indexed by VIPER protein) of significant genomic interactions
 and associated pvals over the background (null TF) model, and NES scores
 }
 \description{
-Filter interactions from NES (DIGGIT) scores and corresponding background-corrected scores. Use this version in the Bayes model to rank TFs
+Use this version in the Bayes model to rank TFs
 }

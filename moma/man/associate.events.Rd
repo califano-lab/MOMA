@@ -2,7 +2,7 @@
 % Please edit documentation in R/diggit.r
 \name{associate.events}
 \alias{associate.events}
-\title{Use 'aREA' to calculate the enrichment between each genomic event - VIPER inferred protein pair. Requires pre-computed VIPER scores and a binary events matrix. Will use only samples in both event and VIPER matrices.}
+\title{Use 'aREA' to calculate the enrichment between each genomic event - VIPER inferred protein pair.}
 \usage{
 associate.events(vipermat, events.mat, min.events = NA, whitelist = NA,
   blacklist = NA)
@@ -22,5 +22,5 @@ associate.events(vipermat, events.mat, min.events = NA, whitelist = NA,
 A matrix of aREA scores, dimensions are nrow(events.mat) x nrow(vipermat)
 }
 \description{
-Use 'aREA' to calculate the enrichment between each genomic event - VIPER inferred protein pair. Requires pre-computed VIPER scores and a binary events matrix. Will use only samples in both event and VIPER matrices.
+Requires pre-computed VIPER scores and a binary events matrix. Will use only samples in both event and VIPER matrices.
 }

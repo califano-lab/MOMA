@@ -1,7 +1,3 @@
-
-library(reshape)
-
-#' 
 #' Map scores to cytoband location 
 #' 
 #' @param mapping a named vector of genomic locations/cytoband IDs. 

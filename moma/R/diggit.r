@@ -1,8 +1,7 @@
-
-library(qvalue)
-library(cluster)
-
-#' @title Use Stouffer's method to combine z-scores of DIGGIT interactions for each cMR protein. Combines only positively associated DIGGIT scores by default.  
+#' Use Stouffer's method to combine z-scores of DIGGIT interactions for each cMR protein.
+#' 
+#' This function combines only positively associated DIGGIT scores by default to create a culmulative DIGGIT score for each cMR.
+#' 
 #' @import stats
 #' @param interactions A list indexed by TF, includes z-scores or p-values for each interacting event
 #' @param from.p Integrate p-values or z-scores (default z-scores; from.p = FALSE)
@@ -44,7 +43,10 @@ stouffer.integrate.diggit <- function(interactions, from.p = FALSE, pos.nes.only
 }
 
 
-#' @title Filter interactions from NES (DIGGIT) scores and corresponding background-corrected scores. Use this version in the Bayes model to rank TFs
+#' Filter interactions from NES (DIGGIT) scores and corresponding background-corrected scores. 
+#' 
+#' Use this version in the Bayes model to rank TFs
+#' 
 #' @import stats
 #' @param corrected.scores A list indexed by the genomic event/gene with corresponding pvals and qvals for
 #' each TF
@@ -56,7 +58,7 @@ stouffer.integrate.diggit <- function(interactions, from.p = FALSE, pos.nes.only
 #' and associated pvals over the background (null TF) model, and NES scores
 sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh = 0.05, cindy.only = TRUE) {
     
-    pvals.matrix <- get.pvals.matrix(corrected.scores)
+    pvals.matrix <- moma::get.pvals.matrix(corrected.scores)
     
     # input validation
     if (!is.numeric(p.thresh)) {
@@ -125,7 +127,10 @@ sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh
 }
 
 
-#' @title Use 'aREA' to calculate the enrichment between each genomic event - VIPER inferred protein pair. Requires pre-computed VIPER scores and a binary events matrix. Will use only samples in both event and VIPER matrices. 
+#' Use 'aREA' to calculate the enrichment between each genomic event - VIPER inferred protein pair. 
+#' 
+#' Requires pre-computed VIPER scores and a binary events matrix. Will use only samples in both event and VIPER matrices.
+#'  
 #' @param vipermat Pre-computed VIPER scores with samples as columns and proteins as rows 
 #' @param events.mat Binary 0/1 events matrix with samples as columns and genes or events as rows
 #' @param whitelist Only compute associations for events in this list
@@ -174,7 +179,10 @@ associate.events <- function(vipermat, events.mat, min.events = NA, whitelist = 
     nes
 }
 
-#' @title Compute the empirical q-values of each genomic-event/VIPER gene pair against the background distribution of associations with a given set of 'null' VIPER genes (i.e. low activity TFs)
+#' Compute the empirical q-values of each genomic-event/VIPER gene pair 
+#' 
+#' Use against the background distribution of associations with a given set of 'null' VIPER genes (i.e. low activity TFs) 
+#' 
 #' @param vipermat viper inferences matrix, samples are columns, rows are TF entrez gene IDs 
 #' @param nes scores for each mutation (rows) against each TF (columns) 
 #' @param null.TFs low-importance TFs used to calculate null distributions
@@ -190,7 +198,7 @@ get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alternative = "
         null.VEC <- x[as.character(null.TFs)]
         null.VEC <- null.VEC[which(!is.na(null.VEC))]
         # get empirical q-values for both upper and lower tails of NES / DIGGIT statistics
-        qvals <- get.empirical.qvals(x, null.VEC, alternative)
+        qvals <- moma::get.empirical.qvals(x, null.VEC, alternative)
         qvals
     }, alternative = alternative)
     
@@ -200,7 +208,8 @@ get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alternative = "
 
 
 
-#' @title Compute aREA enrichment for the proteins in a given regulon, against vipermat scores supplied
+#' Compute aREA enrichment for the proteins in a given regulon, against vipermat scores supplied
+#' 
 #' @param regulon ARACNE regulon object
 #' @param vipermat A VIPER network of inferred activity scores with columns as patient samples, and rows as proteins
 #' @return A matrix of enrichment scores with rows as event/gene names and columns as VIPER protein names
@@ -208,9 +217,9 @@ aREA.regulon_enrich <- function(regulon, vipermat) {
     
     regulon <- lapply(regulon, function(x) as.character(x))
     # Calculate raw enrichment scores: each mutation against each TF columns are TFs, rownames are mutations
-    es <- rea(t(vipermat), regulon)
+    es <- moma::rea(t(vipermat), regulon)
     # Analytical correction
-    dnull <- reaNULL(regulon)
+    dnull <- moma::reaNULL(regulon)
     
     # Calculate pvalue of ES
     pval <- t(vapply(1:length(dnull), function(i, es, dnull) {
@@ -229,7 +238,8 @@ aREA.regulon_enrich <- function(regulon, vipermat) {
 }
 
 
-#' @title aREA.enrich Compute aREA enrichment between all pairwise combinations of VIPER proteins and gene-level events
+#' aREA.enrich Compute aREA enrichment between all pairwise combinations of VIPER proteins and gene-level events
+#' 
 #' @param events.mat A Binary 0/1 matrix with columns as samples, and rows as proteins
 #' @param vipermat A VIPER network of inferred activity scores with columns as samples, and rows as proteins
 #' @return A matrix of enrichment scores with rows as event/gene names and columns as VIPER protein names
@@ -246,9 +256,9 @@ aREA.enrich <- function(events.mat, vipermat) {
     })
     
     # Calculate raw enrichment scores: each mutation against each TF columns are TFs, rownames are mutations
-    es <- rea(t(vipermat), events.regulon)
+    es <- moma::rea(t(vipermat), events.regulon)
     # Analytical correction
-    dnull <- reaNULL(events.regulon)
+    dnull <- moma::reaNULL(events.regulon)
     
     # Calculate pvalue of ES
     pval <- t(vapply(1:length(dnull), function(i, es, dnull) {
@@ -267,7 +277,8 @@ aREA.enrich <- function(events.mat, vipermat) {
 }
 
 
-#' @title This function calculates an Enrichment Score of Association based on how the features rank on the samples sorted by a specific gene
+#' This function calculates an Enrichment Score of Association based on how the features rank on the samples sorted by a specific gene
+#' 
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @param eset Numerical matrix
 #' @param regulon A list with genomic features as its names and samples as its entries, indicating presence of event
@@ -331,7 +342,8 @@ rea <- function(eset, regulon, minsize = 1, maxsize = Inf) {
 
 
 
-#' @title This function generates the NULL model function, which computes the normalized enrichment score and associated p-value
+#' This function generates the NULL model function, which computes the normalized enrichment score and associated p-value
+#' 
 #' @param regulon A list with genomic features as its names and samples as its entries
 #' @param minsize Minimum number of event (or size of regulon) to calculate the model with 
 #' @param maxsize Maximum number of event (or size of regulon) to calculate the model with 
@@ -362,7 +374,8 @@ reaNULL <- function(regulon, minsize = 1, maxsize = Inf) {
 }
 
 
-#' @title Utility function
+#' Utility function
+#' 
 #' @param corrected.scores - corrected p-values processed by 'qvals' package
 #' @return A matrix of p-values for scores between genes/events (rows) and TFs (columns)
 get.pvals.matrix <- function(corrected.scores) {
@@ -378,7 +391,8 @@ get.pvals.matrix <- function(corrected.scores) {
     pvals.matrix
 }
 
-#' @title Utility function
+#' Utility function
+#' 
 #' @param vipermat - matrix of VIPER scores with columns as samples, rows as protein names
 #' @param fdr.thresh - BH-FDR threshold (default 0.05 FDR rate)
 #' @return A vector of normalized z-scores, named by TF id
@@ -412,7 +426,8 @@ viper.getTFScores <- function(vipermat, fdr.thresh = 0.05) {
     zscores
 }
 
-#' @title Calculate p-values from pseudo zscores / VIPER aREA scores, threshold
+#' Calculate p-values from pseudo zscores / VIPER aREA scores, threshold
+#' 
 #' @param zscores Vector of normally distributed z-scores representing protein activities. 
 #' @param fdr.thresh Threshold for false discovery rate, default is 0.05
 #' @return Get the names of proteins with significant z-scores, after multi-hypothesis correction
@@ -428,7 +443,8 @@ viper.getSigTFS <- function(zscores, fdr.thresh = 0.05) {
     names(pvals)
 }
 
-#' @title Retain TCGA sample ids without the final letter designation ('A/B/C')
+#' Retain TCGA sample ids without the final letter designation ('A/B/C')
+#' 
 #' @param mat Matrix of expression or protein activity scores. Columns are sample names, rows are genes
 #' @return An identical matrix with new (shorter) column names
 samplename.filter <- function(mat) {
@@ -438,7 +454,8 @@ samplename.filter <- function(mat) {
     mat
 }
 
-#' @title get.empirical.qvals
+#' Get.empirical.qvals
+#' 
 #' @param test.statistics P-values generated from the test comparisons
 #' @param null.statistics P-values generated under the null (permutation) model
 #' @param alternative Optional : 1 or 2 tails used to generate the p-value (default='both')
@@ -493,7 +510,7 @@ sREA <- function(signatures, groups) {
 
 #' Cluster membership reliability estimated by enrichment analysis
 #'
-#'This function etimates the cluster membership reliability using aREA
+#' This function estimates the cluster membership reliability using aREA
 #'
 #' @param cluster Vector of cluster memberships or list of cluster memberships
 #' @param similarity Similarity matrix
@@ -523,7 +540,7 @@ clusterReliability <- function(cluster, similarity, xlim = NULL, method = c("ele
         if (is.null(xlim)) xlim <- range(unlist(rel, use.names = FALSE))
         res <- lapply(1:length(cluster), function(i, cluster, rel, xlim) {
             tapply(rel[[i]], cluster[[i]], function(x, xlim) {
-                1 - integrateFunction(ecdf(x), xlim[1], xlim[2], steps = 1000)/diff(xlim)
+                1 - moma::integrateFunction(ecdf(x), xlim[1], xlim[2], steps = 1000)/diff(xlim)
             }, xlim = xlim)
         }, cluster = cluster, rel = rel, xlim = xlim)
         if (length(res) == 1) return(res[[1]])
@@ -533,7 +550,7 @@ clusterReliability <- function(cluster, similarity, xlim = NULL, method = c("ele
         if (!is.list(rel)) rel <- list(cluster = rel)
         if (is.null(xlim)) xlim <- range(unlist(rel, use.names = FALSE))
         res <- lapply(rel, function(x, xlim) {
-            1 - integrateFunction(ecdf(x), xlim[1], xlim[2], steps = 1000)/diff(xlim)
+            1 - moma::integrateFunction(ecdf(x), xlim[1], xlim[2], steps = 1000)/diff(xlim)
         }, xlim = xlim)
         if (length(res) == 1) return(res[[1]])
         return(res)
@@ -557,13 +574,13 @@ clusterRange <- function(dis, range = c(1, 100), step = 1, cores = 1, method = c
     
     debug = TRUE
     idx <- 1
-    result <- mclapply(range[1]:range[2], function(k, dis) {
+    result <- parallel::mclapply(range[1]:range[2], function(k, dis) {
         
         solution <- NULL
         clustering <- NULL
         centers <- NULL
         if (method == "pam") {
-            solution <- pam(dis, k, diss = TRUE, cluster.only = FALSE)
+            solution <- cluster::pam(dis, k, diss = TRUE, cluster.only = FALSE)
             clustering <- solution$clustering
             centers <- solution$medoids
         } else if (method == "kmeans") {
@@ -604,7 +621,7 @@ clusterRange <- function(dis, range = c(1, 100), step = 1, cores = 1, method = c
 integrateFunction <- function(f, xmin, xmax, steps = 100, ...) {
     x <- seq(xmin, xmax, length = steps)
     y <- f(x, ...)
-    integrateTZ(x, y)
+    moma::integrateTZ(x, y)
 }
 
 #' Integration with trapezoid method

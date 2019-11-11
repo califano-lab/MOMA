@@ -1,7 +1,5 @@
-
-
-#'
-#' @title Get the empirical p-value from a distribution (vector)
+#' Get the empirical p-value from a distribution (vector)
+#' 
 #' @param gene.name Character
 #' @param x named Vector of scores for the distribution
 #' @return a numeric p-value between 0 and 1
@@ -17,8 +15,8 @@ empirical.p <- function(gene.name, x) {
     p.one.tail
 }
 
-#'
-#' @title Get the conditional p-value of a gene 
+#' Get the conditional p-value of a gene
+#'  
 #' @param gene.name Character
 #' @param condition.on named Vector of scores for the distribution we are conditioning ON
 #' @param x named Vector of scores for the dependent distribution

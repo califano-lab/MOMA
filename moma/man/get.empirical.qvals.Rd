@@ -2,7 +2,7 @@
 % Please edit documentation in R/diggit.r
 \name{get.empirical.qvals}
 \alias{get.empirical.qvals}
-\title{get.empirical.qvals}
+\title{Get.empirical.qvals}
 \usage{
 get.empirical.qvals(test.statistics, null.statistics,
   alternative = "both")
@@ -18,5 +18,5 @@ get.empirical.qvals(test.statistics, null.statistics,
 A list with both the qvalues and empirical p-values from the supplied test and null stats
 }
 \description{
-get.empirical.qvals
+Get.empirical.qvals
 }
