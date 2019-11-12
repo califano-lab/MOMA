@@ -58,7 +58,7 @@ stouffer.integrate.diggit <- function(interactions, from.p = FALSE, pos.nes.only
 #' and associated pvals over the background (null TF) model, and NES scores
 sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh = 0.05, cindy.only = TRUE) {
     
-    pvals.matrix <- moma::get.pvals.matrix(corrected.scores)
+    pvals.matrix <- get.pvals.matrix(corrected.scores)
     
     # input validation
     if (!is.numeric(p.thresh)) {
@@ -198,7 +198,7 @@ get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alternative = "
         null.VEC <- x[as.character(null.TFs)]
         null.VEC <- null.VEC[which(!is.na(null.VEC))]
         # get empirical q-values for both upper and lower tails of NES / DIGGIT statistics
-        qvals <- moma::get.empirical.qvals(x, null.VEC, alternative)
+        qvals <- get.empirical.qvals(x, null.VEC, alternative)
         qvals
     }, alternative = alternative)
     
@@ -217,9 +217,9 @@ aREA.regulon_enrich <- function(regulon, vipermat) {
     
     regulon <- lapply(regulon, function(x) as.character(x))
     # Calculate raw enrichment scores: each mutation against each TF columns are TFs, rownames are mutations
-    es <- moma::rea(t(vipermat), regulon)
+    es <- rea(t(vipermat), regulon)
     # Analytical correction
-    dnull <- moma::reaNULL(regulon)
+    dnull <- reaNULL(regulon)
     
     # Calculate pvalue of ES
     pval <- t(vapply(1:length(dnull), function(i, es, dnull) {
@@ -246,7 +246,6 @@ aREA.regulon_enrich <- function(regulon, vipermat) {
 #' @examples 
 #' nes <- aREA.enrich(moma$gbm.example[['rawsnp']], moma$gbm.example[['vipermat']])
 #' dim(nes)  
-#' @export
 aREA.enrich <- function(events.mat, vipermat) {
     
     # Convert mutations into a regulon-like object
@@ -256,9 +255,9 @@ aREA.enrich <- function(events.mat, vipermat) {
     })
     
     # Calculate raw enrichment scores: each mutation against each TF columns are TFs, rownames are mutations
-    es <- moma::rea(t(vipermat), events.regulon)
+    es <- rea(t(vipermat), events.regulon)
     # Analytical correction
-    dnull <- moma::reaNULL(events.regulon)
+    dnull <- reaNULL(events.regulon)
     
     # Calculate pvalue of ES
     pval <- t(vapply(1:length(dnull), function(i, es, dnull) {
@@ -540,7 +539,7 @@ clusterReliability <- function(cluster, similarity, xlim = NULL, method = c("ele
         if (is.null(xlim)) xlim <- range(unlist(rel, use.names = FALSE))
         res <- lapply(1:length(cluster), function(i, cluster, rel, xlim) {
             tapply(rel[[i]], cluster[[i]], function(x, xlim) {
-                1 - moma::integrateFunction(ecdf(x), xlim[1], xlim[2], steps = 1000)/diff(xlim)
+                1 - integrateFunction(ecdf(x), xlim[1], xlim[2], steps = 1000)/diff(xlim)
             }, xlim = xlim)
         }, cluster = cluster, rel = rel, xlim = xlim)
         if (length(res) == 1) return(res[[1]])
@@ -550,7 +549,7 @@ clusterReliability <- function(cluster, similarity, xlim = NULL, method = c("ele
         if (!is.list(rel)) rel <- list(cluster = rel)
         if (is.null(xlim)) xlim <- range(unlist(rel, use.names = FALSE))
         res <- lapply(rel, function(x, xlim) {
-            1 - moma::integrateFunction(ecdf(x), xlim[1], xlim[2], steps = 1000)/diff(xlim)
+            1 - integrateFunction(ecdf(x), xlim[1], xlim[2], steps = 1000)/diff(xlim)
         }, xlim = xlim)
         if (length(res) == 1) return(res[[1]])
         return(res)
@@ -565,13 +564,14 @@ clusterReliability <- function(cluster, similarity, xlim = NULL, method = c("ele
 #' @param dis Distance object
 #' @param range vector with start and end 'k' 
 #' @param step Integer indicating the incremental number of clusters to add in each iteration
-#' @param cores Maximum number of CPU cores to use
+#' @param mc.cores Maximum number of CPU cores to use
 #' @param method Either 'pam' k-mediods or kmeans. Must supply the original data matrix if using kmeans
 #' @param data Original data matrix
 #' @return list of cluster reliability scores by 'k', 'clustering' (the vector solution) and 'reliability' 
 #' as well as 'medoids' labels
-clusterRange <- function(dis, range = c(1, 100), step = 1, cores = 1, method = c("pam", "kmeans"), data = NULL) {
+clusterRange <- function(dis, range = c(2, 100), step = 1, mc.cores = 1, method = c("pam", "kmeans"), data = NULL) {
     
+    set.seed(5, kind = "L'Ecuyer-CMRG")
     debug = TRUE
     idx <- 1
     result <- parallel::mclapply(range[1]:range[2], function(k, dis) {
@@ -603,7 +603,7 @@ clusterRange <- function(dis, range = c(1, 100), step = 1, cores = 1, method = c
         ret <- NULL
         list(centers = centers, clustering = clustering, k = k, reliability = as.numeric(cr), element.reliability = element.cr, cluster.reliability = cluster.cr)
         
-    }, dis = dis, mc.cores = cores)
+    }, dis = dis, mc.cores = mc.cores)
     
     result
 }
@@ -621,7 +621,7 @@ clusterRange <- function(dis, range = c(1, 100), step = 1, cores = 1, method = c
 integrateFunction <- function(f, xmin, xmax, steps = 100, ...) {
     x <- seq(xmin, xmax, length = steps)
     y <- f(x, ...)
-    moma::integrateTZ(x, y)
+    integrateTZ(x, y)
 }
 
 #' Integration with trapezoid method

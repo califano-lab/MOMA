@@ -4,7 +4,7 @@
 \alias{clusterRange}
 \title{Cluster Range}
 \usage{
-clusterRange(dis, range = c(1, 100), step = 1, cores = 1,
+clusterRange(dis, range = c(2, 100), step = 1, mc.cores = 1,
   method = c("pam", "kmeans"), data = NULL)
 }
 \arguments{
@@ -14,7 +14,7 @@ clusterRange(dis, range = c(1, 100), step = 1, cores = 1,
 
 \item{step}{Integer indicating the incremental number of clusters to add in each iteration}
 
-\item{cores}{Maximum number of CPU cores to use}
+\item{mc.cores}{Maximum number of CPU cores to use}
 
 \item{method}{Either 'pam' k-mediods or kmeans. Must supply the original data matrix if using kmeans}
 
