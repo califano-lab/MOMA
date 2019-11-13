@@ -4,11 +4,9 @@ Version: 1.0.0
 Authors@R: c(person("Evan", "Paull", email = "evanpaull@gmail.com", role = c("aut", "cre")), 
               person("Sunny", "Jones", email = "sunnyjjones@gmail.com", role = c("aut")), 
               person("Mariano", "Alvarez", email = "reef103@gmail.com", role = c("aut")))
-Author: Evan Paull <evanpaull@gmail.com>
-Maintainer: Sunny Jones <sunnyjjones@gmail.com>
 Description: This package implements the inference of candidate master regulator proteins from multi-omics' data (MOMA) algorithm, 
   as well as ancillary analysis and visualization functions. 
-Depends: R (>= 3.5.0)
+Depends: R (>= 3.6.0)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
