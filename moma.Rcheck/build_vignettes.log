@@ -1,0 +1,31 @@
+--- re-building ‘moma.Rmd’ using rmarkdown
+
+Computing associations of 384 Amplifications with 2506 regulators
+Process started at Thu Nov 21 18:12:15 2019
+
+Process ended at Thu Nov 21 18:12:16 2019
+
+Computing associations of 771 Deletions with 2506 regulators
+Process started at Thu Nov 21 18:12:17 2019
+
+Process ended at Thu Nov 21 18:12:18 2019
+
+Computing associations of 118 Mutations with 2506 regulators
+Process started at Thu Nov 21 18:12:19 2019
+
+Process ended at Thu Nov 21 18:12:19 2019
+
+Computing associations of 2 Fusions with 2506 regulators
+Process started at Thu Nov 21 18:12:19 2019
+
+Process ended at Thu Nov 21 18:12:19 2019
+Quitting from lines 93-98 (moma.Rmd) 
+Error: processing vignette 'moma.Rmd' failed with diagnostics:
+10 simultaneous processes spawned
+--- failed re-building ‘moma.Rmd’
+
+SUMMARY: processing the following file failed:
+  ‘moma.Rmd’
+
+Error: Vignette re-building failed.
+Execution halted

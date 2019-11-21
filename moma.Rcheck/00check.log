@@ -1,0 +1,141 @@
+* using log directory ‘/Volumes/ac_lab_data/shares/projects/STES/MOMA/moma.Rcheck’
+* using R version 3.6.1 (2019-07-05)
+* using platform: x86_64-apple-darwin15.6.0 (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-manual --as-cran’
+* checking for file ‘moma/DESCRIPTION’ ... OK
+* this is package ‘moma’ version ‘1.0.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘moma’ can be installed ... OK
+* checking installed package size ... NOTE
+  installed size is 36.1Mb
+  sub-directories of 1Mb or more:
+    Meta   8.0Mb
+    R      3.0Mb
+    data  11.0Mb
+    doc    4.0Mb
+    help   5.0Mb
+    html   2.0Mb
+* checking package directory ... OK
+* checking for future file timestamps ... OK
+* checking ‘build’ directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... NOTE
+Non-standard file/directory found at top level:
+  ‘gbm-test’
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... OK
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... WARNING
+Undocumented code objects:
+  ‘hugo2entrez’ ‘mutSig_blacklist.entrezID’
+Undocumented data sets:
+  ‘hugo2entrez’ ‘mutSig_blacklist.entrezID’
+All user-level objects in a package should have documentation entries.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'aREA.enrich'
+  ‘event.type’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking contents of ‘data’ directory ... WARNING
+Files not of a type allowed in a ‘data’ directory:
+  ‘gbm-test’
+Please use e.g. ‘inst/extdata’ for non-R data files
+
+* checking data for non-ASCII characters ... OK
+* checking data for ASCII and uncompressed saves ... WARNING
+  
+  Note: significantly better compression could be obtained
+        by using R CMD build --resave-data
+                    old_size new_size compress
+  gbm.example.rda      7.3Mb    5.4Mb    bzip2
+  hugo2entrez.RData    245Kb    153Kb       xz
+* checking installed files from ‘inst/doc’ ... OK
+* checking files in ‘vignettes’ ... OK
+* checking examples ... ERROR
+Running examples in ‘moma-Ex.R’ failed
+The error most likely occurred in:
+
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: aREA.enrich
+> ### Title: aREA.enrich Compute aREA enrichment between all pairwise
+> ###   combinations of VIPER proteins and gene-level events
+> ### Aliases: aREA.enrich
+> 
+> ### ** Examples
+> 
+> nes <- aREA.enrich(moma$gbm.example[['rawsnp']], moma$gbm.example[['vipermat']])
+Error in aREA.enrich(moma$gbm.example[["rawsnp"]], moma$gbm.example[["vipermat"]]) : 
+  could not find function "aREA.enrich"
+Execution halted
+* checking for unstated dependencies in vignettes ... OK
+* checking package vignettes in ‘inst/doc’ ... OK
+* checking re-building of vignette outputs ... WARNING
+Error(s) in re-building vignettes:
+--- re-building ‘moma.Rmd’ using rmarkdown
+
+Computing associations of 384 Amplifications with 2506 regulators
+Process started at Thu Nov 21 18:12:15 2019
+
+Process ended at Thu Nov 21 18:12:16 2019
+
+Computing associations of 771 Deletions with 2506 regulators
+Process started at Thu Nov 21 18:12:17 2019
+
+Process ended at Thu Nov 21 18:12:18 2019
+
+Computing associations of 118 Mutations with 2506 regulators
+Process started at Thu Nov 21 18:12:19 2019
+
+Process ended at Thu Nov 21 18:12:19 2019
+
+Computing associations of 2 Fusions with 2506 regulators
+Process started at Thu Nov 21 18:12:19 2019
+
+Process ended at Thu Nov 21 18:12:19 2019
+Quitting from lines 93-98 (moma.Rmd) 
+Error: processing vignette 'moma.Rmd' failed with diagnostics:
+10 simultaneous processes spawned
+--- failed re-building ‘moma.Rmd’
+
+SUMMARY: processing the following file failed:
+  ‘moma.Rmd’
+
+Error: Vignette re-building failed.
+Execution halted
+
+* DONE
+Status: 1 ERROR, 5 WARNINGs, 2 NOTEs
