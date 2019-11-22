@@ -59,11 +59,15 @@ momaRunner <- setRefClass("momaRunner", fields =
       mut.hypotheses <- mut.hypotheses[which(!(mut.hypotheses %in% gene.blacklist))]
       
       # Save aREA results Save aREA results
-      print("Writing hypotheses...")
-      dir.create(output.folder, showWarnings = FALSE)
-      write.table(amps.hypotheses, file = paste0(output.folder, "/hypotheses.amps.txt"), quote = F, sep = "\t")
-      write.table(dels.hypotheses, file = paste0(output.folder, "/hypotheses.dels.txt"), quote = F, sep = "\t")
-      write.table(mut.hypotheses, file = paste0(output.folder, "/hypotheses.muts.txt"), quote = F, sep = "\t")
+      if(is.na(output.folder)){
+        print("No output folder selected, saving genomic associations directly to object without printing.")
+      } else {
+        print(paste("Writing hypotheses to:", output.folder))
+        dir.create(output.folder, showWarnings = FALSE)
+        write.table(amps.hypotheses, file = paste0(output.folder, "/hypotheses.amps.txt"), quote = F, sep = "\t")
+        write.table(dels.hypotheses, file = paste0(output.folder, "/hypotheses.dels.txt"), quote = F, sep = "\t")
+        write.table(mut.hypotheses, file = paste0(output.folder, "/hypotheses.muts.txt"), quote = F, sep = "\t")
+      }
       hypotheses <<- list(mut = mut.hypotheses, del = dels.hypotheses, amp = amps.hypotheses)
       
       # do aREA association
@@ -74,12 +78,16 @@ momaRunner <- setRefClass("momaRunner", fields =
       nes.fusions <- NULL
       if (!is.null(fusions)) {
           fus.hypotheses <- rownames(fusions[apply(fusions, 1, sum, na.rm = TRUE) >= min.events, ])
-          write.table(fus.hypotheses, file = paste0(output.folder, "/hypotheses.fusions.txt"), quote = F, sep = "\t")
+          if(!is.na(output.folder)) {
+            write.table(fus.hypotheses, file = paste0(output.folder, "/hypotheses.fusions.txt"), quote = F, sep = "\t")
+          }
           nes.fusions <- associate.events(viper, fusions, min.events = min.events, blacklist = gene.blacklist, event.type = "Fusions")
       }
       
-      # Save aREA results
-      save(nes.amps, nes.dels, nes.muts, nes.fusions, file = paste0(output.folder, "/aREA.rda"))
+      # Save aREA results if desired
+      if(!is.na(output.folder)){
+        save(nes.amps, nes.dels, nes.muts, nes.fusions, file = paste0(output.folder, "/aREA.rda"))
+      }
       # store in the object list
       nes <<- list(amp = nes.amps, del = nes.dels, mut = nes.muts, fus = nes.fusions)
 }, 
@@ -217,7 +225,7 @@ momaRunner <- setRefClass("momaRunner", fields =
 #' @param gene.blacklist A vector of genes to exclude from mutational/CNV/fusion analysis
 #' @return an instance of class momaRunner
 #' @export
-moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist = NULL, output.folder = NULL, gene.loc.mapping = NULL) {
+moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist = NA_character_, output.folder = NA_character_, gene.loc.mapping = NULL) {
     viper <- samplename.filter(viper)
     mut <- samplename.filter(mut)
     cnv <- samplename.filter(cnv)

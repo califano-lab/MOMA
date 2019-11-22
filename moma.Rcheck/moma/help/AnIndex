@@ -22,6 +22,7 @@ merge.genomicSaturation	merge.genomicSaturation
 moma.constructor	moma.constructor
 momaRunner	momaRunner-class
 momaRunner-class	momaRunner-class
+mutSig	mutSig
 pathway.diggit.intersect	pathway.diggit.intersect
 rea	rea
 reaNULL	reaNULL

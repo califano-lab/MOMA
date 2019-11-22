@@ -243,10 +243,8 @@ aREA.regulon_enrich <- function(regulon, vipermat) {
 #' 
 #' @param events.mat A Binary 0/1 matrix with columns as samples, and rows as proteins
 #' @param vipermat A VIPER network of inferred activity scores with columns as samples, and rows as proteins
+#' @param event.type Name of the event type for printing purposes
 #' @return A matrix of enrichment scores with rows as event/gene names and columns as VIPER protein names
-#' @examples 
-#' nes <- aREA.enrich(moma$gbm.example[['rawsnp']], moma$gbm.example[['vipermat']])
-#' dim(nes)  
 aREA.enrich <- function(events.mat, vipermat, event.type) {
     
     # Convert mutations into a regulon-like object
@@ -577,7 +575,7 @@ clusterReliability <- function(cluster, similarity, xlim = NULL, method = c("ele
 #' as well as 'medoids' labels
 clusterRange <- function(dis, range = c(2, 100), step = 1, mc.cores = 1, method = c("pam", "kmeans"), data = NULL) {
     
-    set.seed(5, kind = "L'Ecuyer-CMRG")
+    set.seed(1, kind = "L'Ecuyer-CMRG")
     debug = TRUE
     idx <- 1
     result <- parallel::mclapply(range[1]:range[2], function(k, dis) {

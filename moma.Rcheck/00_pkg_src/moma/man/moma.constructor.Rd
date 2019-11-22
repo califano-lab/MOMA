@@ -10,8 +10,8 @@ moma.constructor(
   cnv,
   fusions,
   pathways,
-  gene.blacklist = NULL,
-  output.folder = NULL,
+  gene.blacklist = NA_character_,
+  output.folder = NA_character_,
   gene.loc.mapping = NULL
 )
 }

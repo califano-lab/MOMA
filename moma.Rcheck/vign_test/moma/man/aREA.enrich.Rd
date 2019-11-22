@@ -10,14 +10,12 @@ aREA.enrich(events.mat, vipermat, event.type)
 \item{events.mat}{A Binary 0/1 matrix with columns as samples, and rows as proteins}
 
 \item{vipermat}{A VIPER network of inferred activity scores with columns as samples, and rows as proteins}
+
+\item{event.type}{Name of the event type for printing purposes}
 }
 \value{
 A matrix of enrichment scores with rows as event/gene names and columns as VIPER protein names
 }
 \description{
 aREA.enrich Compute aREA enrichment between all pairwise combinations of VIPER proteins and gene-level events
-}
-\examples{
-nes <- aREA.enrich(moma$gbm.example[['rawsnp']], moma$gbm.example[['vipermat']])
-dim(nes)  
 }

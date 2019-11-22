@@ -13,7 +13,6 @@ test_that("build gbm example", {
 	momaObj <- moma.constructor(gbm.example$vipermat, gbm.example$rawsnp,
         	gbm.example$rawcnv, gbm.example$fusions, pathways,
         	gene.blacklist=gbm.example$mutSig,
-        	output.folder='gbm-test/',
         	gene.loc.mapping=gbm.example$gene.loc.mapping)
 
 	expect_equal(ncol(momaObj$viper), 40)

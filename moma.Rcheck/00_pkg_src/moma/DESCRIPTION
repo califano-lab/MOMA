@@ -23,7 +23,7 @@ Imports: cluster (>= 2.0.0), dplyr (>= 0.7), graphics (>= 3.5.0),
 Suggests: knitr, rmarkdown, testthat (>= 2.1.0)
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2019-11-21 23:10:05 UTC; sjj2121
+Packaged: 2019-11-22 21:03:42 UTC; sunnyjones
 Author: Evan Paull [aut, cre],
   Sunny Jones [aut],
   Mariano Alvarez [aut]

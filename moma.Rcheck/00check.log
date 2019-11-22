@@ -1,5 +1,5 @@
-* using log directory ‘/Volumes/ac_lab_data/shares/projects/STES/MOMA/moma.Rcheck’
-* using R version 3.6.1 (2019-07-05)
+* using log directory ‘/Users/sunnyjones/Documents/Github/MOMA_main/MOMA/moma.Rcheck’
+* using R version 3.6.0 (2019-04-26)
 * using platform: x86_64-apple-darwin15.6.0 (64-bit)
 * using session charset: UTF-8
 * using options ‘--no-manual --as-cran’
@@ -16,21 +16,14 @@
 * checking for sufficient/correct file permissions ... OK
 * checking whether package ‘moma’ can be installed ... OK
 * checking installed package size ... NOTE
-  installed size is 36.1Mb
+  installed size is  8.6Mb
   sub-directories of 1Mb or more:
-    Meta   8.0Mb
-    R      3.0Mb
-    data  11.0Mb
-    doc    4.0Mb
-    help   5.0Mb
-    html   2.0Mb
+    data   8.1Mb
 * checking package directory ... OK
 * checking for future file timestamps ... OK
 * checking ‘build’ directory ... OK
 * checking DESCRIPTION meta-information ... OK
-* checking top-level files ... NOTE
-Non-standard file/directory found at top level:
-  ‘gbm-test’
+* checking top-level files ... OK
 * checking for left-over files ... OK
 * checking index information ... OK
 * checking package subdirectories ... OK
@@ -50,57 +43,23 @@ Non-standard file/directory found at top level:
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
 * checking Rd cross-references ... OK
-* checking for missing documentation entries ... WARNING
-Undocumented code objects:
-  ‘hugo2entrez’ ‘mutSig_blacklist.entrezID’
-Undocumented data sets:
-  ‘hugo2entrez’ ‘mutSig_blacklist.entrezID’
-All user-level objects in a package should have documentation entries.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'aREA.enrich'
-  ‘event.type’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
-* checking contents of ‘data’ directory ... WARNING
-Files not of a type allowed in a ‘data’ directory:
-  ‘gbm-test’
-Please use e.g. ‘inst/extdata’ for non-R data files
-
+* checking contents of ‘data’ directory ... OK
 * checking data for non-ASCII characters ... OK
 * checking data for ASCII and uncompressed saves ... WARNING
   
   Note: significantly better compression could be obtained
         by using R CMD build --resave-data
-                    old_size new_size compress
-  gbm.example.rda      7.3Mb    5.4Mb    bzip2
-  hugo2entrez.RData    245Kb    153Kb       xz
+                  old_size new_size compress
+  gbm.example.rda    7.3Mb    5.4Mb    bzip2
+* checking R/sysdata.rda ... OK
 * checking installed files from ‘inst/doc’ ... OK
 * checking files in ‘vignettes’ ... OK
-* checking examples ... ERROR
-Running examples in ‘moma-Ex.R’ failed
-The error most likely occurred in:
-
-> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
-> ### Name: aREA.enrich
-> ### Title: aREA.enrich Compute aREA enrichment between all pairwise
-> ###   combinations of VIPER proteins and gene-level events
-> ### Aliases: aREA.enrich
-> 
-> ### ** Examples
-> 
-> nes <- aREA.enrich(moma$gbm.example[['rawsnp']], moma$gbm.example[['vipermat']])
-Error in aREA.enrich(moma$gbm.example[["rawsnp"]], moma$gbm.example[["vipermat"]]) : 
-  could not find function "aREA.enrich"
-Execution halted
+* checking examples ... NONE
 * checking for unstated dependencies in vignettes ... OK
 * checking package vignettes in ‘inst/doc’ ... OK
 * checking re-building of vignette outputs ... WARNING
@@ -108,25 +67,25 @@ Error(s) in re-building vignettes:
 --- re-building ‘moma.Rmd’ using rmarkdown
 
 Computing associations of 384 Amplifications with 2506 regulators
-Process started at Thu Nov 21 18:12:15 2019
+Process started at Fri Nov 22 16:05:07 2019
 
-Process ended at Thu Nov 21 18:12:16 2019
+Process ended at Fri Nov 22 16:05:08 2019
 
 Computing associations of 771 Deletions with 2506 regulators
-Process started at Thu Nov 21 18:12:17 2019
+Process started at Fri Nov 22 16:05:08 2019
 
-Process ended at Thu Nov 21 18:12:18 2019
+Process ended at Fri Nov 22 16:05:09 2019
 
 Computing associations of 118 Mutations with 2506 regulators
-Process started at Thu Nov 21 18:12:19 2019
+Process started at Fri Nov 22 16:05:09 2019
 
-Process ended at Thu Nov 21 18:12:19 2019
+Process ended at Fri Nov 22 16:05:09 2019
 
 Computing associations of 2 Fusions with 2506 regulators
-Process started at Thu Nov 21 18:12:19 2019
+Process started at Fri Nov 22 16:05:09 2019
 
-Process ended at Thu Nov 21 18:12:19 2019
-Quitting from lines 93-98 (moma.Rmd) 
+Process ended at Fri Nov 22 16:05:09 2019
+Quitting from lines 115-120 (moma.Rmd) 
 Error: processing vignette 'moma.Rmd' failed with diagnostics:
 10 simultaneous processes spawned
 --- failed re-building ‘moma.Rmd’
@@ -138,4 +97,4 @@ Error: Vignette re-building failed.
 Execution halted
 
 * DONE
-Status: 1 ERROR, 5 WARNINGs, 2 NOTEs
+Status: 2 WARNINGs, 1 NOTE

@@ -41,6 +41,7 @@ merge.genomicSaturation
                         'covered' and unique events
 moma.constructor        MOMA Constructor
 momaRunner-class        MOMA Runner
+mutSig                  MutSig Blacklisted genes
 pathway.diggit.intersect
                         Combine DIGGIT inferences with pathway
                         knowledge
