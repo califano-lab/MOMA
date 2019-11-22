@@ -568,15 +568,15 @@ clusterReliability <- function(cluster, similarity, xlim = NULL, method = c("ele
 #' @param dis Distance object
 #' @param range vector with start and end 'k' 
 #' @param step Integer indicating the incremental number of clusters to add in each iteration
-#' @param mc.cores Maximum number of CPU cores to use
+#' @param cores Maximum number of CPU cores to use
 #' @param method Either 'pam' k-mediods or kmeans. Must supply the original data matrix if using kmeans
 #' @param data Original data matrix
 #' @return list of cluster reliability scores by 'k', 'clustering' (the vector solution) and 'reliability' 
 #' as well as 'medoids' labels
-clusterRange <- function(dis, range = c(2, 100), step = 1, mc.cores = 1, method = c("pam", "kmeans"), data = NULL) {
+clusterRange <- function(dis, range = c(2, 100), step = 1, cores = 1, method = c("pam", "kmeans"), data = NULL) {
     
     set.seed(1, kind = "L'Ecuyer-CMRG")
-    debug = TRUE
+    #debug = TRUE
     idx <- 1
     result <- parallel::mclapply(range[1]:range[2], function(k, dis) {
         
@@ -600,14 +600,14 @@ clusterRange <- function(dis, range = c(2, 100), step = 1, mc.cores = 1, method 
         cr <- clusterReliability(clustering, 1/as.matrix(dis), method = "global")
         element.cr <- clusterReliability(clustering, 1/as.matrix(dis), method = "element")
         cluster.cr <- clusterReliability(clustering, 1/as.matrix(dis), method = "cluster")
-        if (debug) {
-            print(paste0(k, " ", as.numeric(cr)))
-        }
+        #if (debug) {
+         #   print(paste0(k, " ", as.numeric(cr)))
+        #}
         
         ret <- NULL
         list(centers = centers, clustering = clustering, k = k, reliability = as.numeric(cr), element.reliability = element.cr, cluster.reliability = cluster.cr)
         
-    }, dis = dis, mc.cores = mc.cores)
+    }, dis = dis, mc.cores = cores)
     
     result
 }

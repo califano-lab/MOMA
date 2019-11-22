@@ -119,7 +119,7 @@ momaRunner <- setRefClass("momaRunner", fields =
       interactions <<- local.interactions
 }, 
 
-  Rank = function(use.cindy = FALSE, genomic.event.types = c("amp", "del", "mut", "fus")) {
+  Rank = function(use.cindy = FALSE, genomic.event.types = c("amp", "del", "mut", "fus"), use.parallel = F, cores = 1) {
       # ranks from DIGGIT scores
       integrated.z <- list()
       for (type in genomic.event.types) {
@@ -136,6 +136,16 @@ momaRunner <- setRefClass("momaRunner", fields =
       }
       # generate integrated rankings from additional sources of evidence, including CINDy and pathway databases and/or structural databases like PrePPI
       pathway.z <- list()
+      
+      if(use.parallel) {
+        if(cores <= 1) {
+          stop("Parallel processing selected but a usable number of cores has not
+                been chosen. Please enter a number > 1")
+        } else {
+          print(paste("Parallel processing selected, using", cores, "cores"))
+        }
+      }
+      
       for (pathway in names(pathways)) {
           
           pathway.z[[pathway]] <- list()
@@ -147,7 +157,8 @@ momaRunner <- setRefClass("momaRunner", fields =
               if (is.null(interactions[[type]])) {
                   next
               }
-              pathway.z[[pathway]][[type]] <- pathway.diggit.intersect(interactions[[type]], pathways[[pathway]], pos.nes.only = TRUE)
+              pathway.z[[pathway]][[type]] <- pathway.diggit.intersect(interactions[[type]], 
+                                                                       pathways[[pathway]], pos.nes.only = TRUE, cores)
           }
       }
       
@@ -156,7 +167,17 @@ momaRunner <- setRefClass("momaRunner", fields =
       ranks[["integrated"]] <<- conditional.model(viper.scores, integrated.z, pathway.z)
 }, 
 
-  Cluster = function() {
+  Cluster = function(use.parallel = F, cores = 1) {
+      
+      if(use.parallel) {
+        if(cores <= 1) {
+          stop("Parallel processing selected but a usable number of cores has not
+                  been chosen. Please enter a number > 1")
+        } else {
+          print(paste("Parallel processing selected, using", cores, "cores"))
+        }
+      }
+    
       # do weighted pearson correlation, using the ranks as weights
       weights <- log(ranks[["integrated"]])^2
       weights <- weights[as.character(rownames(viper))]
@@ -164,7 +185,7 @@ momaRunner <- setRefClass("momaRunner", fields =
       print("using pearson correlation with weighted vipermat")
       dist.obj <- corDist(t(w.vipermat), method = "pearson")
       print("testing clustering options, k = 2..15")
-      search.results <- clusterRange(dist.obj, range = as.numeric(c(2, 15)), step = 1, mc.cores = 1, method = "pam")
+      search.results <- clusterRange(dist.obj, range = as.numeric(c(2, 15)), step = 1, cores = cores, method = "pam")
       search.results
 }, 
 
@@ -305,9 +326,11 @@ moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist 
 #' @param diggit.int List of interactions between MRs - Genomic events, inferred by DIGGIT
 #' @param pathway - a list indexed by TF/MR entrez ID, contains the named vector of p-values for interactions 
 #' @param pos.nes.only Only use positive associations between MR activity and presence of events (default = True)
+#' @param cores Number of cores to use if parallel is selected
 #' @return numeric vector, zscores for each TF/MR
-pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only = TRUE) {
+pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only = TRUE, cores = 1) {
     
+  
     pathway.pvals <- parallel::mclapply(names(diggit.int), function(tf) {
         
         partners.pvals <- pathway[[as.character(tf)]]
@@ -332,7 +355,7 @@ pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only = TRUE) {
         }
         # print (paste0('found this many relevant interactions: ', length(pvals))) print (pvals)
         pvals
-    }, mc.cores = 10)
+    }, mc.cores = cores)
     names(pathway.pvals) <- names(diggit.int)
     
     ## Compute both Stouffer integrated z-scores and Fisher integrated p-values
