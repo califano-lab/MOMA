@@ -20,8 +20,16 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, mutati
         q()
     }
     
-    # interactions makeInteractions = function(genomic.event.types=c('amp', 'del', 'mut', 'fus'), cindy.only=TRUE) { interactions: mut : named by Entrez
-    # ID
+    # confirm they are in Entrez ID format
+    
+    is.entrezIDs <- function(vec) {
+        all(sapply(1:length(vec), function(i) as.numeric(vec)[i]==vec[i]))
+    }
+    if (isFALSE(is.entrezIDs(selected.tfs))) {
+        stop("Error: tfs not in entrez ID format!")
+    }
+    
+    # For each event type, gets names of cMRs that have those events
     interaction.map <- valid.diggit.interactions(momaObj$interactions, momaObj$gene.loc.mapping, selected.tfs)
     
     # another assert statment: make sure we have non-zero interactions for each
@@ -38,6 +46,98 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, mutati
     oc
 }
 
+
+#' Return a set of events 'covered' by specified cMR-event interactions 
+#' @param interactions List indexed by amp/mut/del/fus - from cMRs to interacting events
+#' @param selected.tfs For each event type list, search within only these cMRS
+#' @param gene.loc.mapping Data.frame mapping entrezIDs to cytoband locations
+#' @return a list of events 'covered' by the supplied interactions of type mut/amp/del/fus
+valid.diggit.interactions <- function(interactions, gene.loc.mapping, selected.tfs) {
+    
+    if (length(selected.tfs) == 0) {
+        stop("No TFs input to diggit function")
+    }
+    selected.tfs <- as.character(selected.tfs)
+    
+    mut.tfs <- selected.tfs[which(selected.tfs %in% names(interactions[["mut"]]))]
+    amp.tfs <- selected.tfs[which(selected.tfs %in% names(interactions[["amp"]]))]
+    del.tfs <- selected.tfs[which(selected.tfs %in% names(interactions[["del"]]))]
+    fus.tfs <- selected.tfs[which(selected.tfs %in% names(interactions[["fus"]]))]
+    
+    if (length(mut.tfs) == 0 || length(amp.tfs) == 0 || length(del.tfs) == 0) {
+        stop("No valid TFs in the interactions supplied!")
+    } else if (length(fus.tfs) == 0) {
+        warning("No valid fusion interactions...")
+    }
+    
+    mut.I <- subset.list.interactions(interactions[["mut"]], mut.tfs)
+    del.I <- subset.list.interactions(interactions[["del"]], del.tfs)
+    amp.I <- subset.list.interactions(interactions[["amp"]], amp.tfs)
+    
+    # only subset if fusions exist fusions IDs are unique , nothing else necessary
+    if (length(fus.tfs) >= 1) {
+        fus.I <- subset.list.interactions(interactions[["fus"]], fus.tfs)
+        covered.fusions <- fus.I
+    }
+    
+    
+    # Add cnv events to mutation coverage, as either copy number variation is valid evidence for explaining a patient's mutation
+    covered.mutations <- merge.lists(mut.I, del.I)
+    covered.mutations <- merge.lists(covered.mutations, amp.I)
+    
+    # Add mut events to cnv coverage, as it is a valid type of evidence for explaining a patient's CNV change
+    covered.amps <- merge.lists(amp.I, mut.I)
+    covered.dels <- merge.lists(del.I, mut.I)
+    
+    
+    
+    # create a new mapping from TF in Entrez -> event location
+    covered.amps.LOC <- lapply(names(covered.amps), function(x, I) {
+        geneNames <- I[[as.character(x)]]
+        band.names <- unique(as.character(gene.loc.mapping[which(gene.loc.mapping$Entrez.IDs %in% geneNames), "Cytoband"]))
+        if (length(band.names) == 0) {
+            print(paste("Warning: could not map entrez IDs to Cytoband for IDS, skipping..."))
+            print(geneNames)
+            band.names <- NA
+        }
+        band.names
+    }, I = covered.amps)
+    names(covered.amps.LOC) <- names(covered.amps)
+    covered.amps.LOC <- covered.amps.LOC[!is.na(covered.amps.LOC)]
+    
+    if (sum(sapply(covered.amps.LOC, function(x) length(x))) == 0) {
+        print("Error: something went wrong when mapping amplification Entrez.IDs to Cytoband IDs. Quitting...")
+        quit(status = 1)
+    }
+    
+    # create a new mapping from TF in Entrez -> event location
+    covered.dels.LOC <- lapply(names(covered.dels), function(x, I) {
+        geneNames <- I[[as.character(x)]]
+        band.names <- unique(as.character(gene.loc.mapping[which(gene.loc.mapping$Entrez.IDs %in% geneNames), "Cytoband"]))
+        if (length(band.names) == 0) {
+            print(paste("Warning: could not map entrez IDs to Cytoband for IDS, skipping..."))
+            print(geneNames)
+            band.names <- NA
+        }
+        band.names
+    }, I = covered.dels)
+    names(covered.dels.LOC) <- names(covered.dels)
+    covered.dels.LOC <- covered.dels.LOC[!is.na(covered.dels.LOC)]
+    
+    if (sum(sapply(covered.amps.LOC, function(x) length(x))) == 0) {
+        print("Error: something went wrong when mapping deletion Entrez.IDs to Cytoband IDs. Quitting...")
+        quit(status = 1)
+    }
+    
+    # don't incorporate fusions into final list object unless they exist
+    if (length(fus.tfs) >= 1) {
+        return(list(mut = covered.mutations, amp = covered.amps.LOC, del = covered.dels.LOC, fus = covered.fusions))
+    } else {
+        return(list(mut = covered.mutations, amp = covered.amps.LOC, del = covered.dels.LOC))
+    }
+}
+
+
 #' The core function to compute which sample-specific alterations overlap with genomic events that are explained 
 #' via DIGGIT. 
 #' 
@@ -45,12 +145,15 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, mutati
 #' @param viper.samples Sample vector to restrict sample-specific analysis to
 #' @param selected.tfs Transcription factors being analyzed
 #' @param interaction.map List object of events 'covered' by the supplied interactions of type mut/amp/del/fus
+#' @param cnv.threshold Numeric absolute value to threshold SNP6 and/or GISTIC 
+#' or other CNV scores at. Above that absolute value is considered a positive event. 
 #' @param mutation.filter A vector of whitelisted mutation events, in entrez gene IDs
 #' @param idx.range Number of tfs to check for genomic saturation calculation, default is 1253
-#' @param cnv.threshold Numeric absolute value to threshold SNP6 and/or GISTIC or other CNV scores at. Above that absolute value is considered a positive event. 
 #' @param verbose Output status during the run (default=FALSE)
 #' @return A list of lists, indexed by sample name, with coverage statistics/data for each sample
-sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map, cnv.threshold = 0.5, mutation.filter = NULL, verbose = FALSE, idx.range = NULL) {
+sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
+                           cnv.threshold = 0.5, mutation.filter = NULL, 
+                           idx.range = NULL, verbose = FALSE) {
     
     if (is.null(momaObj$hypotheses)) {
         stop("Error: no hypothesis set for momaRunner class object!!")
@@ -221,97 +324,9 @@ sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map
     coverage
 }
 
-#' Return a set of events 'covered' by specified cMR-event interactions 
-#' @param interactions List indexed by amp/mut/del/fus - from cMRs to interacting events
-#' @param selected.tfs For each event type list, search within only these cMRS
-#' @param gene.loc.mapping Data.frame mapping entrezIDs to cytoband locations
-#' @return a list of events 'covered' by the supplied interactions of type mut/amp/del/fus
-valid.diggit.interactions <- function(interactions, gene.loc.mapping, selected.tfs) {
-    
-    if (length(selected.tfs) == 0) {
-        stop("No TFs input to diggit function")
-    }
-    selected.tfs <- as.character(selected.tfs)
-    
-    mut.tfs <- selected.tfs[which(selected.tfs %in% names(interactions[["mut"]]))]
-    amp.tfs <- selected.tfs[which(selected.tfs %in% names(interactions[["amp"]]))]
-    del.tfs <- selected.tfs[which(selected.tfs %in% names(interactions[["del"]]))]
-    fus.tfs <- selected.tfs[which(selected.tfs %in% names(interactions[["fus"]]))]
-    
-    if (length(mut.tfs) == 0 || length(amp.tfs) == 0 || length(del.tfs) == 0) {
-        stop("No valid TFs in the interactions supplied!")
-    } else if (length(fus.tfs) == 0) {
-        warning("No valid fusion interactions...")
-    }
-    
-    mut.I <- subset.list.interactions(interactions[["mut"]], mut.tfs)
-    del.I <- subset.list.interactions(interactions[["del"]], del.tfs)
-    amp.I <- subset.list.interactions(interactions[["amp"]], amp.tfs)
-    
-    # only subset if fusions exist fusions IDs are unique , nothing else necessary
-    if (length(fus.tfs) >= 1) {
-        fus.I <- subset.list.interactions(interactions[["fus"]], fus.tfs)
-        covered.fusions <- fus.I
-    }
-    
-    
-    # Add cnv events to mutation coverage, as either copy number variation is valid evidence for explaining a patient's mutation
-    covered.mutations <- merge.lists(mut.I, del.I)
-    covered.mutations <- merge.lists(covered.mutations, amp.I)
-    
-    # Add mut events to cnv coverage, as it is a valid type of evidence for explaining a patient's CNV change
-    covered.amps <- merge.lists(amp.I, mut.I)
-    covered.dels <- merge.lists(del.I, mut.I)
-    
-    
-    
-    # create a new mapping from TF in Entrez -> event location
-    covered.amps.LOC <- lapply(names(covered.amps), function(x, I) {
-        geneNames <- I[[as.character(x)]]
-        band.names <- unique(as.character(gene.loc.mapping[which(gene.loc.mapping$Entrez.IDs %in% geneNames), "Cytoband"]))
-        if (length(band.names) == 0) {
-            print(paste("Warning: could not map entrez IDs to Cytoband for IDS, skipping..."))
-            print(geneNames)
-            band.names <- NA
-        }
-        band.names
-    }, I = covered.amps)
-    names(covered.amps.LOC) <- names(covered.amps)
-    covered.amps.LOC <- covered.amps.LOC[!is.na(covered.amps.LOC)]
-    
-    if (sum(sapply(covered.amps.LOC, function(x) length(x))) == 0) {
-        print("Error: something went wrong when mapping amplification Entrez.IDs to Cytoband IDs. Quitting...")
-        quit(status = 1)
-    }
-    
-    # create a new mapping from TF in Entrez -> event location
-    covered.dels.LOC <- lapply(names(covered.dels), function(x, I) {
-        geneNames <- I[[as.character(x)]]
-        band.names <- unique(as.character(gene.loc.mapping[which(gene.loc.mapping$Entrez.IDs %in% geneNames), "Cytoband"]))
-        if (length(band.names) == 0) {
-            print(paste("Warning: could not map entrez IDs to Cytoband for IDS, skipping..."))
-            print(geneNames)
-            band.names <- NA
-        }
-        band.names
-    }, I = covered.dels)
-    names(covered.dels.LOC) <- names(covered.dels)
-    covered.dels.LOC <- covered.dels.LOC[!is.na(covered.dels.LOC)]
-    
-    if (sum(sapply(covered.amps.LOC, function(x) length(x))) == 0) {
-        print("Error: something went wrong when mapping deletion Entrez.IDs to Cytoband IDs. Quitting...")
-        quit(status = 1)
-    }
-    
-    # don't incorporate fusions into final list object unless they exist
-    if (length(fus.tfs) >= 1) {
-        return(list(mut = covered.mutations, amp = covered.amps.LOC, del = covered.dels.LOC, fus = covered.fusions))
-    } else {
-        return(list(mut = covered.mutations, amp = covered.amps.LOC, del = covered.dels.LOC))
-    }
-}
 
-#' @title Helper function: subset a list to the set of keys supplied return the names of interactions with positive values, in a list structure
+#' @title Helper function: subset a list to the set of keys supplied return the 
+#' names of interactions with positive values, in a list structure
 #' @param int.l List of interactions, at each index this is a numeric named vector
 #' @param keys Keys used to reduce interactions
 #' @return Returns a filtered list of interactions in the same format as the input
@@ -346,3 +361,53 @@ merge.lists <- function(l1, l2) {
     }
     return(merged)
 }
+
+
+#' @title merge.genomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events
+#' @param coverage.range List indexed by sample, then sub-indexed by # of master regulators, then by event type (mut/amp/del/fus). Holds all events by sample
+#' @param topN Maximum number of master regulators to compute coverage
+#' @return A data frame with summary statistics for genomic saturation at each 'k'
+merge.genomicSaturation <- function(coverage.range, topN) {
+    
+    data <- c()
+    for (i in 1:topN) {
+        # count for each sample $mut/amp/del all point to either a NA or a vector of names of the event. If NA the length will be zero so simply count the
+        # number of each type of event
+        count <- unlist(lapply(coverage.range, function(x) {
+            num.events <- length(x[[i]]$mut) + length(x[[i]]$amp) + length(x[[i]]$del)
+        }))
+        count <- na.omit(count)
+        
+        # apply over each sample, get the coverage for each
+        fraction <- unlist(lapply(coverage.range, function(x) {
+            # critically: must omit the NAs so they don't interfere with count
+            event.fractions <- x[[i]]$total.frac
+            event.fractions
+        }))
+        fraction <- na.omit(fraction)
+        
+        all.events <- unlist(lapply(coverage.range, function(x) {
+            c(x[[i]]$mut, x[[i]]$amp, x[[i]]$del)
+        }))
+        all.events <- na.omit(all.events)
+        
+        data <- rbind(data, c(i, mean(count), mean(fraction), length(unique(all.events))))
+    }
+    df <- data.frame(mean = data[, 2], k = data[, 1], fraction = data[, 3], unique.events = data[, 4])
+    df
+}
+
+
+#' @title Fit based on fractional overall coverage of genomic events
+#' @param sweep Numeric vector of genomic coverage values, named by -k- threshold 
+#' @param frac Fraction of coverage to use as a threshold (default .85 = 85 percent)
+#' @return The -k- integer where coverage is acheived
+fit.curve.percent <- function(sweep, frac = 0.85) {
+    fractional <- as.numeric(as.character(sweep))/max(sweep)
+    best.k <- names(sweep[which(fractional >= frac)])[1]
+    return(as.numeric(best.k))
+}
+
+
+
+

@@ -2,7 +2,8 @@
 % Please edit documentation in R/genomic.saturation.r
 \name{subset.list.interactions}
 \alias{subset.list.interactions}
-\title{Helper function: subset a list to the set of keys supplied return the names of interactions with positive values, in a list structure}
+\title{Helper function: subset a list to the set of keys supplied return the 
+names of interactions with positive values, in a list structure}
 \usage{
 \method{subset}{list.interactions}(int.l, keys)
 }
@@ -15,5 +16,6 @@
 Returns a filtered list of interactions in the same format as the input
 }
 \description{
-Helper function: subset a list to the set of keys supplied return the names of interactions with positive values, in a list structure
+Helper function: subset a list to the set of keys supplied return the 
+names of interactions with positive values, in a list structure
 }

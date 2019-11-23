@@ -171,7 +171,7 @@ momaRunner <- setRefClass("momaRunner", fields =
       
       if(use.parallel) {
         if(cores <= 1) {
-          stop("Parallel processing selected but a usable number of cores has not
+          stop("Parallel processing selected but multiple number of cores have not
                   been chosen. Please enter a number > 1")
         } else {
           print(paste("Parallel processing selected, using", cores, "cores"))
@@ -194,7 +194,12 @@ momaRunner <- setRefClass("momaRunner", fields =
       # do saturation analysis with all available data types helper functions in external libs coverage statistics at throughhold sweep
       
       if (is.null(clustering.solution)) {
+        if(is.null(sample.clustering)) {
+          stop("No clustering solution provided. Provide one as an argument or save one
+               to the momaObj. Quitting...")
+        } else {
           clustering.solution <- sample.clustering
+        }
       }
       # get coverage for each subtype
       coverage.subtypes <- list()
@@ -319,130 +324,5 @@ moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist 
     obj <- momaRunner$new(viper = viper, mut = mut, cnv = cnv, fusions = fusions, pathways = pathways, gene.blacklist = as.character(gene.blacklist), 
         output.folder = output.folder, gene.loc.mapping = gene.loc.mapping)
     obj
-}
-
-
-#' @title Combine DIGGIT inferences with pathway knowledge 
-#' @param diggit.int List of interactions between MRs - Genomic events, inferred by DIGGIT
-#' @param pathway - a list indexed by TF/MR entrez ID, contains the named vector of p-values for interactions 
-#' @param pos.nes.only Only use positive associations between MR activity and presence of events (default = True)
-#' @param cores Number of cores to use if parallel is selected
-#' @return numeric vector, zscores for each TF/MR
-pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only = TRUE, cores = 1) {
-    
-  
-    pathway.pvals <- parallel::mclapply(names(diggit.int), function(tf) {
-        
-        partners.pvals <- pathway[[as.character(tf)]]
-        
-        # 
-        if (pos.nes.only) {
-            I <- diggit.int[[as.character(tf)]]
-            I <- I[which(I > 0)]
-            tf.diggit.interactors <- unique(names(I))
-        } else {
-            tf.diggit.interactors <- unique(names(diggit.int[[as.character(tf)]]))
-        }
-        
-        # Find partners PrePPI P-values
-        pvals <- partners.pvals[which(names(partners.pvals) %in% tf.diggit.interactors)]
-        
-        if (length(pvals) == 0) {
-            return(1)
-        }
-        if (length(pvals) == 1) {
-            return(as.numeric(pvals))
-        }
-        # print (paste0('found this many relevant interactions: ', length(pvals))) print (pvals)
-        pvals
-    }, mc.cores = cores)
-    names(pathway.pvals) <- names(diggit.int)
-    
-    ## Compute both Stouffer integrated z-scores and Fisher integrated p-values
-    integrated.z <- unlist(lapply(pathway.pvals, function(x) {
-        
-        x[which(x == 1)] <- 0.5
-        iz <- sum(abs(qnorm(x)))/sqrt(length(x))
-        iz
-    }))
-    names(integrated.z) <- names(pathway.pvals)
-    
-    integrated.p <- unlist(lapply(pathway.pvals, function(x) {
-        
-        if (length(x) == 1) {
-            return(x)
-        }
-        
-        integrated.p <- -pchisq(-2 * sum(log(x)), 2 * length(x), log.p = TRUE)
-        integrated.p
-    }))
-    names(integrated.p) <- names(diggit.int)
-    
-    # return the z-scores only
-    integrated.z
-    
-    # list(pvals=integrated.p, zscores=integrated.z, pathway.pvals=pathway.pvals)
-}
-
-#' @title dispatch method for either CNV location corrected or SNV
-#' @param interactions List of MR - Genomic Event interactions, inferred by DIGGIT
-#' @param cytoband.map Data.frame mapping Entrez.IDs to cytoband locations
-#' @return Z-scores for each MR
-stouffer.integrate <- function(interactions, cytoband.map = NULL) {
-    z <- NULL
-    if (!is.null(cytoband.map)) {
-        # need to create a vector with gene
-        map.vec <- cytoband.map$Cytoband
-        names(map.vec) <- cytoband.map$Entrez.IDs
-        z <- cnvScoreStouffer(map.vec, interactions)
-    } else {
-        z <- stouffer.integrate.diggit(interactions)
-    }
-    z
-}
-
-#' @title Fit based on fractional overall coverage of genomic events
-#' @param sweep Numeric vector of genomic coverage values, named by -k- threshold 
-#' @param frac Fraction of coverage to use as a threshold (default .85 = 85 percent)
-#' @return The -k- integer where coverage is acheived
-fit.curve.percent <- function(sweep, frac = 0.85) {
-    fractional <- as.numeric(as.character(sweep))/max(sweep)
-    best.k <- names(sweep[which(fractional >= frac)])[1]
-    return(as.numeric(best.k))
-}
-
-
-#' @title merge.genomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events
-#' @param coverage.range List indexed by sample, then sub-indexed by # of master regulators, then by event type (mut/amp/del/fus). Holds all events by sample
-#' @param topN Maximum number of master regulators to compute coverage
-#' @return A data frame with summary statistics for genomic saturation at each 'k'
-merge.genomicSaturation <- function(coverage.range, topN) {
-    
-    data <- c()
-    for (i in 1:topN) {
-        # count for each sample $mut/amp/del all point to either a NA or a vector of names of the event. If NA the length will be zero so simply count the
-        # number of each type of event
-        count <- unlist(lapply(coverage.range, function(x) {
-            num.events <- length(x[[i]]$mut) + length(x[[i]]$amp) + length(x[[i]]$del)
-        }))
-        count <- na.omit(count)
-        
-        # apply over each sample, get the coverage for each
-        fraction <- unlist(lapply(coverage.range, function(x) {
-            # critically: must omit the NAs so they don't interfere with count
-            event.fractions <- x[[i]]$total.frac
-            event.fractions
-        }))
-        fraction <- na.omit(fraction)
-        
-        all.events <- unlist(lapply(coverage.range, function(x) {
-            c(x[[i]]$mut, x[[i]]$amp, x[[i]]$del)
-        }))
-        all.events <- na.omit(all.events)
-        
-        data <- rbind(data, c(i, mean(count), mean(fraction), length(unique(all.events))))
-    }
-    df <- data.frame(mean = data[, 2], k = data[, 1], fraction = data[, 3], unique.events = data[, 4])
-    df
 }
 

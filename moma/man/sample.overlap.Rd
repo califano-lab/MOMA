@@ -12,8 +12,8 @@ sample.overlap(
   interaction.map,
   cnv.threshold = 0.5,
   mutation.filter = NULL,
-  verbose = FALSE,
-  idx.range = NULL
+  idx.range = NULL,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -25,13 +25,14 @@ sample.overlap(
 
 \item{interaction.map}{List object of events 'covered' by the supplied interactions of type mut/amp/del/fus}
 
-\item{cnv.threshold}{Numeric absolute value to threshold SNP6 and/or GISTIC or other CNV scores at. Above that absolute value is considered a positive event.}
+\item{cnv.threshold}{Numeric absolute value to threshold SNP6 and/or GISTIC 
+or other CNV scores at. Above that absolute value is considered a positive event.}
 
 \item{mutation.filter}{A vector of whitelisted mutation events, in entrez gene IDs}
 
-\item{verbose}{Output status during the run (default=FALSE)}
-
 \item{idx.range}{Number of tfs to check for genomic saturation calculation, default is 1253}
+
+\item{verbose}{Output status during the run (default=FALSE)}
 }
 \value{
 A list of lists, indexed by sample name, with coverage statistics/data for each sample
