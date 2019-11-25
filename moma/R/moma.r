@@ -238,8 +238,9 @@ momaRunner <- setRefClass("momaRunner", fields =
       checkpoints <<- tmp.checkpoints
   },
 
-  makeSaturationPlots = function(clustering.solution = NULL, important.genes = NULL, max.muts = 10, max.cnvs = 5) {
+  makeSaturationPlots = function(clustering.solution = NULL, important.genes = NULL, max.muts = 25, max.cnvs = 10) {
     
+    print(sample.clustering)
     # get clustering solution to use for calculations
     if (is.null(clustering.solution)) {
       if (is.null(sample.clustering)) {
@@ -255,15 +256,16 @@ momaRunner <- setRefClass("momaRunner", fields =
     tmp.identity.plots <- list()
     
     # get subtype event tables
-    subtype.tables <- get.subtype.event.tables(genomic.saturation, clustering.solution)
+    print(checkpoints)
+    subtype.tables <- get.subtype.event.tables(genomic.saturation, clustering.solution, checkpoints)
     
     # get summary table of unique events added in for each regulator 
     ## could be clarified/improved
     ## also potential improvement: look for inflection points of huge jumps of new unique events and highlight those regulators in particular?
     tissue.coverage.df <- merge.data.by.subtype(genomic.saturation, sample.clustering, 100)
     
-    gene2band <- momaObj$gene.loc.mapping$Gene.Symbol
-    names(gene2band) <- momaObj$gene.loc.mapping$Cytoband
+    gene2band <- gene.loc.mapping$Gene.Symbol
+    names(gene2band) <- gene.loc.mapping$Cytoband
     
     # Make plots each subtype
     for (k in 1:length(subtype.tables)) {
@@ -271,19 +273,19 @@ momaRunner <- setRefClass("momaRunner", fields =
       samples.total <- sum(sample.clustering == k)
       print(paste0("Number of samples in cluster ", k, ": ", samples.total))
       print("Getting events to plot...")
-      p.identities <- plot.events(subtype.tables[[k]], length(subtype.tables), output=NULL, important.genes, gene2band, samples.total, max.muts = 10, max.cnv = 5, plot.label, k=k)
-      identity.plots[["bar.plots"]][[k]] <- p.identities
+      p.identities <- plot.events(subtype.tables[[k]], important.genes, gene2band, samples.total, max.muts = 25, max.cnv = 10)
+      tmp.identity.plots[["bar.plots"]][[k]] <- p.identities
     }
     
     for (k in 1:length(subtype.tables)) {
       # genomic coverage plot, top 100
       #subtype.df <- tissue.coverage.df[(tissue.coverage.df$subtype == k),]
-      p.coverage <- genomic.plot.small(tissue.coverage.df, tissue=plot.label, tissue.cluster=k, fraction=0.85)
-      identity.plots[["curve.plots"]][[k]] <- p.coverage
+      p.coverage <- genomic.plot.small(tissue.coverage.df, fraction=0.85, tissue.cluster=k)
+      tmp.identity.plots[["curve.plots"]][[k]] <- p.coverage
     }
     
     
-    
+    identity.plots <<- tmp.identity.plots
     
   }
 
