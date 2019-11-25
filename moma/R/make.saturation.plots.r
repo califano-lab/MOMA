@@ -1,6 +1,6 @@
 #' Helper function to get subtype specific events
 #' @param saturation.data : genomic saturation object from moma. List indexed by cluster then sample then regulator with the number of events associated with each additional regulator
-#' @param sample.clustering
+#' @param sample.clustering : clustering vector with sample names and cluster designations
 #' @param checkpoints : from momaObj
 #' @return a table that has counts of how many times a particular event happens in a cluster
 #' @export
@@ -72,8 +72,8 @@ df
 
 
 #' Create data frame from coverage data, including number of total events 'covered' and unique events
-#' @param genomic.saturation
-#' @param sample.clustering
+#' @param genomic.saturation : data from genomic saturation function
+#' @param sample.clustering : clustering vector with sample names and cluster designations
 #' @param topN : number of regulators to look through. default is 100
 merge.data.by.subtype <- function(genomic.saturation, sample.clustering, topN = 100)  {
   
@@ -106,6 +106,8 @@ merge.data.by.subtype <- function(genomic.saturation, sample.clustering, topN = 
 
 
 #' Helper function for merge.data.by.subtype
+#' @param coverage.range : genomic saturation for a particular subtype
+#' @param topN : max number of top regulators to search through
 merge.data <- function(coverage.range, topN)  {
   
   data <- c()
@@ -217,7 +219,7 @@ plot.events <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NUL
   # Scale frequency to a percentage of samples in that cluster not number of occurences
   mapped$freq.percentage <- mapped$Freq/samples.total
   
-  p <- qplot(x=id, y=freq.percentage, fill=type, data=mapped, geom = "col") + coord_flip() +
+  p <- ggplot2::qplot(x=id, y=freq.percentage, fill=type, data=mapped, geom = "col") + coord_flip() +
     scale_fill_manual(values = c("mut"='#00BA38', "amp"= '#F8766D', "del" = '#619CFF', "fus" = '#FF8C00' )) +
     ylab("Frequency") + xlab("Event") 
   #theme(axis.text.y = element_text(size=y.textSize))

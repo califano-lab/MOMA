@@ -2,6 +2,9 @@
 
 export(get.best.clustering.supervised)
 export(get.clin)
+export(get.subtype.event.tables)
+export(map.entrez)
+export(map.hugo)
 export(moma.constructor)
 export(survplot.best.v.worst)
 export(tibble.add_clusters)

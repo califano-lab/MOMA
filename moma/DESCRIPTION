@@ -15,6 +15,7 @@ biocViews: Software, NetworkEnrichment, NetworkInference, Network, FeatureExtrac
 Imports:
 	cluster (>= 2.0.0),
 	dplyr (>= 0.7),
+	ggplot2 (>= 3.2.0),
 	graphics (>= 3.5.0),
 	grDevices (>= 3.5.0),
 	methods (>= 3.5.0),

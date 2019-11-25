@@ -240,7 +240,7 @@ momaRunner <- setRefClass("momaRunner", fields =
 
   makeSaturationPlots = function(clustering.solution = NULL, important.genes = NULL, max.muts = 25, max.cnvs = 10) {
     
-    print(sample.clustering)
+    # print(sample.clustering)
     # get clustering solution to use for calculations
     if (is.null(clustering.solution)) {
       if (is.null(sample.clustering)) {
@@ -256,7 +256,7 @@ momaRunner <- setRefClass("momaRunner", fields =
     tmp.identity.plots <- list()
     
     # get subtype event tables
-    print(checkpoints)
+    # print(checkpoints)
     subtype.tables <- get.subtype.event.tables(genomic.saturation, clustering.solution, checkpoints)
     
     # get summary table of unique events added in for each regulator 
