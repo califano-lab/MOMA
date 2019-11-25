@@ -27,7 +27,8 @@ momaRunner <- setRefClass("momaRunner", fields =
                                  genomic.saturation = "list", 
                                  coverage.summaryStats = "list", 
                                  checkpoints = "list", 
-                                 sample.clustering = "numeric"), # numbers are cluster assignments, names are sample ids matching other data
+                                 sample.clustering = "numeric", # numbers are cluster assignments, names are sample ids matching other data
+                                 identity.plots = "list"), # result field
                           methods = list(
   runDIGGIT = function(fCNV = NULL, cnvthr = 0.5, min.events = 4) {
       
@@ -189,10 +190,9 @@ momaRunner <- setRefClass("momaRunner", fields =
       search.results
 }, 
 
-  saturationPlots = function(clustering.solution = NULL, cov.fraction = 0.85) {
+  saturationCalculation = function(clustering.solution = NULL, cov.fraction = 0.85) {
       
-      # do saturation analysis with all available data types helper functions in external libs coverage statistics at throughhold sweep
-      
+      # get clustering solution to use for calculations
       if (is.null(clustering.solution)) {
         if(is.null(sample.clustering)) {
           stop("No clustering solution provided. Provide one as an argument or save one
@@ -236,7 +236,62 @@ momaRunner <- setRefClass("momaRunner", fields =
       genomic.saturation <<- coverage.subtypes
       coverage.summaryStats <<- tmp.summaryStats
       checkpoints <<- tmp.checkpoints
-}))
+  },
+
+  makeSaturationPlots = function(clustering.solution = NULL, important.genes = NULL, max.muts = 10, max.cnvs = 5) {
+    
+    # get clustering solution to use for calculations
+    if (is.null(clustering.solution)) {
+      if (is.null(sample.clustering)) {
+        stop("No clustering solution provided. Provide one as an argument or save one
+               to the momaObj. Quitting...")
+      } else {
+        clustering.solution <- sample.clustering
+      }
+    }
+    
+    # **** incorporate checkpoint specificity here later ****
+    
+    tmp.identity.plots <- list()
+    
+    # get subtype event tables
+    subtype.tables <- get.subtype.event.tables(genomic.saturation, clustering.solution)
+    
+    # get summary table of unique events added in for each regulator 
+    ## could be clarified/improved
+    ## also potential improvement: look for inflection points of huge jumps of new unique events and highlight those regulators in particular?
+    tissue.coverage.df <- merge.data.by.subtype(genomic.saturation, sample.clustering, 100)
+    
+    gene2band <- momaObj$gene.loc.mapping$Gene.Symbol
+    names(gene2band) <- momaObj$gene.loc.mapping$Cytoband
+    
+    # Make plots each subtype
+    for (k in 1:length(subtype.tables)) {
+      # genomic events descriptive bar plot
+      samples.total <- sum(sample.clustering == k)
+      print(paste0("Number of samples in cluster ", k, ": ", samples.total))
+      print("Getting events to plot...")
+      p.identities <- plot.events(subtype.tables[[k]], length(subtype.tables), output=NULL, important.genes, gene2band, samples.total, max.muts = 10, max.cnv = 5, plot.label, k=k)
+      identity.plots[["bar.plots"]][[k]] <- p.identities
+    }
+    
+    for (k in 1:length(subtype.tables)) {
+      # genomic coverage plot, top 100
+      #subtype.df <- tissue.coverage.df[(tissue.coverage.df$subtype == k),]
+      p.coverage <- genomic.plot.small(tissue.coverage.df, tissue=plot.label, tissue.cluster=k, fraction=0.85)
+      identity.plots[["curve.plots"]][[k]] <- p.coverage
+    }
+    
+    
+    
+    
+  }
+
+
+
+  )
+
+)
 
 
 

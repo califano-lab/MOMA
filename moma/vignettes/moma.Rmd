@@ -150,7 +150,7 @@ fields:
 These will be used for plotting the genomic saturation curves as well.
   
 ```{r saturation, results = "hide", message = F, warning = F}
-momaObj$saturationPlots()
+momaObj$saturationCalculation()
 ```
 
 ```{r checkpoints}
