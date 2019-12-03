@@ -12,7 +12,7 @@
 \item{topN}{: max number of top regulators to search through}
 }
 \value{
-
+dataframe with coverage data for genomic events
 }
 \description{
 Helper function for merge.data.by.subtype

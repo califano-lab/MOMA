@@ -14,7 +14,7 @@
 \item{topN}{: number of regulators to look through. default is 100}
 }
 \value{
-
+dataframe with coverage data for genomic events
 }
 \description{
 Create data frame from coverage data, including number of total events 'covered' and unique events

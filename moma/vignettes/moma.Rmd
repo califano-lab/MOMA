@@ -215,6 +215,7 @@ momaObj$identity.plots$curve.plots[[1]] +
 ```
 
 
+## Incorporating and Plotting Survival Data
 
 
 

@@ -74,7 +74,7 @@ df
 #' @param genomic.saturation : data from genomic saturation function
 #' @param sample.clustering : clustering vector with sample names and cluster designations
 #' @param topN : number of regulators to look through. default is 100
-#' @return
+#' @return dataframe with coverage data for genomic events
 merge.data.by.subtype <- function(genomic.saturation, sample.clustering, topN = 100)  {
   
   ### unnecessary ### remove after testing
@@ -108,7 +108,7 @@ merge.data.by.subtype <- function(genomic.saturation, sample.clustering, topN = 
 #' Helper function for merge.data.by.subtype
 #' @param coverage.range : genomic saturation for a particular subtype
 #' @param topN : max number of top regulators to search through
-#' @return
+#' @return dataframe with coverage data for genomic events
 merge.data <- function(coverage.range, topN)  {
   
   data <- c()
@@ -142,7 +142,8 @@ merge.data <- function(coverage.range, topN)  {
 
 
 #' Plot barchart of genomic events
-#'
+#' 
+#' @importFrom rlang .data
 #' @param summary.vec : named vector of the counts, named 'Event name':'Type'
 #' where type is 'mut', 'amp', 'del', 'fus'. Mutations are in Entrez ID
 #' Amp/Deletion CNV events are in genomic band location
@@ -220,7 +221,7 @@ plot.events <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NUL
   # Scale frequency to a percentage of samples in that cluster not number of occurences
   mapped$freq.percentage <- mapped$Freq/samples.total
   
-  p <- ggplot2::qplot(x=id, y=freq.percentage, fill=type, data=mapped, geom = "col") + coord_flip() +
+  p <- ggplot2::qplot(x=mapped$id, y=mapped$freq.percentage, fill=mapped$type, data=mapped, geom = "col") + coord_flip() +
     scale_fill_manual(values = c("mut"='#00BA38', "amp"= '#F8766D', "del" = '#619CFF', "fus" = '#FF8C00' )) +
     ylab("Frequency") + xlab("Event") 
   #theme(axis.text.y = element_text(size=y.textSize))
@@ -316,9 +317,10 @@ get.data.frame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 
 
 
 #' Make small genomic plot
-#' @importFrom dplyr filter
 #' @importFrom tidyr drop_na
+#' @importFrom rlang .data
 #' @import ggplot2
+#' @import magrittr
 #' @param input.df : tissue.coverage.df with mean, k, fraction and unique events. has all samples
 #' @param fraction : what fraction coverage to use for genomic curve threshold
 #' @param tissue.cluster : which cluster subsample to look at
@@ -339,15 +341,18 @@ genomic.plot.small <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
   color.this.sub <- subtype.colors[tissue.cluster]
   
   # subset to only this subtype and remove NAs
-  subtype.df <- input.df %>% 
-    dplyr::filter(subtype == tissue.cluster) %>%
-    tidyr::drop_na(fraction)
+  #subtype.df <- input.df %>% 
+  #  dplyr::filter(.data$subtype == tissue.cluster) %>%
+  #  tidyr::drop_na(.data$fraction)
+  
+  subtype.df <- input.df[input.df$subtype == tissue.cluster,] 
+  subtype.df <- subtype.df %>% tidyr::drop_na(.data$fraction)
   
   # df <- data.frame(k=input.df$k, mean=input.df$fraction, subtype=as.factor(input.df$subtype))
   
   sweep <- subtype.df$fraction
   names(sweep) <- sort(unique(subtype.df$k))
-  best.k <- fit.threshold(sweep, frac=fraction)
+  best.k <- fit.curve.percent(sweep, frac=fraction)
   print (paste("Threshold for MR cutoff: ", best.k))
   
   
@@ -373,7 +378,7 @@ genomic.plot.small <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
   
   # need to fix so that colors are different for each plot
   # for now it's just black
-  p.100 <- ggplot(subtype.df, aes(k, fraction)) + geom_line(color = color.this.sub, size=1.5, alpha=0.75) +
+  p.100 <- ggplot(subtype.df, aes(.data$k, .data$fraction)) + geom_line(color = color.this.sub, size=1.5, alpha=0.75) +
     xlab("Number of MRs") +
     scale_y_continuous(
       "Mean Fraction",
@@ -391,16 +396,15 @@ genomic.plot.small <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
 }
 
 
-#'  Helper function to do inflection point fitting. 
-#'  Use the heuristic, or if supplied, the definitions file to set the 
-#'  MR threshold
-#'  @param sweep : numeric vector of genomic coverage values, named by -k- threshold
-#'  @param frac : Fraction of coverage to use as a threshold (default .85 = 85 percent)
-#'  @return The -k- integer where coverage is acheived
-fit.threshold <- function(sweep, frac=NULL) {
-  k <- fit.curve.percent(sweep, frac)
-  return (k)
-}
+# #'  Helper function to do inflection point fitting. 
+# #'  Use the heuristic, or if supplied, the definitions file to set the MR threshold
+# #'  @param sweep : numeric vector of genomic coverage values, named by -k- threshold
+# #'  @param frac : Fraction of coverage to use as a threshold (default .85 = 85 percent)
+# #'  @return The -k- integer where coverage is acheived
+# fit.threshold <- function(sweep, frac=NULL) {
+#   k <- fit.curve.percent(sweep, frac)
+#   return (k)
+# }
 
 
 # # Make multiplot layout
