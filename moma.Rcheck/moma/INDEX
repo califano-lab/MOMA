@@ -1,0 +1,110 @@
+aREA.enrich             aREA.enrich Compute aREA enrichment between all
+                        pairwise combinations of VIPER proteins and
+                        gene-level events
+aREA.regulon_enrich     Compute aREA enrichment for the proteins in a
+                        given regulon, against vipermat scores supplied
+                        (used for model matching functionality)
+associate.events        Use 'aREA' to calculate the enrichment between
+                        each genomic event - VIPER inferred protein
+                        pair.
+clusterRange            Cluster Range
+clusterReliability      Cluster membership reliability estimated by
+                        enrichment analysis
+cnvScoreStouffer        Integreate CNV scores
+conditional.model       Implements the conditional Bayes model to
+                        combine VIPER scores with diggit and pathway
+                        scores
+conditional.p           Get the conditional p-value of a gene
+empirical.p             Get the empirical p-value from a distribution
+                        (vector)
+fit.curve.percent       Fit based on fractional overall coverage of
+                        genomic events
+fit.threshold           Helper function to do inflection point fitting.
+                        Use the heuristic, or if supplied, the
+                        definitions file to set the MR threshold @param
+                        sweep : numeric vector of genomic coverage
+                        values, named by -k- threshold @param frac :
+                        Fraction of coverage to use as a threshold
+                        (default .85 = 85 percent) @return The -k-
+                        integer where coverage is acheived
+gbm.example             Glioblastoma (GBM) Example Dataset
+genomic.plot.small      Make small genomic plot
+get.best.clustering.supervised
+                        Get the set of optimal clusterings from the
+                        Silhouette results. Find the one that optimizes
+                        survival
+get.clin                get.clin Parse the full clinical merged file
+                        from GDAC-Firehose and make a dlpyr tibble out
+                        of it
+get.coverage            Get coverage of interactions
+get.data.frame          Helper function to get data frame for bar plot
+                        plot.events function
+get.diggit.empiricalQvalues
+                        Compute the empirical q-values of each
+                        genomic-event/VIPER gene pair
+get.empirical.qvals     Get.empirical.qvals
+get.pvals.matrix        Utility function - WHERE???
+get.subtype.event.tables
+                        Helper function to get subtype specific events
+integrateFunction       Numerical integration of functions
+integrateTZ             Integration with trapezoid method
+make.coverage.df        Helper function for making the coverage
+                        dataframe (might)
+map.entrez              Convert from entrez ids to hugo gene names
+map.hugo                Convert from hugo gene names to entrez ids
+mapScores.cnvBand       Map scores to cytoband location
+merge.data              Helper function for merge.data.by.subtype
+merge.data.by.subtype   Create data frame from coverage data, including
+                        number of total events 'covered' and unique
+                        events
+merge.genomicSaturation
+                        merge.genomicSaturation Create data frame from
+                        coverage data, including number of total events
+                        'covered' and unique events
+moma.constructor        MOMA Constructor
+momaRunner-class        MOMA Runner
+mutSig                  MutSig Blacklisted genes
+pathway.diggit.intersect
+                        Combine DIGGIT inferences with pathway
+                        knowledge
+plot.events             Plot barchart of genomic events
+rea                     This function calculates an Enrichment Score of
+                        Association based on how the features rank on
+                        the samples sorted by a specific gene
+reaNULL                 This function generates the NULL model
+                        function, which computes the normalized
+                        enrichment score and associated p-value
+sREA                    Simple one-tail rank based enrichment analysis
+                        sREA (for cluster analysis?)
+sample.overlap          The core function to compute which
+                        sample-specific alterations overlap with
+                        genomic events that are explained via DIGGIT.
+samplename.filter       Retain TCGA sample ids without the final letter
+                        designation ('A/B/C') - WHERE??
+sig.interactors.DIGGIT
+                        Filter interactions from NES (DIGGIT) scores
+                        and corresponding background-corrected scores.
+stouffer.integrate      dispatch method for either CNV location
+                        corrected or SNV
+stouffer.integrate.diggit
+                        Use Stouffer's method to combine z-scores of
+                        DIGGIT interactions for each cMR protein.
+subset.list.interactions
+                        Helper function: subset a list to the set of
+                        keys supplied return the names of interactions
+                        with positive values, in a list structure
+survplot.best.v.worst   Get the best and worst clustering solutions,
+                        plot the Kaplan-Meyer of those populations
+tibble.add_clusters     Add clustering solutions to the tibble dataset
+                        'survObj' and return
+tibble.survfit          Add a survival object to the tibble dataset
+                        'survObj' and return
+tibble.survfit.progression_free
+                        progression free survival
+tibble.survfit_select   Get survival based on clustering
+valid.diggit.interactions
+                        Return a set of events 'covered' by specified
+                        cMR-event interactions
+viper.getSigTFS         Calculate p-values from pseudo zscores / VIPER
+                        aREA scores, threshold
+viper.getTFScores       Utility function

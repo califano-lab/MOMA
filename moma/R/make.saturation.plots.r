@@ -3,7 +3,6 @@
 #' @param sample.clustering : clustering vector with sample names and cluster designations
 #' @param checkpoints : from momaObj
 #' @return a table that has counts of how many times a particular event happens in a cluster
-#' @export
 get.subtype.event.tables <- function(saturation.data, sample.clustering, checkpoints) {
   
   subtype.coverage <- list()
@@ -75,6 +74,7 @@ df
 #' @param genomic.saturation : data from genomic saturation function
 #' @param sample.clustering : clustering vector with sample names and cluster designations
 #' @param topN : number of regulators to look through. default is 100
+#' @return
 merge.data.by.subtype <- function(genomic.saturation, sample.clustering, topN = 100)  {
   
   ### unnecessary ### remove after testing
@@ -108,6 +108,7 @@ merge.data.by.subtype <- function(genomic.saturation, sample.clustering, topN = 
 #' Helper function for merge.data.by.subtype
 #' @param coverage.range : genomic saturation for a particular subtype
 #' @param topN : max number of top regulators to search through
+#' @return
 merge.data <- function(coverage.range, topN)  {
   
   data <- c()
@@ -314,8 +315,10 @@ get.data.frame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 
 }
 
 
-#'Make small genomic plot
-#'
+#' Make small genomic plot
+#' @importFrom dplyr filter
+#' @importFrom tidyr drop_na
+#' @import ggplot2
 #' @param input.df : tissue.coverage.df with mean, k, fraction and unique events. has all samples
 #' @param fraction : what fraction coverage to use for genomic curve threshold
 #' @param tissue.cluster : which cluster subsample to look at
@@ -337,8 +340,8 @@ genomic.plot.small <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
   
   # subset to only this subtype and remove NAs
   subtype.df <- input.df %>% 
-    filter(subtype == tissue.cluster) %>%
-    drop_na(fraction)
+    dplyr::filter(subtype == tissue.cluster) %>%
+    tidyr::drop_na(fraction)
   
   # df <- data.frame(k=input.df$k, mean=input.df$fraction, subtype=as.factor(input.df$subtype))
   
@@ -398,3 +401,42 @@ fit.threshold <- function(sweep, frac=NULL) {
   k <- fit.curve.percent(sweep, frac)
   return (k)
 }
+
+
+# # Make multiplot layout
+# multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+#   library(grid)
+#   
+#   # Make a list from the ... arguments and plotlist
+#   plots <- c(list(...), plotlist)
+#   
+#   numPlots = length(plots)
+#   
+#   # If layout is NULL, then use 'cols' to determine layout
+#   if (is.null(layout)) {
+#     # Make the panel
+#     # ncol: Number of columns of plots
+#     # nrow: Number of rows needed, calculated from # of cols
+#     layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+#                      ncol = cols, nrow = ceiling(numPlots/cols))
+#   }
+#   
+#   if (numPlots==1) {
+#     print(plots[[1]])
+#     
+#   } else {
+#     # Set up the page
+#     grid.newpage()
+#     pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+#     
+#     # Make each plot, in the correct location
+#     for (i in 1:numPlots) {
+#       # Get the i,j matrix positions of the regions that contain this subplot
+#       matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+#       
+#       print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+#                                       layout.pos.col = matchidx$col))
+#     }
+#   }
+# }
+

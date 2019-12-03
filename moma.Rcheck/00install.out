@@ -1,0 +1,24 @@
+* installing *source* package ‘moma’ ...
+** using staged installation
+** R
+** data
+*** moving datasets to lazyload DB
+** inst
+** byte-compile and prepare package for lazy loading
+Warning: replacing previous import ‘dplyr::filter’ by ‘stats::filter’ when loading ‘moma’
+Warning: replacing previous import ‘dplyr::lag’ by ‘stats::lag’ when loading ‘moma’
+Warning: replacing previous import ‘stats::filter’ by ‘dplyr::filter’ when loading ‘moma’
+** help
+*** installing help indices
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded from temporary location
+Warning: replacing previous import ‘dplyr::filter’ by ‘stats::filter’ when loading ‘moma’
+Warning: replacing previous import ‘dplyr::lag’ by ‘stats::lag’ when loading ‘moma’
+Warning: replacing previous import ‘stats::filter’ by ‘dplyr::filter’ when loading ‘moma’
+** testing if installed package can be loaded from final location
+Warning: replacing previous import ‘dplyr::filter’ by ‘stats::filter’ when loading ‘moma’
+Warning: replacing previous import ‘dplyr::lag’ by ‘stats::lag’ when loading ‘moma’
+Warning: replacing previous import ‘stats::filter’ by ‘dplyr::filter’ when loading ‘moma’
+** testing if installed package keeps a record of temporary installation path
+* DONE (moma)

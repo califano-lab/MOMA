@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>R: Multi Omic Master Regulator Analysis</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body>
+<h1> Multi Omic Master Regulator Analysis
+<img class="toplogo" src="../../../doc/html/Rlogo.svg" alt="[R logo]" />
+</h1>
+<hr/>
+<div style="text-align: center;">
+<a href="../../../doc/html/packages.html"><img class="arrow" src="../../../doc/html/left.jpg" alt="[Up]" /></a>
+<a href="../../../doc/html/index.html"><img class="arrow" src="../../../doc/html/up.jpg" alt="[Top]" /></a>
+</div><h2>Documentation for package &lsquo;moma&rsquo; version 1.0.0</h2>
+
+<ul><li><a href="../DESCRIPTION">DESCRIPTION file</a>.</li>
+<li><a href="../doc/index.html">User guides, package vignettes and other documentation.</a></li>
+</ul>
+
+<h2>Help Pages</h2>
+
+
+<table width="100%">
+<tr><td style="width: 25%;"><a href="aREA.enrich.html">aREA.enrich</a></td>
+<td>aREA.enrich Compute aREA enrichment between all pairwise combinations of VIPER proteins and gene-level events</td></tr>
+<tr><td style="width: 25%;"><a href="aREA.regulon_enrich.html">aREA.regulon_enrich</a></td>
+<td>Compute aREA enrichment for the proteins in a given regulon, against vipermat scores supplied (used for model matching functionality)</td></tr>
+<tr><td style="width: 25%;"><a href="associate.events.html">associate.events</a></td>
+<td>Use 'aREA' to calculate the enrichment between each genomic event - VIPER inferred protein pair.</td></tr>
+<tr><td style="width: 25%;"><a href="clusterRange.html">clusterRange</a></td>
+<td>Cluster Range</td></tr>
+<tr><td style="width: 25%;"><a href="clusterReliability.html">clusterReliability</a></td>
+<td>Cluster membership reliability estimated by enrichment analysis</td></tr>
+<tr><td style="width: 25%;"><a href="cnvScoreStouffer.html">cnvScoreStouffer</a></td>
+<td>Integreate CNV scores</td></tr>
+<tr><td style="width: 25%;"><a href="conditional.model.html">conditional.model</a></td>
+<td>Implements the conditional Bayes model to combine VIPER scores with diggit and pathway scores</td></tr>
+<tr><td style="width: 25%;"><a href="conditional.p.html">conditional.p</a></td>
+<td>Get the conditional p-value of a gene</td></tr>
+<tr><td style="width: 25%;"><a href="empirical.p.html">empirical.p</a></td>
+<td>Get the empirical p-value from a distribution (vector)</td></tr>
+<tr><td style="width: 25%;"><a href="fit.curve.percent.html">fit.curve.percent</a></td>
+<td>Fit based on fractional overall coverage of genomic events</td></tr>
+<tr><td style="width: 25%;"><a href="fit.threshold.html">fit.threshold</a></td>
+<td>Helper function to do inflection point fitting.  Use the heuristic, or if supplied, the definitions file to set the MR threshold @param sweep : numeric vector of genomic coverage values, named by -k- threshold @param frac : Fraction of coverage to use as a threshold (default .85 = 85 percent) @return The -k- integer where coverage is acheived</td></tr>
+<tr><td style="width: 25%;"><a href="gbm.example.html">gbm.example</a></td>
+<td>Glioblastoma (GBM) Example Dataset</td></tr>
+<tr><td style="width: 25%;"><a href="genomic.plot.small.html">genomic.plot.small</a></td>
+<td>Make small genomic plot</td></tr>
+<tr><td style="width: 25%;"><a href="get.best.clustering.supervised.html">get.best.clustering.supervised</a></td>
+<td>Get the set of optimal clusterings from the Silhouette results. Find the one that optimizes survival</td></tr>
+<tr><td style="width: 25%;"><a href="get.clin.html">get.clin</a></td>
+<td>get.clin Parse the full clinical merged file from GDAC-Firehose and make a dlpyr tibble out of it</td></tr>
+<tr><td style="width: 25%;"><a href="get.coverage.html">get.coverage</a></td>
+<td>Get coverage of interactions</td></tr>
+<tr><td style="width: 25%;"><a href="get.data.frame.html">get.data.frame</a></td>
+<td>Helper function to get data frame for bar plot plot.events function</td></tr>
+<tr><td style="width: 25%;"><a href="get.diggit.empiricalQvalues.html">get.diggit.empiricalQvalues</a></td>
+<td>Compute the empirical q-values of each genomic-event/VIPER gene pair</td></tr>
+<tr><td style="width: 25%;"><a href="get.empirical.qvals.html">get.empirical.qvals</a></td>
+<td>Get.empirical.qvals</td></tr>
+<tr><td style="width: 25%;"><a href="get.pvals.matrix.html">get.pvals.matrix</a></td>
+<td>Utility function - WHERE???</td></tr>
+<tr><td style="width: 25%;"><a href="get.subtype.event.tables.html">get.subtype.event.tables</a></td>
+<td>Helper function to get subtype specific events</td></tr>
+<tr><td style="width: 25%;"><a href="integrateFunction.html">integrateFunction</a></td>
+<td>Numerical integration of functions</td></tr>
+<tr><td style="width: 25%;"><a href="integrateTZ.html">integrateTZ</a></td>
+<td>Integration with trapezoid method</td></tr>
+<tr><td style="width: 25%;"><a href="make.coverage.df.html">make.coverage.df</a></td>
+<td>Helper function for making the coverage dataframe (might)</td></tr>
+<tr><td style="width: 25%;"><a href="map.entrez.html">map.entrez</a></td>
+<td>Convert from entrez ids to hugo gene names</td></tr>
+<tr><td style="width: 25%;"><a href="map.hugo.html">map.hugo</a></td>
+<td>Convert from hugo gene names to entrez ids</td></tr>
+<tr><td style="width: 25%;"><a href="mapScores.cnvBand.html">mapScores.cnvBand</a></td>
+<td>Map scores to cytoband location</td></tr>
+<tr><td style="width: 25%;"><a href="merge.data.html">merge.data</a></td>
+<td>Helper function for merge.data.by.subtype</td></tr>
+<tr><td style="width: 25%;"><a href="merge.data.by.subtype.html">merge.data.by.subtype</a></td>
+<td>Create data frame from coverage data, including number of total events 'covered' and unique events</td></tr>
+<tr><td style="width: 25%;"><a href="merge.genomicSaturation.html">merge.genomicSaturation</a></td>
+<td>merge.genomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events</td></tr>
+<tr><td style="width: 25%;"><a href="moma.constructor.html">moma.constructor</a></td>
+<td>MOMA Constructor</td></tr>
+<tr><td style="width: 25%;"><a href="momaRunner-class.html">momaRunner</a></td>
+<td>MOMA Runner</td></tr>
+<tr><td style="width: 25%;"><a href="momaRunner-class.html">momaRunner-class</a></td>
+<td>MOMA Runner</td></tr>
+<tr><td style="width: 25%;"><a href="mutSig.html">mutSig</a></td>
+<td>MutSig Blacklisted genes</td></tr>
+<tr><td style="width: 25%;"><a href="pathway.diggit.intersect.html">pathway.diggit.intersect</a></td>
+<td>Combine DIGGIT inferences with pathway knowledge</td></tr>
+<tr><td style="width: 25%;"><a href="plot.events.html">plot.events</a></td>
+<td>Plot barchart of genomic events</td></tr>
+<tr><td style="width: 25%;"><a href="rea.html">rea</a></td>
+<td>This function calculates an Enrichment Score of Association based on how the features rank on the samples sorted by a specific gene</td></tr>
+<tr><td style="width: 25%;"><a href="reaNULL.html">reaNULL</a></td>
+<td>This function generates the NULL model function, which computes the normalized enrichment score and associated p-value</td></tr>
+<tr><td style="width: 25%;"><a href="sample.overlap.html">sample.overlap</a></td>
+<td>The core function to compute which sample-specific alterations overlap with genomic events that are explained via DIGGIT.</td></tr>
+<tr><td style="width: 25%;"><a href="samplename.filter.html">samplename.filter</a></td>
+<td>Retain TCGA sample ids without the final letter designation ('A/B/C') - WHERE??</td></tr>
+<tr><td style="width: 25%;"><a href="sig.interactors.DIGGIT.html">sig.interactors.DIGGIT</a></td>
+<td>Filter interactions from NES (DIGGIT) scores and corresponding background-corrected scores.</td></tr>
+<tr><td style="width: 25%;"><a href="sREA.html">sREA</a></td>
+<td>Simple one-tail rank based enrichment analysis sREA (for cluster analysis?)</td></tr>
+<tr><td style="width: 25%;"><a href="stouffer.integrate.html">stouffer.integrate</a></td>
+<td>dispatch method for either CNV location corrected or SNV</td></tr>
+<tr><td style="width: 25%;"><a href="stouffer.integrate.diggit.html">stouffer.integrate.diggit</a></td>
+<td>Use Stouffer's method to combine z-scores of DIGGIT interactions for each cMR protein.</td></tr>
+<tr><td style="width: 25%;"><a href="subset.list.interactions.html">subset.list.interactions</a></td>
+<td>Helper function: subset a list to the set of keys supplied return the names of interactions with positive values, in a list structure</td></tr>
+<tr><td style="width: 25%;"><a href="survplot.best.v.worst.html">survplot.best.v.worst</a></td>
+<td>Get the best and worst clustering solutions, plot the Kaplan-Meyer of those populations</td></tr>
+<tr><td style="width: 25%;"><a href="tibble.add_clusters.html">tibble.add_clusters</a></td>
+<td>Add clustering solutions to the tibble dataset 'survObj' and return</td></tr>
+<tr><td style="width: 25%;"><a href="tibble.survfit.html">tibble.survfit</a></td>
+<td>Add a survival object to the tibble dataset 'survObj' and return</td></tr>
+<tr><td style="width: 25%;"><a href="tibble.survfit.progression_free.html">tibble.survfit.progression_free</a></td>
+<td>progression free survival</td></tr>
+<tr><td style="width: 25%;"><a href="tibble.survfit_select.html">tibble.survfit_select</a></td>
+<td>Get survival based on clustering</td></tr>
+<tr><td style="width: 25%;"><a href="valid.diggit.interactions.html">valid.diggit.interactions</a></td>
+<td>Return a set of events 'covered' by specified cMR-event interactions</td></tr>
+<tr><td style="width: 25%;"><a href="viper.getSigTFS.html">viper.getSigTFS</a></td>
+<td>Calculate p-values from pseudo zscores / VIPER aREA scores, threshold</td></tr>
+<tr><td style="width: 25%;"><a href="viper.getTFScores.html">viper.getTFScores</a></td>
+<td>Utility function</td></tr>
+</table>
+</body></html>

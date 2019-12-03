@@ -9,6 +9,7 @@
 #' @import survival
 #' @import RColorBrewer
 #' @import methods
+#' @import ggplot2
 #' @export
 momaRunner <- setRefClass("momaRunner", fields = 
                             list(viper = "matrix", 

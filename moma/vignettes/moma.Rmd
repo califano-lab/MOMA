@@ -46,6 +46,7 @@ graphics and plotting functions.
 
 
 ```{r setup}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 library(moma)
 ```
 
@@ -78,8 +79,8 @@ pathways[['preppi']] = gbm.example$preppi
 
 ## Generating the **MOMA** object
 
-Generate the MOMA object from the data that we have. The data required to do the
-full analysis are:
+Start by loading in all the data we have to a MOMA object. The following are data required 
+to do the full analysis:
 
 - **VIPER matrix**: continuous values of inferred protein activities
 - **SNP matrix**: binary 0/1 values where 1 indicates the prescence of a mutation
@@ -100,7 +101,7 @@ momaObj <- moma.constructor(gbm.example$vipermat, gbm.example$rawsnp,
 ## MOMA Analysis on GBM Data
 
 The first step, `runDIGGIT()`  will run the DIGGIT inference algorithm [CITE] to
-findstatistical interactions between VIPER-inferred proteins and genomic events.  
+find statistical interactions between VIPER-inferred proteins and genomic events.  
 
 The `makeInteractions()` function will infer robust computational predictions
 using all the provided data, including the Conditional Inference of Network Dynamics 
@@ -136,7 +137,7 @@ momaObj$sample.clustering <- clustering.solutions[[2]]$clustering
 
   
 Genomic saturation analysis is then performed on each cluster with the 
-`saturationPlots()` function, allowing us to find the key proteins that are 
+`saturationCalculation()` function, allowing us to find the key proteins that are 
 downstream of the majority of genomic events in the samples within a particular 
 cluster. These regulators make up that cluster's Checkpoint.  
 
@@ -172,6 +173,50 @@ See example below generated using ComplexHeatmap [CITE]
 
 ## Visualizing the Genomic Saturation and Events Plots
 
-The opther important results of the analysis are the statisically significant
+The other important results of the analysis are the statisically significant
 genomic events found to be upstream of each of the checkpoint master regulators. 
-The `make.
+The `makeSaturationPlots()` function takes the subtype specific genomic event interactions
+calculated in the previous step and makes customizable plots for viewing the results. These
+are saved to the $identity.plots() part of the momaObj.
+
+```{r make plots, warning=FALSE}
+
+momaObj$makeSaturationPlots()
+
+```
+
+
+The two plot types are: 
+
+- **Genomic Event Bar Plots** : these plot the frequency of the different types of 
+genomic events found to be upstream of the regulators in the checkpoint.  
+- **Saturation Curves** : these plot the number of regulators needed to capture
+a certain percentage of genomic events. The inflection points plotted on
+this graph match up with the cut off for which regulators make up a particular
+cluster's checkpoint.   
+
+```{r visualize plots, fig.height=5, fig.width=7}
+
+momaObj$identity.plots$bar.plots[[1]]
+
+momaObj$identity.plots$curve.plots[[1]]
+
+```
+
+The data for these plots are stored as ggplot objects so layers can be added afterwards
+for further customization.
+
+```{r plot customization, fig.height=5, fig.width=7}
+library(ggplot2)
+momaObj$identity.plots$curve.plots[[1]] +
+  ggtitle("GBM Subtype 1") +
+  theme_light()
+
+```
+
+
+
+
+
+
+

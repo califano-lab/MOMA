@@ -14,7 +14,6 @@ RoxygenNote: 7.0.0
 biocViews: Software, NetworkEnrichment, NetworkInference, Network, FeatureExtraction, Clustering, FunctionalGenomics, Transcriptomics, SystemsBiology
 Imports:
 	cluster (>= 2.0.0),
-	dplyr (>= 0.7),
 	ggplot2 (>= 3.2.0),
 	graphics (>= 3.5.0),
 	grDevices (>= 3.5.0),
@@ -28,6 +27,7 @@ Imports:
 	stats (>= 3.5.0),
 	survival (>= 2.40-1),
 	tibble (>= 2.1.1),
+	tidyr (>= 1.0.0),
 	utils (>= 3.5.0)
 Suggests: 
     knitr,

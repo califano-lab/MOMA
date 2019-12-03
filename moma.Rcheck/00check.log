@@ -1,0 +1,93 @@
+* using log directory ‘/Users/sunnyjones/Documents/Github/MOMA_main/MOMA/moma.Rcheck’
+* using R version 3.6.0 (2019-04-26)
+* using platform: x86_64-apple-darwin15.6.0 (64-bit)
+* using session charset: UTF-8
+* using options ‘--no-manual --as-cran’
+* checking for file ‘moma/DESCRIPTION’ ... OK
+* this is package ‘moma’ version ‘1.0.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘moma’ can be installed ... WARNING
+Found the following significant warnings:
+  Warning: replacing previous import ‘dplyr::filter’ by ‘stats::filter’ when loading ‘moma’
+  Warning: replacing previous import ‘dplyr::lag’ by ‘stats::lag’ when loading ‘moma’
+  Warning: replacing previous import ‘stats::filter’ by ‘dplyr::filter’ when loading ‘moma’
+See ‘/Users/sunnyjones/Documents/Github/MOMA_main/MOMA/moma.Rcheck/00install.out’ for details.
+* checking installed package size ... NOTE
+  installed size is  8.8Mb
+  sub-directories of 1Mb or more:
+    data   8.1Mb
+* checking package directory ... OK
+* checking for future file timestamps ... NOTE
+unable to verify current time
+* checking ‘build’ directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking dependencies in R code ... WARNING
+'library' or 'require' call not declared from: ‘grid’
+'library' or 'require' call to ‘grid’ in package code.
+  Please use :: or requireNamespace() instead.
+  See section 'Suggested packages' in the 'Writing R Extensions' manual.
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+genomic.plot.small: no visible binding for global variable ‘subtype’
+genomic.plot.small: no visible binding for global variable ‘k’
+multiplot: no visible global function definition for ‘grid.newpage’
+multiplot: no visible global function definition for ‘pushViewport’
+multiplot: no visible global function definition for ‘viewport’
+multiplot: no visible global function definition for ‘grid.layout’
+plot.events: no visible binding for global variable ‘freq.percentage’
+plot.events: no visible binding for global variable ‘type’
+Undefined global functions or variables:
+  freq.percentage grid.layout grid.newpage k pushViewport subtype type
+  viewport
+* checking Rd files ... NOTE
+prepare_Rd: merge.data.Rd:14-16: Dropping empty section \value
+prepare_Rd: merge.data.by.subtype.Rd:16-18: Dropping empty section \value
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'fit.threshold'
+  ‘sweep’ ‘frac’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking contents of ‘data’ directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking data for ASCII and uncompressed saves ... OK
+* checking R/sysdata.rda ... OK
+* checking installed files from ‘inst/doc’ ... OK
+* checking files in ‘vignettes’ ... OK
+* checking examples ... NONE
+* checking for unstated dependencies in vignettes ... OK
+* checking package vignettes in ‘inst/doc’ ... OK
+* checking re-building of vignette outputs ... OK
+* DONE
+Status: 3 WARNINGs, 4 NOTEs
