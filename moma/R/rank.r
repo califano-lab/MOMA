@@ -61,7 +61,7 @@ stouffer.integrate <- function(interactions, cytoband.map = NULL) {
 }
 
 
-#' Integreate CNV scores 
+#' Integrate CNV scores 
 #' 
 #' @param mapping a named vector of genomic locations/cytoband IDs. 
 #' names are the gene names for each--i.e. a many to one mapping from HUGO or entrez IDs to cytoband location

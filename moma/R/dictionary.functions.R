@@ -2,8 +2,7 @@
 #' 
 #' @param entrez.ids : vector of entrez ids requires hugo2entrez to be loaded
 #' @return : vector of hugo gene names
-#' @export
-map.entrez <- function(entrez.ids) {
+map_entrez <- function(entrez.ids) {
   mapped <- c()
   for (name in entrez.ids) {
     idx <- which(as.numeric(hugo2entrez[,2]) == as.numeric(name))
@@ -21,8 +20,7 @@ map.entrez <- function(entrez.ids) {
 #' 
 #' @param hugo.ids : vector of entrez ids, requires hugo2entrez to be loaded
 #' @return : vector of entrez ids 
-#' @export
-map.hugo <- function(hugo.ids) {
+map_hugo <- function(hugo.ids) {
   mapped <- c()
   for (name in hugo.ids) {
     idx <- which(hugo2entrez[,1] == name)

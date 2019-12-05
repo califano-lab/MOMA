@@ -13,7 +13,7 @@ aREA.regulon_enrich <- function(regulon, vipermat) {
   dnull <- reaNULL(regulon)
   
   # Calculate pvalue of ES
-  pval <- t(vapply(1:length(dnull), function(i, es, dnull) {
+  pval <- t(vapply(seq_len(length(dnull)), function(i, es, dnull) {
     dnull[[i]](es[i, ])$p.value
   }, es = es$groups, dnull = dnull, FUN.VALUE = numeric(ncol(es$groups))))
   

@@ -72,7 +72,7 @@ aREA.enrich <- function(events.mat, vipermat, event.type) {
     dnull <- reaNULL(events.regulon)
     
     # Calculate pvalue of ES
-    pval <- t(vapply(1:length(dnull), function(i, es, dnull) {
+    pval <- t(vapply(seq_len(length(dnull)), function(i, es, dnull) {
         dnull[[i]](es[i, ])$p.value
     }, es = es$groups, dnull = dnull, FUN.VALUE = numeric(ncol(es$groups))))
     
@@ -132,7 +132,7 @@ rea <- function(eset, regulon, minsize = 1, maxsize = Inf, event.type = NA) {
     message("Process started at ", date())
     pb <- txtProgressBar(max = length(regulon), style = 3)
     
-    temp <- lapply(1:length(regulon), function(i, regulon, t1, t2, tw, pb) {
+    temp <- lapply(seq_len(length(regulon)), function(i, regulon, t1, t2, tw, pb) {
         hitsamples <- regulon[[i]]
         hitsamples <- intersect(hitsamples, rownames(t1))
         

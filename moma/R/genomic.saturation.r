@@ -14,7 +14,7 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, mutati
     
     # select considered cMRs
     print(paste("Top : ", topN, " regulators"))
-    selected.tfs <- cMR.ranking[1:topN]
+    selected.tfs <- cMR.ranking[seq_len(topN)]
     if (length(selected.tfs) == 0) {
         print("Error: no TFs selected!")
         q()
@@ -23,7 +23,7 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, mutati
     # confirm they are in Entrez ID format
     
     is.entrezIDs <- function(vec) {
-        all(sapply(1:length(vec), function(i) as.numeric(vec)[i]==vec[i]))
+        all(sapply(seq_along(vec), function(i) as.numeric(vec)[i]==vec[i]))
     }
     if (isFALSE(is.entrezIDs(selected.tfs))) {
         stop("Error: tfs not in entrez ID format!")
@@ -256,7 +256,7 @@ sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map
         }
         
         # for each K in 1:N, compute the coverage of the top K events and return the stats
-        sample.cover <- lapply(1:length(selected.tfs), function(x) c())
+        sample.cover <- lapply(seq_along(selected.tfs), function(x) c())
         # do a semi-complete range for speed and if supplied already with a range, then use that
         if (is.null(idx.range)) {
             if (length(selected.tfs) > 100) {
@@ -267,7 +267,7 @@ sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map
                 idx.range <- c(idx.range, 7:12 * 100)
                 idx.range <- c(idx.range, 1253)
             } else {
-                idx.range = 1:length(selected.tfs)
+                idx.range = seq_along(selected.tfs)
             }
         }
         
@@ -276,7 +276,7 @@ sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map
         last.idx <- 1
         for (i in idx.range) {
             # use these for coverage
-            top.N.tfs <- selected.tfs[1:i]
+            top.N.tfs <- selected.tfs[seq_len(i)]
             active.mrs <- intersect(active.proteins, top.N.tfs)
             
             # if no extra active mrs this round, copy previous stats and continue
@@ -370,7 +370,7 @@ merge.lists <- function(l1, l2) {
 merge.genomicSaturation <- function(coverage.range, topN) {
     
     data <- c()
-    for (i in 1:topN) {
+    for (i in seq_len(topN)) {
         # count for each sample $mut/amp/del all point to either a NA or a vector of names of the event. If NA the length will be zero so simply count the
         # number of each type of event
         count <- unlist(lapply(coverage.range, function(x) {

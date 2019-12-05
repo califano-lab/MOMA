@@ -13,7 +13,7 @@
 #' as well as 'medoids' labels
 clusterRange <- function(dis, range = c(2, 100), step = 1, cores = 1, method = c("pam", "kmeans"), data = NULL) {
   
-  set.seed(1, kind = "L'Ecuyer-CMRG")
+  #set.seed(1, kind = "L'Ecuyer-CMRG")
   #debug = TRUE
   idx <- 1
   result <- parallel::mclapply(range[1]:range[2], function(k, dis) {
@@ -67,7 +67,7 @@ clusterReliability <- function(cluster, similarity, xlim = NULL, method = c("ele
     res <- lapply(cluster, function(cluster, similarity) {
       reg <- split(names(cluster), cluster)
       tmp <- sREA(similarity, reg)
-      tmp <- lapply(1:nrow(tmp), function(i, tmp, reg) {
+      tmp <- lapply(seq_len(nrow(tmp)), function(i, tmp, reg) {
         tmp[i, ][colnames(tmp) %in% reg[[which(names(reg) == (rownames(tmp)[i]))]]]
       }, tmp = tmp, reg = reg)
       res <- unlist(tmp, use.names = FALSE)
@@ -80,7 +80,7 @@ clusterReliability <- function(cluster, similarity, xlim = NULL, method = c("ele
     rel <- clusterReliability(cluster, similarity, method = "element")
     if (!is.list(rel)) rel <- list(cluster = rel)
     if (is.null(xlim)) xlim <- range(unlist(rel, use.names = FALSE))
-    res <- lapply(1:length(cluster), function(i, cluster, rel, xlim) {
+    res <- lapply(seq_len(length(cluster)), function(i, cluster, rel, xlim) {
       tapply(rel[[i]], cluster[[i]], function(x, xlim) {
         1 - integrateFunction(ecdf(x), xlim[1], xlim[2], steps = 1000)/diff(xlim)
       }, xlim = xlim)

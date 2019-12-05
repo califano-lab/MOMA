@@ -107,7 +107,7 @@ momaRunner <- setRefClass("momaRunner", fields =
       
       full.type.names <- c("Amplifications", "Deletions", "Mutations", "Fusions")
       local.interactions = list()
-      for (i in 1:4) {
+      for (i in seq_len(4)) {
           type <- genomic.event.types[i]
           print(paste("Performing background correction for ", full.type.names[i], " NES scores..."))
           nes.thisType <- nes[[type]]
@@ -233,7 +233,7 @@ momaRunner <- setRefClass("momaRunner", fields =
           names(sweep) <- tmp.summaryStats[[clus.id]]$k
           best.k <- fit.curve.percent(sweep, frac = cov.fraction)
           # pick the top cMRs based on this
-          tmp.checkpoints[[clus.id]] <- names(subtype.specific.MR_ranks[1:best.k])
+          tmp.checkpoints[[clus.id]] <- names(subtype.specific.MR_ranks[seq_len(best.k)])
       }
       genomic.saturation <<- coverage.subtypes
       coverage.summaryStats <<- tmp.summaryStats
@@ -270,7 +270,7 @@ momaRunner <- setRefClass("momaRunner", fields =
     names(gene2band) <- gene.loc.mapping$Cytoband
     
     # Make plots each subtype
-    for (k in 1:length(subtype.tables)) {
+    for (k in seq_len(length(subtype.tables))) {
       # genomic events descriptive bar plot
       samples.total <- sum(sample.clustering == k)
       print(paste0("Number of samples in cluster ", k, ": ", samples.total))
@@ -279,7 +279,7 @@ momaRunner <- setRefClass("momaRunner", fields =
       tmp.identity.plots[["bar.plots"]][[k]] <- p.identities
     }
     
-    for (k in 1:length(subtype.tables)) {
+    for (k in seq_len(length(subtype.tables))) {
       # genomic coverage plot, top 100
       #subtype.df <- tissue.coverage.df[(tissue.coverage.df$subtype == k),]
       p.coverage <- genomic.plot.small(tissue.coverage.df, fraction=0.85, tissue.cluster=k)
@@ -310,7 +310,7 @@ momaRunner <- setRefClass("momaRunner", fields =
 #' @param gene.blacklist A vector of genes to exclude from mutational/CNV/fusion analysis
 #' @return an instance of class momaRunner
 #' @export
-moma.constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist = NA_character_, output.folder = NA_character_, gene.loc.mapping = NULL) {
+moma_constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist = NA_character_, output.folder = NA_character_, gene.loc.mapping = NULL) {
     viper <- samplename.filter(viper)
     mut <- samplename.filter(mut)
     cnv <- samplename.filter(cnv)

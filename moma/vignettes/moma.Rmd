@@ -1,7 +1,7 @@
 ---
 title: "MOMA - Multi Omic Master Regulator Analysis"
 author: "Evan Paull and Sunny Jones"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 #bibliography: bibliography.bib
 vignette: >
   %\VignetteIndexEntry{MOMA - Multi Omic Master Regulator Analysis}
@@ -46,7 +46,6 @@ graphics and plotting functions.
 
 
 ```{r setup}
-knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 library(moma)
 ```
 
@@ -92,7 +91,7 @@ to do the full analysis:
 - **Output Folder** : (optional) will save intermediate DIGGIT results here
 
 ```{r moma object}
-momaObj <- moma.constructor(gbm.example$vipermat, gbm.example$rawsnp,
+momaObj <- moma_constructor(gbm.example$vipermat, gbm.example$rawsnp,
         gbm.example$rawcnv, gbm.example$fusions, pathways,
         gene.blacklist=gbm.example$mutSig,
         gene.loc.mapping=gbm.example$gene.loc.mapping)
@@ -195,6 +194,9 @@ a certain percentage of genomic events. The inflection points plotted on
 this graph match up with the cut off for which regulators make up a particular
 cluster's checkpoint.   
 
+The data for these plots are stored as ggplot objects so layers can be added afterwards
+for further customization.
+
 ```{r visualize plots, fig.height=5, fig.width=7}
 
 momaObj$identity.plots$bar.plots[[1]]
@@ -203,19 +205,9 @@ momaObj$identity.plots$curve.plots[[1]]
 
 ```
 
-The data for these plots are stored as ggplot objects so layers can be added afterwards
-for further customization.
-
-```{r plot customization, fig.height=5, fig.width=7}
-library(ggplot2)
-momaObj$identity.plots$curve.plots[[1]] +
-  ggtitle("GBM Subtype 1") +
-  theme_light()
-
-```
 
 
-## Incorporating and Plotting Survival Data
+
 
 
 

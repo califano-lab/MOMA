@@ -2,7 +2,7 @@
 % Please edit documentation in R/rank.r
 \name{cnvScoreStouffer}
 \alias{cnvScoreStouffer}
-\title{Integreate CNV scores}
+\title{Integrate CNV scores}
 \usage{
 cnvScoreStouffer(
   mapping,
@@ -28,5 +28,5 @@ names are the gene names for each--i.e. a many to one mapping from HUGO or entre
 A vector of z-scores, named by the Master Regulators in 'diggit.interactions'
 }
 \description{
-Integreate CNV scores
+Integrate CNV scores
 }

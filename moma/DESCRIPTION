@@ -1,8 +1,8 @@
 Package: moma
 Title: Multi Omic Master Regulator Analysis
-Version: 1.0.0
-Authors@R: c(person("Evan", "Paull", email = "evanpaull@gmail.com", role = c("aut", "cre")), 
-              person("Sunny", "Jones", email = "sunnyjjones@gmail.com", role = c("aut")), 
+Version: 0.99.0
+Authors@R: c(person("Evan", "Paull", email = "evanpaull@gmail.com", role = c("aut")), 
+              person("Sunny", "Jones", email = "sunnyjjones@gmail.com", role = c("aut", "cre")), 
               person("Mariano", "Alvarez", email = "reef103@gmail.com", role = c("aut")))
 Description: This package implements the inference of candidate master regulator proteins from multi-omics' data (MOMA) algorithm, 
   as well as ancillary analysis and visualization functions. 
@@ -33,6 +33,7 @@ Imports:
 	tidyr (>= 1.0.0),
 	utils (>= 3.5.0)
 Suggests: 
+    BiocStyle, 
     knitr,
     rmarkdown,
     testthat (>= 2.1.0)

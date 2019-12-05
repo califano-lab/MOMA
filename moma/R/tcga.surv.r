@@ -1,5 +1,5 @@
 
-#' @title get.clin Parse the full clinical merged file from GDAC-Firehose and make a dlpyr tibble out of it
+#' @title get_clin Parse the full clinical merged file from GDAC-Firehose and make a dlpyr tibble out of it
 #' @import tibble
 #' @importFrom dplyr inner_join select contains 
 #' @importFrom readr read_tsv
@@ -10,7 +10,7 @@
 #' @param clin.file Clinical Merge file from TCGA
 #' @return Returns a tibble data.frame of the clinical data. Rows are patient.bcr_patient_barcode IDs
 #' @export
-get.clin <- function(clin.file = NULL) {
+get_clin <- function(clin.file = NULL) {
     
     if (is.null(clin.file)) {
         clin.dir <- list.files(pattern = "gdac..*Merge.*")
@@ -38,7 +38,7 @@ get.clin <- function(clin.file = NULL) {
 #' @param clustering Clustering solution with numeric values as cluster ID, named by samples
 #' @return The same tibble with an additional 'clusters' variable added
 #' @export
-tibble.add_clusters <- function(data, clustering) {
+tibble_add_clusters <- function(data, clustering) {
     
     # Make a joint vector
     data$samples <- toupper(data$patient.bcr_patient_barcode)
@@ -47,7 +47,7 @@ tibble.add_clusters <- function(data, clustering) {
     res <- dplyr::inner_join(data, clusters, by = c(samples = "samples"))
     if (length(res$cluster) == 0) {
         # likely that clustering names are not patient ids but full sample ids: remove the last -01 and it should work
-        names(clustering) <- unlist(lapply(strsplit(names(clustering), "-"), function(x) paste(x[1:3], collapse = "-")))
+        names(clustering) <- unlist(lapply(strsplit(names(clustering), "-"), function(x) paste(x[seq_len(3)], collapse = "-")))
         clusters <- data.frame(samples = names(clustering), cluster = clustering)
         res <- dplyr::inner_join(data, clusters, by = c(samples = "samples"))
         if (length(res$cluster) == 0) {
@@ -64,7 +64,7 @@ tibble.add_clusters <- function(data, clustering) {
 #' @return The original tibble with a 'survObj' added to the data frame
 #' @export
 #' @return A copy of the input tibble with a '$survObj' attached
-tibble.survfit <- function(data) {
+tibble_survfit <- function(data) {
     
     data$days.death <- as.numeric(apply(as.matrix(dplyr::select(data, dplyr::contains("days_to_death"))), 1, function(x) max(na.omit(x))))
     data$days.last_followup <- as.numeric(apply(as.matrix(dplyr::select(data, dplyr::contains("days_to_last_followup"))), 1, function(x) max(na.omit(x))))
@@ -111,7 +111,7 @@ tibble.survfit <- function(data) {
 #' @param data Clinical survival data in tibble format, processed from TCGA GDAC / Firehose
 #' @return A copy of the input tibble with a $survObj attached
 #' @export
-tibble.survfit.progression_free <- function(data) {
+tibble_survfit_progression_free <- function(data) {
     
     data$days.death <- as.numeric(apply(as.matrix(dplyr::select(data, dplyr::contains("days_to_death"))), 1, function(x) max(na.omit(x))))
     data$days.last_followup <- as.numeric(apply(as.matrix(dplyr::select(data, dplyr::contains("days_to_last_followup"))), 1, function(x) max(na.omit(x))))
@@ -138,9 +138,9 @@ tibble.survfit.progression_free <- function(data) {
     
     # there may be multiple intersections in TCGA data: it's buggy!! Take the days to death, or days to last followup if no death date
     data$days.last_remission_free <- as.numeric(apply(cbind(data$days.death, data$days.new_tumor, data$days.last_followup), 1, function(x) {
-        if (!all(is.na(x[1:2]))) {
+        if (!all(is.na(x[seq_len(2)]))) {
             # the smaller of days to death or remission
-            return(min(x[1:2]))
+            return(min(x[seq_len(2)]))
         } else {
             return(x[3])
         }
@@ -172,15 +172,15 @@ tibble.survfit.progression_free <- function(data) {
 #' @param progression.free.surv Compute progression-free survival only? (default=FALSE)
 #' @return A list containing the survObj, and associated p-values between the best-worst surviving clustrers, as well as overall stratification based on a COX PH model.
 #' @export
-tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.surv = FALSE) {
+tibble_survfit_select <- function(clustering, clinical.tibble, progression.free.surv = FALSE) {
     
-    names(clustering) <- unlist(lapply(strsplit(names(clustering), "-"), function(x) paste(x[1:3], collapse = "-")))
-    clin.tibble <- tibble.add_clusters(clinical.tibble, clustering)
+    names(clustering) <- unlist(lapply(strsplit(names(clustering), "-"), function(x) paste(x[seq_len(3)], collapse = "-")))
+    clin.tibble <- tibble_add_clusters(clinical.tibble, clustering)
     
     if (!progression.free.surv) {
-        clin.tibble <- tibble.survfit(clin.tibble)
+        clin.tibble <- tibble_survfit(clin.tibble)
     } else {
-        clin.tibble <- tibble.survfit.progression_free(clin.tibble)
+        clin.tibble <- tibble_survfit_progression_free(clin.tibble)
     }
     # Find the best and worst surviving clusters based on the statistics
     SurvDiff <- survival::survdiff(survObj ~ cluster, data = clin.tibble, rho = 0)
@@ -193,9 +193,9 @@ tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.
     # Redo the survival analysis difference between just these clusters
     clin.subset <- dplyr::filter(clin.tibble, cluster %in% as.numeric(c(best.surv.cluster, worst.surv.cluster)))
     if (!progression.free.surv) {
-        clin.subset <- tibble.survfit(clin.subset)
+        clin.subset <- tibble_survfit(clin.subset)
     } else {
-        clin.subset <- tibble.survfit.progression_free(clin.subset)
+        clin.subset <- tibble_survfit_progression_free(clin.subset)
     }
     SurvDiff.best_worst <- survival::survdiff(survObj ~ cluster, data = clin.subset, rho = 0)
     pval.best_worst <- 1 - pchisq(SurvDiff.best_worst$chisq, length(SurvDiff$n) - 1)
@@ -210,7 +210,7 @@ tibble.survfit_select <- function(clustering, clinical.tibble, progression.free.
 #' @param progression.free.surv Compute progression-free survival only? (default=FALSE)
 #' @return A list containing the best clustering solution and associated survival separation p-value. Also includes the best and worst surviving clusters
 #' @export
-get.best.clustering.supervised <- function(search.results, clinical.tibble, tissue, progression.free.surv = FALSE) {
+get_best_clustering_supervised <- function(search.results, clinical.tibble, tissue, progression.free.surv = FALSE) {
     
     search.results
     
@@ -240,7 +240,7 @@ get.best.clustering.supervised <- function(search.results, clinical.tibble, tiss
     survival.results <- lapply(equiv.clusters, function(k) {
         # print (paste('Calculating survival separation on clustering k = ', k))
         clustering <- search.results[[(k - 1)]]$clustering
-        res <- tibble.survfit_select(clustering, clinical.tibble, progression.free.surv)
+        res <- tibble_survfit_select(clustering, clinical.tibble, progression.free.surv)
         res
     })
     names(survival.results) <- equiv.clusters
@@ -255,7 +255,7 @@ get.best.clustering.supervised <- function(search.results, clinical.tibble, tiss
     surv.res <- survival.results[[as.character(best.k)]]
     # surv.res$best.clus surv.res$worst.clus redo surv objets
     
-    survplot.best.v.worst(clinical.tibble, clustering, "survival.supervised.png", paste(toupper(tissue), " supervised clustering, best vs worst survival clusters"))
+    survplot_best_v_worst(clinical.tibble, clustering, "survival.supervised.png", paste(toupper(tissue), " supervised clustering, best vs worst survival clusters"))
     
     list(clustering = clustering, clustering.k = best.k, pval.overall = pvals.overall[1], pval.best_v_worst = pvals.best_v_worst[1], clus.choices = list(best = surv.res$best.clus, 
         worst = surv.res$worst.clus))
@@ -269,11 +269,11 @@ get.best.clustering.supervised <- function(search.results, clinical.tibble, tiss
 #' @param title.print Plot title
 #' @return Nothing, writes the plot to the supplied .png output file
 #' @export
-survplot.best.v.worst <- function(clinical.tibble, clustering, output, title.print) {
+survplot_best_v_worst <- function(clinical.tibble, clustering, output, title.print) {
     
-    names(clustering) <- unlist(lapply(strsplit(names(clustering), "-"), function(x) paste(x[1:3], collapse = "-")))
-    clin.tibble <- tibble.add_clusters(clinical.tibble, clustering)
-    clin.tibble <- tibble.survfit(clin.tibble)
+    names(clustering) <- unlist(lapply(strsplit(names(clustering), "-"), function(x) paste(x[seq_len(3)], collapse = "-")))
+    clin.tibble <- tibble_add_clusters(clinical.tibble, clustering)
+    clin.tibble <- tibble_survfit(clin.tibble)
     # Find the best and worst surviving clusters based on the statistics
     SurvDiff <- survival::survdiff(survObj ~ cluster, data = clin.tibble, rho = 0)
     # print (SurvDiff)
@@ -283,7 +283,7 @@ survplot.best.v.worst <- function(clinical.tibble, clustering, output, title.pri
     
     # Redo the survival analysis difference between just these clusters
     clin.subset <- dplyr::filter(clin.tibble, cluster %in% as.numeric(c(best.surv.cluster, worst.surv.cluster)))
-    clin.subset <- tibble.survfit(clin.subset)
+    clin.subset <- tibble_survfit(clin.subset)
     SurvDiff <- survival::survdiff(survObj ~ cluster, data = clin.subset, rho = 0)
     pval <- 1 - pchisq(SurvDiff$chisq, length(SurvDiff$n) - 1)
     
@@ -293,14 +293,14 @@ survplot.best.v.worst <- function(clinical.tibble, clustering, output, title.pri
     colors <- colorRampPalette(brewer.pal(8, "Dark2"))(2)
     png(output, width = 700, height = 500)
     par(mar = c(c(10, 10, 10, 10)))
-    plot(fit, conf.type = "log-log", col = colors, lty = 1:2, lwd = 4, mark.time = TRUE, cex.lab = 2, cex.axis = 2, cex.main = 2, cex.sub = 2, xlab = "Survival Time (Days)", 
+    plot(fit, conf.type = "log-log", col = colors, lty = c(1,2), lwd = 4, mark.time = TRUE, cex.lab = 2, cex.axis = 2, cex.main = 2, cex.sub = 2, xlab = "Survival Time (Days)", 
         ylab = "Survival Probability")
     # 
     pval.print <- formatC(pval, format = "e", digits = 1)
     # title(main=title.print)
     mtext(pval.print, pos = 2)
     legend.labels <- unique(clin.subset$cluster)
-    legend("top", legend = legend.labels, col = colors, lty = 1:2, lwd = 3, horiz = FALSE)
+    legend("top", legend = legend.labels, col = colors, lty = c(1,2), lwd = 3, horiz = FALSE)
     dev.off()
 }
 

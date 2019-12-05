@@ -112,7 +112,7 @@ merge.data.by.subtype <- function(genomic.saturation, sample.clustering, topN = 
 merge.data <- function(coverage.range, topN)  {
   
   data <- c()
-  for (i in 1:topN) {
+  for (i in seq_len(topN)) {
     # count for each sample
     # $mut/amp/del all point to either a NA or a vector of names of the event. If NA the length will be zero
     # so simply count the number of each type of event 
@@ -162,7 +162,7 @@ plot.events <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NUL
   data$id <- unlist(lapply(data$coverage, function(label) {
     label <- as.character(label)
     name <- strsplit(label, ':')[[1]][1]
-    hugo <- map.entrez(as.character(name))
+    hugo <- map_entrez(as.character(name))
     if (is.na(hugo)) {
       return (name)
     } else {
@@ -183,9 +183,9 @@ plot.events <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NUL
   if (nrow(mapped) > 50) {
     # add at least half simply with mutated gene labels
     mut.data <- mapped[mapped$type=='mut',]
-    add.labels <- na.omit(unique(mut.data[order(-mut.data$Freq),][1:25,]$id))
+    add.labels <- na.omit(unique(mut.data[order(-mut.data$Freq),][seq_len(25),]$id))
     # and add cnv
-    additional <- setdiff(unique(mapped$id), add.labels)[1:(50-length(add.labels))]
+    additional <- setdiff(unique(mapped$id), add.labels)[seq_len(50-length(add.labels))]
     mapped <- mapped[mapped$id %in% union(additional, add.labels),]
   }
   
@@ -258,7 +258,7 @@ get.data.frame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 
   ## add duplicate entries for those genes
   mapped <- c()
   loc.data <- data[data$type=='del',]
-  for (row in 1:nrow(loc.data)) {
+  for (row in seq_len(nrow(loc.data))) {
     loc <- loc.data[row, 3]
     genes.inBand <- as.character(genomeBand_2_gene[which(names(genomeBand_2_gene)==loc)])
     hgIB <- intersect(genes.inBand, highlight.genes)
@@ -268,7 +268,7 @@ get.data.frame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 
     mapped <- rbind(mapped, data.frame(coverage=loc.data[row, 1], Freq=loc.data[row, 2], id=hgIB, type=loc.data[row, 4]))
   }
   loc.data <- data[data$type=='amp',]
-  for (row in 1:nrow(loc.data)) {
+  for (row in seq_len(nrow(loc.data))) {
     loc <- loc.data[row, 3]
     genes.inBand <- as.character(genomeBand_2_gene[which(names(genomeBand_2_gene)==loc)])
     hgIB <- intersect(genes.inBand, highlight.genes)
@@ -280,7 +280,7 @@ get.data.frame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 
   
   # find mutations in key regions
   loc.data <- data[data$type=='mut',]
-  for (row in 1:nrow(loc.data)) {
+  for (row in seq_len(nrow(loc.data))) {
     gene <- loc.data[row, 3]
     hgIB <- intersect(gene, highlight.genes)
     if (length(hgIB)==0) { next }
@@ -292,7 +292,7 @@ get.data.frame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 
   # add in top X mutations not in the driver list
   mut.data <- data[data$type=='mut',]
   i = 1	
-  for (row in 1:nrow(mut.data)) {
+  for (row in seq_len(nrow(mut.data))) {
     if (mut.data[row,]$id %in% all.gene.ids) { next }
     if (i > MAX.muts) { break }
     mapped <- rbind(mapped, mut.data[row,])
@@ -304,7 +304,7 @@ get.data.frame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 
   
   # add CNV band locations (a few)
   subset <- data[apply(cbind(data$type=='amp', data$type=='del'), 1, any),]
-  if (nrow(subset) > MAX.CNV.loc) { subset <- subset[1:MAX.CNV.loc,] }
+  if (nrow(subset) > MAX.CNV.loc) { subset <- subset[seq_len(MAX.CNV.loc),] }
   mapped <- rbind(mapped, subset)
   
   # order by total frequency of events by gene/id
