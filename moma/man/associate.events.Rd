@@ -9,7 +9,6 @@ associate.events(
   events.mat,
   min.events = NA,
   whitelist = NA,
-  blacklist = NA,
   event.type = c("Amplifications", "Deletions", "Mutations", "Fusions", NA)
 )
 }
@@ -21,8 +20,6 @@ associate.events(
 \item{min.events}{Only compute enrichment if the number of samples with these events is GTE to this}
 
 \item{whitelist}{Only compute associations for events in this list}
-
-\item{blacklist}{Exclude associations for events in this list}
 
 \item{event.type}{Name of the event type being analyzed}
 }

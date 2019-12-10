@@ -1,7 +1,7 @@
 ---
 title: "MOMA - Multi Omic Master Regulator Analysis"
-author: "Evan Paull and Sunny Jones"
-output: rmarkdown::html_document
+author: "Evan Paull, Sunny Jones, Mariano Alvarez, Federico Giorgi and Andrea Califano"
+output: rmarkdown::pdf_document
 #bibliography: bibliography.bib
 vignette: >
   %\VignetteIndexEntry{MOMA - Multi Omic Master Regulator Analysis}
@@ -112,11 +112,11 @@ The `Rank()` function will create a final ranking of candidate Master Regulators
 for this cohort of patient samples.
 
 ```{r interactions, results = "hide", message = FALSE}
-momaObj$runDIGGIT(fCNV=gbm.example$fCNV)
+momaObj$runDIGGIT(fCNV=gbm.example$fCNV, verbose = T)
 
-momaObj$makeInteractions(cindy.only=FALSE)
+momaObj$makeInteractions()
 
-momaObj$Rank(use.cindy=TRUE)
+momaObj$Rank()
 ```
 
 Clustering of the samples, using the protein ranks computed in the last step, 
@@ -128,10 +128,10 @@ clusters; here, we are selecting the 3 cluster solution.
 in the generated clustering object is k-1).* 
 
 ```{r clustering}
-clustering.solutions <- momaObj$Cluster()
+momaObj$Cluster()
 
 # pick the 3 cluster solution and save it to the moma Object
-momaObj$sample.clustering <- clustering.solutions[[2]]$clustering
+momaObj$sample.clustering <- momaObj$clustering.results[[2]]$clustering
 ```
 
   
@@ -179,9 +179,7 @@ calculated in the previous step and makes customizable plots for viewing the res
 are saved to the $identity.plots() part of the momaObj.
 
 ```{r make plots, warning=FALSE}
-
 momaObj$makeSaturationPlots()
-
 ```
 
 
@@ -197,12 +195,12 @@ cluster's checkpoint.
 The data for these plots are stored as ggplot objects so layers can be added afterwards
 for further customization.
 
-```{r visualize plots, fig.height=5, fig.width=7}
-
+```{r visualize plots}
+library(ggplot2)
 momaObj$identity.plots$bar.plots[[1]]
-
-momaObj$identity.plots$curve.plots[[1]]
-
+momaObj$identity.plots$curve.plots[[1]] + 
+  ggtitle("Genomic Saturation Curve for GBM Subtype 1")
+  
 ```
 
 

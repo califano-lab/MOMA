@@ -5,18 +5,17 @@
 #' @param vipermat Pre-computed VIPER scores with samples as columns and proteins as rows 
 #' @param events.mat Binary 0/1 events matrix with samples as columns and genes or events as rows
 #' @param whitelist Only compute associations for events in this list
-#' @param blacklist Exclude associations for events in this list
 #' @param min.events Only compute enrichment if the number of samples with these events is GTE to this
 #' @param event.type Name of the event type being analyzed
 #' @return A matrix of aREA scores, dimensions are nrow(events.mat) x nrow(vipermat) 
-associate.events <- function(vipermat, events.mat, min.events = NA, whitelist = NA, blacklist = NA, event.type = c("Amplifications", "Deletions", "Mutations", "Fusions", NA)) {
+associate.events <- function(vipermat, events.mat, min.events = NA, whitelist = NA, event.type = c("Amplifications", "Deletions", "Mutations", "Fusions", NA)) {
     event.type <- match.arg(event.type)
     if (is.null(events.mat)) {
-        print("Null mutation matrix, skipping..")
+        print(paste("Null", event.type, "matrix, skipping.."))
         return(NULL)
     }
     if (dim(events.mat)[1] == 0 | dim(events.mat)[2] == 0) {
-        print("Not enough mutations...skipping")
+        print(paste0("Not enough ", event.type,", skipping"))
         return(NULL)
     }
     
@@ -25,13 +24,8 @@ associate.events <- function(vipermat, events.mat, min.events = NA, whitelist = 
     vipermat <- vipermat[, common.samples]
     events.mat <- events.mat[, common.samples]
     
-    # remove blacklist
-    if (all(is.na(blacklist))) {
-        # print (blacklist)
-        events.mat <- events.mat[setdiff(rownames(events.mat), blacklist), ]
-    }
     # include only whitelist items
-    if (!all(is.na(whitelist))) {
+    if (!(is.na(whitelist))) {
         events.mat <- events.mat[intersect(rownames(events.mat), whitelist), ]
     }
     # filter to minmum number of somatic events
@@ -40,10 +34,10 @@ associate.events <- function(vipermat, events.mat, min.events = NA, whitelist = 
     }
     # test again after removing low freuquency events
     if (is.null(dim(events.mat))) {
-        print("Not enough events...skipping")
+        print(paste0("Not enough ", event.type,", skipping"))
         return(NULL)
     } else if (dim(events.mat)[1] == 0 | dim(events.mat)[2] == 0) {
-        print("Not enough events...skipping")
+        print(paste0("Not enough ", event.type,", skipping"))
         return(NULL)
     }
     

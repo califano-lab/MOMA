@@ -32,7 +32,7 @@ momaRunner <- setRefClass("momaRunner", fields =
                                  sample.clustering = "numeric", # numbers are cluster assignments, names are sample ids matching other data
                                  identity.plots = "list"), # result field
                           methods = list(
-  runDIGGIT = function(fCNV = NULL, cnvthr = 0.5, min.events = 4) {
+  runDIGGIT = function(fCNV = NULL, cnvthr = 0.5, min.events = 4, verbose = FALSE) {
       
       cnv.local <- NULL
       if (is.null(fCNV)) {
@@ -52,31 +52,50 @@ momaRunner <- setRefClass("momaRunner", fields =
       dels[which(dels <= -cnvthr)] <- 1
       
       # save the exact hypotheses (genes) we're testing, based on MIN.EVENTS
-      amps.hypotheses <- rownames(amps[apply(amps, 1, sum, na.rm = TRUE) >= min.events, ])
-      amps.hypotheses <- amps.hypotheses[which(!(amps.hypotheses %in% gene.blacklist))]
       
-      dels.hypotheses <- rownames(dels[apply(dels, 1, sum, na.rm = TRUE) >= min.events, ])
-      dels.hypotheses <- dels.hypotheses[which(!(dels.hypotheses %in% gene.blacklist))]
+      temp.amps <- rownames(amps[apply(amps, 1, sum, na.rm = TRUE) >= min.events, ])
+      amps.hypotheses <- temp.amps[which(!(temp.amps %in% gene.blacklist))]
+      amps.mat <- amps[amps.hypotheses,]
       
-      mut.hypotheses <- rownames(somut[apply(somut, 1, sum, na.rm = TRUE) >= min.events, ])
-      mut.hypotheses <- mut.hypotheses[which(!(mut.hypotheses %in% gene.blacklist))]
+      temp.dels <- rownames(dels[apply(dels, 1, sum, na.rm = TRUE) >= min.events, ])
+      dels.hypotheses <- temp.dels[which(!(temp.dels %in% gene.blacklist))]
+      dels.mat <- dels[dels.hypotheses,]
       
-      # Save aREA results Save aREA results
+      temp.muts <- rownames(somut[apply(somut, 1, sum, na.rm = TRUE) >= min.events, ])
+      muts.hypotheses <- temp.muts[which(!(temp.muts %in% gene.blacklist))]
+      muts.mat <- somut[muts.hypotheses,]
+      
+      
+      # Print info about 
+      if(verbose) {
+        print(paste("Removing", length(gene.blacklist),"mutSig blacklist genes from hypothesis testing"))
+        
+        amps.removed <- length(temp.amps) - length(amps.hypotheses)
+        print(paste(length(amps.hypotheses), "useable amplifications found.", amps.removed, "removed for being on the gene blacklist."))
+        
+        dels.removed <- length(temp.dels) - length(dels.hypotheses)
+        print(paste(length(dels.hypotheses), "useable deletions found.", dels.removed, "removed for being on the gene blacklist."))
+        
+        muts.removed <- length(temp.muts) - length(muts.hypotheses)
+        print(paste(length(muts.hypotheses), "useable mutations found.", muts.removed, "removed for being on the gene blacklist."))
+      }
+      
+      # Save genomic hypotheses 
       if(is.na(output.folder)){
-        print("No output folder selected, saving genomic associations directly to object without printing.")
+        print("No output folder selected, saving genomic hypotheses directly to object without printing.")
       } else {
         print(paste("Writing hypotheses to:", output.folder))
         dir.create(output.folder, showWarnings = FALSE)
         write.table(amps.hypotheses, file = paste0(output.folder, "/hypotheses.amps.txt"), quote = F, sep = "\t")
         write.table(dels.hypotheses, file = paste0(output.folder, "/hypotheses.dels.txt"), quote = F, sep = "\t")
-        write.table(mut.hypotheses, file = paste0(output.folder, "/hypotheses.muts.txt"), quote = F, sep = "\t")
+        write.table(muts.hypotheses, file = paste0(output.folder, "/hypotheses.muts.txt"), quote = F, sep = "\t")
       }
-      hypotheses <<- list(mut = mut.hypotheses, del = dels.hypotheses, amp = amps.hypotheses)
+      hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, amp = amps.hypotheses)
       
       # do aREA association
-      nes.amps <- associate.events(viper, amps, min.events = min.events, blacklist = gene.blacklist, event.type = "Amplifications")
-      nes.dels <- associate.events(viper, dels, min.events = min.events, blacklist = gene.blacklist, event.type = "Deletions")
-      nes.muts <- associate.events(viper, somut, min.events = min.events, blacklist = gene.blacklist, event.type = "Mutations")
+      nes.amps <- associate.events(viper, amps.mat, min.events = min.events, event.type = "Amplifications")
+      nes.dels <- associate.events(viper, dels.mat, min.events = min.events, event.type = "Deletions")
+      nes.muts <- associate.events(viper, muts.mat, min.events = min.events, event.type = "Mutations")
       
       nes.fusions <- NULL
       if (!is.null(fusions)) {
@@ -84,7 +103,7 @@ momaRunner <- setRefClass("momaRunner", fields =
           if(!is.na(output.folder)) {
             write.table(fus.hypotheses, file = paste0(output.folder, "/hypotheses.fusions.txt"), quote = F, sep = "\t")
           }
-          nes.fusions <- associate.events(viper, fusions, min.events = min.events, blacklist = gene.blacklist, event.type = "Fusions")
+          nes.fusions <- associate.events(viper, fusions, min.events = min.events, event.type = "Fusions")
       }
       
       # Save aREA results if desired
@@ -95,7 +114,7 @@ momaRunner <- setRefClass("momaRunner", fields =
       nes <<- list(amp = nes.amps, del = nes.dels, mut = nes.muts, fus = nes.fusions)
 }, 
 
-  makeInteractions = function(genomic.event.types = c("amp", "del", "mut", "fus"), cindy.only = TRUE) {
+  makeInteractions = function(genomic.event.types = c("amp", "del", "mut", "fus"), cindy.only = FALSE) {
       
       # NULL TFs : from the VIPER matrix, calculate p-values of the absolute mean NES score for each.  (2-tailed test, -pnorm*2).  BH-FDR < 0.05 are sig.
       # Take everything else as the background model.
@@ -116,13 +135,13 @@ momaRunner <- setRefClass("momaRunner", fields =
           }
           corrected.scores <- get.diggit.empiricalQvalues(viper, nes.thisType, null.TFs)
           print("Generating final interactions...")
-          local.interactions[[type]] <- sig.interactors.DIGGIT(corrected.scores, nes[[type]], pathways[["cindy"]], cindy.only = FALSE)
+          local.interactions[[type]] <- sig.interactors.DIGGIT(corrected.scores, nes[[type]], pathways[["cindy"]], cindy.only = cindy.only)
       }
       
       interactions <<- local.interactions
 }, 
 
-  Rank = function(use.cindy = FALSE, genomic.event.types = c("amp", "del", "mut", "fus"), use.parallel = F, cores = 1) {
+  Rank = function(use.cindy = TRUE, genomic.event.types = c("amp", "del", "mut", "fus"), use.parallel = F, cores = 1) {
       # ranks from DIGGIT scores
       integrated.z <- list()
       for (type in genomic.event.types) {
@@ -189,7 +208,7 @@ momaRunner <- setRefClass("momaRunner", fields =
       dist.obj <- corDist(t(w.vipermat), method = "pearson")
       print("testing clustering options, k = 2..15")
       search.results <- clusterRange(dist.obj, range = as.numeric(c(2, 15)), step = 1, cores = cores, method = "pam")
-      search.results
+      clustering.results <<- search.results
 }, 
 
   saturationCalculation = function(clustering.solution = NULL, cov.fraction = 0.85) {
