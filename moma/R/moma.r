@@ -329,7 +329,8 @@ momaRunner <- setRefClass("momaRunner", fields =
 #' @param gene.blacklist A vector of genes to exclude from mutational/CNV/fusion analysis
 #' @return an instance of class momaRunner
 #' @export
-moma_constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist = NA_character_, output.folder = NA_character_, gene.loc.mapping = NULL) {
+moma_constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist = NA_character_, 
+                             output.folder = NA_character_, gene.loc.mapping = gene.loc.map) {
     viper <- samplename.filter(viper)
     mut <- samplename.filter(mut)
     cnv <- samplename.filter(cnv)

@@ -86,15 +86,13 @@ to do the full analysis:
 - **CNV matrix**: continuous values as calculated by GISTIC [CITE]
 - **Fusion matrix**: binary 0/1 values 
 - **Pathway list**: see above
-- **Gene Blacklist**: genes to not include in the analysis *
-- **Gene Locations**: mapping of genes to chromosome locations
+- **Gene Blacklist**: genes to not include in the analysis
 - **Output Folder** : (optional) will save intermediate DIGGIT results here
 
 ```{r moma object}
 momaObj <- moma_constructor(gbm.example$vipermat, gbm.example$rawsnp,
         gbm.example$rawcnv, gbm.example$fusions, pathways,
-        gene.blacklist=gbm.example$mutSig,
-        gene.loc.mapping=gbm.example$gene.loc.mapping)
+        gene.blacklist=gbm.example$mutSig)
 ```
 
 ## MOMA Analysis on GBM Data

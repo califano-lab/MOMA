@@ -12,7 +12,7 @@ moma_constructor(
   pathways,
   gene.blacklist = NA_character_,
   output.folder = NA_character_,
-  gene.loc.mapping = NULL
+  gene.loc.mapping = gene.loc.map
 )
 }
 \arguments{
