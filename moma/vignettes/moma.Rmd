@@ -147,7 +147,7 @@ fields:
   
 These will be used for plotting the genomic saturation curves as well.
   
-```{r saturation, message=FALSE, warning=FALSE, results="hide"}
+```{r saturation, message=FALSE, results="hide"}
 momaObj$saturationCalculation()
 ```
 

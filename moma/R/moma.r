@@ -100,6 +100,7 @@ momaRunner <- setRefClass("momaRunner", fields =
       nes.fusions <- NULL
       if (!is.null(fusions)) {
           fus.hypotheses <- rownames(fusions[apply(fusions, 1, sum, na.rm = TRUE) >= min.events, ])
+          hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, amp = amps.hypotheses, fus = fus.hypotheses)
           if(!is.na(output.folder)) {
             write.table(fus.hypotheses, file = paste0(output.folder, "/hypotheses.fusions.txt"), quote = F, sep = "\t")
           }
@@ -283,7 +284,7 @@ momaRunner <- setRefClass("momaRunner", fields =
     # get summary table of unique events added in for each regulator 
     ## could be clarified/improved
     ## also potential improvement: look for inflection points of huge jumps of new unique events and highlight those regulators in particular?
-    tissue.coverage.df <- merge.data.by.subtype(genomic.saturation, sample.clustering, 100)
+    tissue.coverage.df <- merge.data.by.subtype(genomic.saturation, clustering.solution, 100)
     
     gene2band <- gene.loc.mapping$Gene.Symbol
     names(gene2band) <- gene.loc.mapping$Cytoband
@@ -291,7 +292,7 @@ momaRunner <- setRefClass("momaRunner", fields =
     # Make plots each subtype
     for (k in seq_len(length(subtype.tables))) {
       # genomic events descriptive bar plot
-      samples.total <- sum(sample.clustering == k)
+      samples.total <- sum(clustering.solution == k)
       print(paste0("Number of samples in cluster ", k, ": ", samples.total))
       print("Getting events to plot...")
       p.identities <- plot.events(subtype.tables[[k]], important.genes, gene2band, samples.total, max.muts = 25, max.cnv = 10)
@@ -330,7 +331,7 @@ momaRunner <- setRefClass("momaRunner", fields =
 #' @return an instance of class momaRunner
 #' @export
 moma_constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist = NA_character_, 
-                             output.folder = NA_character_, gene.loc.mapping = gene.loc.map) {
+                             output.folder = NA_character_, gene.loc.mapping = gene.map) {
     viper <- samplename.filter(viper)
     mut <- samplename.filter(mut)
     cnv <- samplename.filter(cnv)

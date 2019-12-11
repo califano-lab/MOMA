@@ -13,7 +13,7 @@ sample.overlap(
   cnv.threshold = 0.5,
   mutation.filter = NULL,
   idx.range = NULL,
-  verbose = FALSE
+  verbose = T
 )
 }
 \arguments{
