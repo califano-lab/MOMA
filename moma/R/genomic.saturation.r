@@ -255,16 +255,19 @@ sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map
             print(paste("Filtered out: ", removed, " mutations using filter..."))
         }
         
+        
         if (verbose) {
-            print("FUS:")
-            print(validated.fusion.events)
-            print("DELS:")
-            print(validated.del.locations)
-            print("AMPS:")
-            print(validated.amp.locations)
-            print("Muts:")
-            print(validated.mut.events)
+            print(paste("FUS:", length(validated.fusion.events),":"))
+            paste(head(validated.fusion.events))
+            print(paste("DELS:", length(validated.del.locations), ":"))
+            paste(head(validated.del.locations))
+            print(paste("AMPS:", length(validated.amp.locations), ":"))
+            print(head(validated.amp.locations))
+            print(paste("MUTS:", length(validated.mut.events), ":"))
+            print(head(validated.mut.events))
         }
+        
+        
         
         # for each K in 1:N, compute the coverage of the top K events and return the stats
         sample.cover <- lapply(seq_along(selected.tfs), function(x) c())

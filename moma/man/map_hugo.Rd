@@ -7,7 +7,7 @@
 map_hugo(hugo.ids)
 }
 \arguments{
-\item{hugo.ids}{: vector of entrez ids, requires hugo2entrez to be loaded}
+\item{hugo.ids}{: vector of hugo gene names, requires hugo2entrez to be loaded}
 }
 \value{
 : vector of entrez ids
