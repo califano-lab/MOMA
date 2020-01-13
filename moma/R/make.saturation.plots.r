@@ -319,6 +319,7 @@ get.data.frame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 
 #' Make small genomic plot
 #' @importFrom tidyr drop_na
 #' @importFrom rlang .data
+#' @importFrom grDevices colorRampPalette
 #' @import ggplot2
 #' @import magrittr
 #' @param input.df : tissue.coverage.df with mean, k, fraction and unique events. has all samples
@@ -327,11 +328,7 @@ get.data.frame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 
 #' @return output .png
 genomic.plot.small <- function(input.df, fraction=0.85, tissue.cluster=NULL)  { 
   
-  #### need to add in null matrix function? ###
-  
-  # old color code
-  # subtype.color.map=brewer.pal(n = 8, name = "Dark2")
-  # names(subtype.color.map) <- 1:8
+  #### need to add in null matrix function ###
   
   
   # get number of subtypes and colors for plotting
@@ -340,23 +337,16 @@ genomic.plot.small <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
   subtype.colors <- getPalette(num.subtypes)
   color.this.sub <- subtype.colors[tissue.cluster]
   
-  # subset to only this subtype and remove NAs
-  #subtype.df <- input.df %>% 
-  #  dplyr::filter(.data$subtype == tissue.cluster) %>%
-  #  tidyr::drop_na(.data$fraction)
   
   subtype.df <- input.df[input.df$subtype == tissue.cluster,] 
   subtype.df <- subtype.df %>% tidyr::drop_na(.data$fraction)
   
-  # df <- data.frame(k=input.df$k, mean=input.df$fraction, subtype=as.factor(input.df$subtype))
   
   sweep <- subtype.df$fraction
   names(sweep) <- sort(unique(subtype.df$k))
   best.k <- fit.curve.percent(sweep, frac=fraction)
   print (paste("Threshold for MR cutoff: ", best.k))
   
-  
-  ### this needs to be cleaned up too.... ####
   
   # mean statistic for these samples
   mean.stat <- unlist(lapply(sort(unique(subtype.df$k)), function(k) {
@@ -373,11 +363,9 @@ genomic.plot.small <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
   y.multiplier <- mean(na.omit(mean.events.stat/mean.stat))
   
   # first make a condensed plot just the first ~100 events
-  
   ymax <- subtype.df[nrow(subtype.df),]$fraction
   
-  # need to fix so that colors are different for each plot
-  # for now it's just black
+  # make plot
   p.100 <- ggplot(subtype.df, aes(.data$k, .data$fraction)) + geom_line(color = color.this.sub, size=1.5, alpha=0.75) +
     xlab("Number of MRs") +
     scale_y_continuous(

@@ -110,7 +110,7 @@ The `Rank()` function will create a final ranking of candidate Master Regulators
 for this cohort of patient samples.
 
 ```{r interactions, results = "hide", message = FALSE}
-momaObj$runDIGGIT(fCNV=gbm.example$fCNV, verbose = T)
+momaObj$runDIGGIT(fCNV=gbm.example$fCNV, verbose = TRUE)
 
 momaObj$makeInteractions()
 
@@ -165,8 +165,6 @@ print (cluster1.checkpoint[1:10])
 The primary results of the analysis are the master regululators of each particular
 cluster's checkpoint, as displayed above. You can plot the original VIPER matrix 
 subset down to only these regulators using whatever heatmap function you like. 
-See example below generated using ComplexHeatmap [CITE]  
-[IMAGE].
 
 ## Visualizing the Genomic Saturation and Events Plots
 

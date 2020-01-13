@@ -11,6 +11,10 @@
 #' @import methods
 #' @import ggplot2
 #' @import magrittr
+#' @import graphics
+#' @import grDevices
+#' @import readr
+#' @import tibble
 #' @export
 momaRunner <- setRefClass("momaRunner", fields = 
                             list(viper = "matrix", 
@@ -328,10 +332,12 @@ momaRunner <- setRefClass("momaRunner", fields =
 #' @param gene.loc.mapping A data.frame of band locations and Entrez IDs
 #' @param output.folder Location to store output and intermediate results 
 #' @param gene.blacklist A vector of genes to exclude from mutational/CNV/fusion analysis
+#' @importFrom utils data
 #' @return an instance of class momaRunner
 #' @export
 moma_constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist = NA_character_, 
                              output.folder = NA_character_, gene.loc.mapping = gene.map) {
+    data("gene.map")
     viper <- samplename.filter(viper)
     mut <- samplename.filter(mut)
     cnv <- samplename.filter(cnv)

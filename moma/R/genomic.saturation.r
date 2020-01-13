@@ -144,7 +144,7 @@ valid.diggit.interactions <- function(interactions, gene.loc.mapping, selected.t
 
 #' The core function to compute which sample-specific alterations overlap with genomic events that are explained 
 #' via DIGGIT. 
-#' 
+#' @importFrom utils head
 #' @param momaObj Object reference of momaRunner class
 #' @param viper.samples Sample vector to restrict sample-specific analysis to
 #' @param selected.tfs Transcription factors being analyzed
@@ -157,7 +157,7 @@ valid.diggit.interactions <- function(interactions, gene.loc.mapping, selected.t
 #' @return A list of lists, indexed by sample name, with coverage statistics/data for each sample
 sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
                            cnv.threshold = 0.5, mutation.filter = NULL, 
-                           idx.range = NULL, verbose = T) {
+                           idx.range = NULL, verbose = FALSE) {
     
     if (is.null(momaObj$hypotheses)) {
         stop("Error: no hypothesis set for momaRunner class object!!")
@@ -274,7 +274,7 @@ sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map
         # do a semi-complete range for speed and if supplied already with a range, then use that
         if (is.null(idx.range)) {
             if (length(selected.tfs) > 100) {
-                idx.range <- 1:50
+                idx.range <- seq_len(50)
                 idx.range <- c(idx.range, 26:50 * 2)
                 idx.range <- c(idx.range, 11:30 * 10)
                 idx.range <- c(idx.range, 13:25 * 25)
