@@ -1,5 +1,154 @@
+#' Main function to generate the summary plots of the analysis
+#' @import ComplexHeatmap
+#' @import circlize
+#' @import grid
+#' @param moma.obj : momaObj that has already run the saturationCalculation function
+#' @param cluster.solution : clustering vector with sample names and cluster designations
+#' @param important.genes : vector of gene names to prioritize when plotting. 
+#' Can be general genes of interest, oncogenes, tumor supressors etc
+#' @param fCNV : vector of confirmed functional CNVs if calculated. Will filter for only those CNVs
+#' @param max.events : maximum number of events to plot for the oncoplots
+#' If desired a vector of two numbers can be supplied indicating the max number of mutations and cnvs (respectively)
+#' @return object with both types of summary plot for each subtype
+#' @export
+makeSaturationPlots <- function(momaObj, clustering.solution = NULL, important.genes = NULL, fCNV = NULL, max.events = 30) {
+  
+  # check for required components of previous saturation analysis and set as local variables
+  if (length(momaObj$checkpoints) == 0) {
+    stop("Genomic Saturation analysis has not been done. Run momaObj$saturationCalculation() before continuing.
+         Quitting...")
+  }
+  
+  checkpoints <- momaObj$checkpoints
+  genomic.saturation <- momaObj$genomic.saturation
+  
+  # get clustering solution to use for calculations. should be provided or previously saved in the momaObj
+  if (is.null(clustering.solution)) {
+    if (length(momaObj$sample.clustering) == 0) {
+      stop("No clustering solution provided. Provide one as an argument or save one
+                to the momaObj. Quitting...")
+    } else {
+       clustering.solution <- momaObj$sample.clustering
+    }
+  }
+  
+  # make gene to cytoband location mapping
+  band2gene <- momaObj$gene.loc.mapping$Gene.Symbol
+  names(band2gene) <- momaObj$gene.loc.mapping$Cytoband
+  
+  
+  
+  ###########################
+  # Get raw input mutation/cnv/fusion matrices  
+  # from the momaObj and prep for oncoprint plots   
+  ##########################
+  
+  # Mutations
+  snpmat <- momaObj$mut
+  snpmat[snpmat == 1] <- "mut"
+  snpmat[snpmat == 0] <- NA
+  rownames(snpmat) <- map_entrez(rownames(snpmat))
+  
+  # Fusions if they exist
+  fusions.mat <- NULL
+  if(length(momaObj$fusions) != 0) {
+    fusions.mat <- momaObj$fusions
+    fusions.mat[fusions.mat == 1] <- "fus"
+    fusions.mat[fusions.mat == 0] <- NA
+  }
+  
+  # CNVs. Input should be GISITC scores so separate into high/low events
+  # Filter to only keep fCNVs if provided
+  amps <- dels <- cnv <- momaObj$cnv
+  if(!is.null(fCNV)){
+    cnv <- cnv[na.omit(match(fCNV, rownames(cnv))),]
+    if(nrow(cnv) == 0) {
+      stop("CNV matrix after functional CNV filtering is empty. 
+           Check that names are in same format or if too many fCNVs are provided.
+           Quitting...")
+    }
+  }
+  
+  amps[amps < 0.5] <- NA
+  amps[amps >= 0.5] <- "amp"
+  
+  dels[dels > -0.5] <- NA
+  dels[dels <= -0.5] <- "del"
+  
+  
+  rownames(amps) <- rownames(dels) <- map_entrez(rownames(cnv))
+  
+  ##########################
+  # Restructure saturation data 
+  # to prep for plotting
+  ##########################
+
+  
+  # get subtype event tables
+  subtype.tables <- get.subtype.event.tables(genomic.saturation, clustering.solution, checkpoints)
+  
+  # get summary table of unique events added in for each regulator 
+  ## could be clarified/improved
+  ## also potential improvement: look for inflection points of huge jumps of new unique events and highlight those regulators in particular?
+  tissue.coverage.df <- merge.data.by.subtype(genomic.saturation, clustering.solution, 100)
+  
+
+  # initalize object to save plots in
+  tmp.identity.plots <- list()
+  
+  if(!is.null(important.genes)) {
+    print("List of important genes has been provided. Will prioritize plotting these events first")
+  }
+  
+  for(k in seq_along(subtype.tables)) {
+    
+    ###########
+    # Oncoprint Events Plots
+    ###########
+    samples.thisCluster <- names(clustering.solution[clustering.solution == k])
+    print(paste0("Number of samples in cluster ", k, ": ", length(samples.thisCluster)))
+    
+    # subset genomic event matrices for this cluster
+    snpmat.thisClus <- snpmat[,colnames(snpmat) %in% samples.thisCluster]
+    #cnv.thisClus <- cnv[,colnames(cnv) %in% samples.thisCluster]
+    amps.thisClus <- amps[,colnames(amps) %in% samples.thisCluster]
+    dels.thisClus <- dels[,colnames(dels) %in% samples.thisCluster]
+    fusions.thisClus <- NULL
+    if (!is.null(fusions.mat)) {	
+      fusions.thisClus <- fusions.mat[,colnames(fusions.mat) %in% samples.thisCluster]
+      if(ncol(fusions.thisClus) == 0) {
+        fusions.thisClus <- NULL
+      }
+    }
+    
+    p.oncoprint <- oncoprint.plot(summary.vec = subtype.tables[[k]], snpmat.thisClus, amps.thisClus, dels.thisClus, fusions.thisClus, 
+                                  important.genes, band2gene, max.events, k)
+    tmp.identity.plots[["oncoprint.plots"]][[k]] <- p.oncoprint
+    
+    #########
+    # Saturation Curve Plots
+    #########
+    p.coverage <- genomic.plot.small(tissue.coverage.df, fraction=0.85, tissue.cluster=k)
+    tmp.identity.plots[["curve.plots"]][[k]] <- p.coverage
+    
+  }
+  
+  tmp.identity.plots
+  
+}
+
+
+
+
+
+
+
+
+
+
 #' Helper function to get subtype specific events
-#' @param saturation.data : genomic saturation object from moma. List indexed by cluster then sample then regulator with the number of events associated with each additional regulator
+#' @param saturation.data : genomic saturation object from moma. List indexed by 
+#' cluster then sample then regulator with the number of events associated with each additional regulator
 #' @param sample.clustering : clustering vector with sample names and cluster designations
 #' @param checkpoints : from momaObj
 #' @return a table that has counts of how many times a particular event happens in a cluster
@@ -141,7 +290,299 @@ merge.data <- function(coverage.range, topN)  {
 }
 
 
-#' Plot barchart of genomic events
+#' Function to plot genomic events in the style of oncoPrint/cBioPortal
+#' @importFrom tidyr separate
+#' @importFrom dplyr arrange filter select mutate mutate_all everything bind_rows group_by n
+#' @importFrom tibble deframe as_tibble rownames_to_column tibble column_to_rownames
+#' @importFrom stringr str_split_fixed
+#' @param summary.vec : named vector of the counts, named 'Event name':'Type'
+#' where type is 'mut', 'amp', 'del', 'fus'. Mutations are in Entrez ID
+#' Amp/Deletion CNV events are in genomic band location
+#' @param snpmat.thisClus : SNP matrix subset to samples in current cluster
+#' @param amps.thisClus : CNV matrix subset to samples in current cluster (just amplifications)
+#' @param dels.thisClus : CNV matrix subset to samples in current cluster (just deletions)
+#' @param fusions.thisClus : Fusion matrix subset to samples in current cluster
+#' @param important.genes : well known genes to highlight in the analysis
+#' @param band2gene : mapping of genomic location IDs to gene name: vector of HUGO gene ids, named by genomic location
+#' @param max.events : maximum number of events to plot for the oncoplots
+#' If desired a vector of two numbers can be supplied indicating the max number of mutations and cnvs (respectively)
+#' @param k : current cluster number
+#' @return oncoprint event plot
+oncoprint.plot <- function(summary.vec, snpmat.thisClus, amps.thisClus, dels.thisClus, fusions.thisClus, 
+                           important.genes, band2gene, max.events, k) {
+  
+  data <- data.frame(coverage=names(summary.vec), freq=as.numeric(summary.vec)) %>%
+    tidyr::separate(coverage, c("id", "type"), ":", remove = F) %>%
+    dplyr::arrange(desc(freq))
+  
+  ## Split into separate data types
+  mut.data <- dplyr::filter(data, type == "mut") %>% 
+    dplyr::mutate(id = map_entrez(id)) %>% 
+    dplyr::select(id, freq) %>% 
+    tibble::deframe()
+  
+  amp.data <- dplyr::filter(data, type == "amp") %>%
+    dplyr::select(id, freq) %>% 
+    dplyr::mutate(gene = NA)
+  
+  del.data <- dplyr::filter(data, type == "del") %>%
+    dplyr::select(id, freq) %>% 
+    dplyr::mutate(gene = NA)
+  
+  fus.data <- dplyr::filter(data, type == "fus") %>% 
+    dplyr::select(id, freq) %>% 
+    tibble::deframe()
+  
+  
+  if(is.null(important.genes)) {
+    # if no list of important genes has been provided just plot top events
+    
+    # subset mutations by name
+    mut.mat <- tibble::as_tibble(snpmat.thisClus[names(mut.data),], rownames = NA) %>% 
+      tibble::rownames_to_column(var = "genomic.event") %>% 
+      dplyr::mutate(type = "mut") %>% 
+      dplyr::mutate_all(as.character) %>% 
+      dplyr::select(genomic.event, type, dplyr::everything())
+    
+    # for each cytoband region subset the genes in that region and get the gene with the highest number of events to represent it
+    
+    # amplifications 
+    for(row in seq_len(nrow(amp.data))) {
+      cnv.loc <- amp.data$id[row]
+      genes.inBand <- as.character(band2gene[which(names(band2gene)==cnv.loc)])
+      band.mat <- amps.thisClus[intersect(genes.inBand, rownames(amps.thisClus)),]
+      if(is.null(nrow(band.mat))) { 
+        # only one gene case, just use that one
+        amp.data$gene[row] <- intersect(genes.inBand, rownames(amps.thisClus))
+      } else {
+        rank.events <- apply(band.mat, 1, function(x) sum(!is.na(x))) %>% sort(decreasing = T)  
+        # take the one with most events cause sometimes genes in the band won't all have same score
+        amp.data$gene[row] <- names(rank.events)[1]
+      }
+      
+    }
+    
+    amps.mat <- amps.thisClus[amp.data$gene, ]
+    amps.mat <- cbind(genomic.event = amp.data$id, type = rep("amp", nrow(amps.mat)), amps.mat) %>% as.data.frame(stringsAsFactors = F)
+    
+    # deletions
+    for(row in seq_len(nrow(del.data))) {
+      cnv.loc <- del.data$id[row]
+      genes.inBand <- as.character(band2gene[which(names(band2gene)==cnv.loc)])
+      band.mat <- dels.thisClus[intersect(genes.inBand, rownames(dels.thisClus)),]
+      if(is.null(nrow(band.mat))) { 
+        # only one gene case, just use that one
+        del.data$gene[row] <- intersect(genes.inBand, rownames(dels.thisClus))
+      } else {
+        rank.events <- apply(band.mat, 1, function(x) sum(!is.na(x))) %>% sort(decreasing = T)  
+        # take the one with most events cause sometimes genes in the band won't all have same score
+        del.data$gene[row] <- names(rank.events)[1]
+      }
+      
+    }
+    
+    dels.mat <- dels.thisClus[del.data$gene, ]
+    dels.mat <- cbind(genomic.event = del.data$id, type = rep("del", nrow(dels.mat)), dels.mat) %>% as.data.frame(stringsAsFactors = F)
+    
+    # fusions
+    
+    if(!is.null(fusions.thisClus) & length(fus.data) > 0) {
+      fus.mat <- tibble::as_tibble(fusions.thisClus[names(fus.data),], rownames = NA) %>% 
+        tibble::rownames_to_column(var = "genomic.event") %>% 
+        dplyr::mutate(type = "fus") %>% 
+        dplyr::mutate_all(as.character) %>% 
+        dplyr::select(genomic.event, type, dplyr::everything())
+    } else {
+      fus.mat <- NULL
+      #print("No fusions this cluster")
+    }
+    
+    
+    mat.to.plot <- dplyr::bind_rows(mut.mat, amps.mat, dels.mat, fus.mat)
+    
+  } else { 
+    # if important genes have been provided split events into important vs others 
+    # only add in others if max events has not been reached
+    
+    ######
+    
+    ## TODO: Add in important gene band finding script
+    
+    ######
+    
+    
+    }
+  
+  # merge rows that are duplicated (have muts and amp/dels)
+  dups <- mat.to.plot %>% dplyr::group_by(genomic.event) %>% 
+    dplyr::filter(dplyr::n() > 1)
+  
+  if(nrow(dups) > 0 ) {
+    dups.names <- unique(dups$genomic.event)
+    # remove duplicates from the current matrix
+    mat.to.plot <- dplyr::filter(mat.to.plot, !genomic.event %in% dups.names)
+    for (name in dups.names) {
+      # collapse all types of events together into one row and then rebind to main matrix
+      # having NA;event is fine syntax for use in oncoprint function
+      #### added in function to keep amps and dels separate, only merge mut with amps/dels
+      
+      merged <- dups %>% dplyr::filter(genomic.event == name)
+      if(!"mut" %in% merged$type) {
+        # means that only events are amps/dels, don't merge. 
+        # add a/d to the end do be able to differentiate later 
+        # (and to not run into issue of duplicate rownames in the matrix)
+        merged$genomic.event <- paste(merged$genomic.event, merged$type, sep = "_")
+      } else if ("mut" %in% merged$type & nrow(merged) == 2) {
+        # means that one event is a mut and other is amp/del
+        # merge together like before by collapsing the rows together
+        merged <- apply(merged, 2, paste0, collapse = ";")
+        merged[1] <- name
+      } else if (nrow(merged) == 3) {
+        # means that there is one of each type of event mut, amp and del
+        # merge mut with amp and del separately
+        
+        amp.merged <- dplyr::filter(merged, type %in% c("amp", "mut")) %>% apply(2, paste0, collapse = ";")
+        amp.merged[1] <- paste(name, "amp", sep = "_")
+        
+        del.merged <- dplyr::filter(merged, type %in% c("del", "mut")) %>% apply(2, paste0, collapse = ";")
+        del.merged[1] <- paste(name, "del", sep = "_")
+        
+        merged <- dplyr::bind_rows(amp.merged, del.merged)
+      } else {
+        print ("ERROR MERGING DUPLICATES....")
+      }
+      
+      mat.to.plot <- dplyr::bind_rows(mat.to.plot, merged)
+    }
+  }
+  
+  # replace new NA's with regular ones so that plots can be counted for events again
+  mat.to.plot[mat.to.plot == "NA;NA"] <- NA
+  mat.to.plot[mat.to.plot == "NA;NA;NA"] <- NA
+  
+  # get row sums, in terms of events and take top ones. filter for events that happen at least twice here
+  mat.to.plot <- tibble::column_to_rownames(mat.to.plot, var = "genomic.event") %>% 
+    dplyr::select(-type) %>% as.matrix()
+  num.events <- apply(mat.to.plot, 1, function(x) sum(!is.na(x))) %>% sort(decreasing = T) 
+  num.events <- num.events[num.events > 1] 
+  
+  # add events in chunks of frequency until max is reached
+  final.mat <- matrix(nrow = 0, ncol = ncol(mat.to.plot))
+  freq.range <- unique(num.events)
+  freq.idx <- 1
+  while(nrow(final.mat) < max.events & freq.idx <= length(unique(num.events))) {
+    to.add <- names(num.events[num.events == freq.range[freq.idx]])
+    to.add.mat <- matrix(mat.to.plot[to.add,], nrow = length(to.add), dimnames = list(rownames = to.add))
+    # final.mat <- rbind(final.mat, to.add.mat)
+    new.final.mat <- rbind(final.mat, to.add.mat)
+    if(nrow(new.final.mat) > max.events) {
+      break
+    } else {
+      final.mat <- new.final.mat
+    }
+    freq.idx <- freq.idx + 1
+  }
+  
+  # check if all genes are unique (as per merging of muts with amps/dels)
+  # if so remove _cnv ending, else leave it on
+  
+  final.plot.names <- stringr::str_split_fixed(rownames(final.mat), pattern = "_", n = 2)
+  if(length(unique(final.plot.names[,1])) == nrow(final.mat)) {
+    rownames(final.mat) <- final.plot.names[,1]
+  }
+  
+  print(paste("Plotting", nrow(final.mat), "total events for subtype", k))
+  
+  
+  ##########
+  # Heatmap plot
+  #########
+  
+  
+  heatmap_legend_param = list(title = "Alterations", 
+                              at = c("amp", "del", "mut", "fus"), 
+                              labels = c("Amplification", "Deletion", "Mutation", "Fusion"))
+  
+  
+  # color parameters for oncoprint
+  col = c("del" = "blue", "amp" = "red", "mut" = "#008000", "fus" = 'gold2', "NA" = "grey22")
+  alter_fun = list(
+    background = function(x, y, w, h) {
+      grid.rect(x, y, w*0.6, h*0.75, 
+                gp = gpar(fill = "#CCCCCC", col = NA))
+    },
+    # big blue - dels
+    del = function(x, y, w, h) {
+      grid.rect(x, y, w*0.6, h*0.75, 
+                gp = gpar(fill = col["del"], col = NA))
+    },
+    # big red - amps
+    amp = function(x, y, w, h) {
+      grid.rect(x, y, w*0.6, h*0.75, 
+                gp = gpar(fill = col["amp"], col = NA))
+    },
+    
+    # small green
+    mut = function(x, y, w, h) {
+      grid.rect(x, y, w*0.6, h*0.33, 
+                gp = gpar(fill = col["mut"], col = NA))
+    },
+    
+    # big yellow
+    fus = function(x, y, w, h) {
+      grid.rect(x, y, w*0.6, h*0.75, 
+                gp = gpar(fill = col["fus"], col = NA))
+    }
+  )
+  
+  # optimize size of labels
+  if(nrow(final.mat) >= 55) {
+    label.size <- 3
+  } else if (nrow(final.mat) >= 40 ) {
+    label.size <- 4
+  } else if (nrow(final.mat) >= 30) {
+    label.size <- 5
+  } else if (nrow(final.mat) >= 20) {
+    label.size <- 6
+  } else {
+    label.size <- 7
+  }
+  
+  
+  title <- paste("Genomic Events for Subtype", k)
+  
+  
+  ht <- ComplexHeatmap::oncoPrint(final.mat,
+                  alter_fun = alter_fun, col = col,
+                  #heatmap_legend_param = heatmap_legend_param,
+                  #remove_empty_columns = T,
+                  pct_side = "right", pct_gp = gpar(fontsize = label.size),
+                  column_title = title, column_title_gp = gpar(fontsize = 8),
+                  row_names_side = "left", row_names_gp = gpar(fontsize = label.size),
+                  #show_heatmap_legend = F,
+                  show_heatmap_legend = T,
+                  top_annotation = HeatmapAnnotation(
+                    column_barplot = anno_oncoprint_barplot(height = unit(.4, "cm"), axis_param = list(gp = gpar(fontsize = 4)))),
+                  right_annotation = rowAnnotation(
+                    row_barplot = anno_oncoprint_barplot(width = unit(1, "cm"), axis_param = list(gp = gpar(fontsize = 5)))))
+  
+  
+  #### FIGURE OUT HOW TO MAKE THE PLOT SAVE AND PRINT AS OBJECT PROPERLY #### 
+  p <- grid::grid.grabExpr(draw(ht, padding = unit(c(0, 0, 0, 0), "mm")))
+  
+  p
+  
+}
+
+
+
+
+
+
+
+##### No longer the primary plot style but keeping as an option plot style
+##### TODO: Need to make it a freestanding function
+#' Plot barchart of genomic events 
 #' 
 #' @importFrom rlang .data
 #' @param summary.vec : named vector of the counts, named 'Event name':'Type'

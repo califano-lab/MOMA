@@ -7,7 +7,8 @@
 get.subtype.event.tables(saturation.data, sample.clustering, checkpoints)
 }
 \arguments{
-\item{saturation.data}{: genomic saturation object from moma. List indexed by cluster then sample then regulator with the number of events associated with each additional regulator}
+\item{saturation.data}{: genomic saturation object from moma. List indexed by 
+cluster then sample then regulator with the number of events associated with each additional regulator}
 
 \item{sample.clustering}{: clustering vector with sample names and cluster designations}
 

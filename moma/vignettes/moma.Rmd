@@ -83,7 +83,7 @@ to do the full analysis:
 
 - **VIPER matrix**: continuous values of inferred protein activities
 - **SNP matrix**: binary 0/1 values where 1 indicates the prescence of a mutation
-- **CNV matrix**: continuous values as calculated by GISTIC [CITE]
+- **CNV matrix**: copy number variant values
 - **Fusion matrix**: binary 0/1 values 
 - **Pathway list**: see above
 - **Gene Blacklist**: genes to not include in the analysis
@@ -175,7 +175,11 @@ calculated in the previous step and makes customizable plots for viewing the res
 are saved to the $identity.plots() part of the momaObj.
 
 ```{r make plots, warning=FALSE}
-momaObj$makeSaturationPlots()
+#momaObj$makeSaturationPlots()
+
+test <- makeSaturationPlots(momaObj)
+
+
 ```
 
 
@@ -193,8 +197,10 @@ for further customization.
 
 ```{r visualize plots}
 library(ggplot2)
-momaObj$identity.plots$bar.plots[[1]]
-momaObj$identity.plots$curve.plots[[1]] + 
+#momaObj$identity.plots$bar.plots[[1]]
+#momaObj$identity.plots$curve.plots[[1]] + 
+#show(test$oncoprint.plots[[1]])
+test$curve.plots[[1]] +
   ggtitle("Genomic Saturation Curve for GBM Subtype 1")
   
 ```

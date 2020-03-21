@@ -231,13 +231,13 @@ sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map
             if (sample %in% colnames(momaObj$fusions)) {
                 fus.events <- names(which(momaObj$fusions[, sample] > 0))
                 if(length(fus.events) == 0) {
-                    print(paste("No fusion events in", sample))
+                    #print(paste("No fusion events in", sample))
                     fus.events <- NULL
                 } else {
-                    print(paste(fus.events, "found in", sample))
+                    #print(paste(fus.events, "found in", sample))
                 }
             } else {
-                print(paste0("Sample not recorded in fusions matrix:", sample))
+                #print(paste0("Sample not recorded in fusions matrix:", sample))
             }
         }
         fus.events <- fus.events[which(fus.events %in% momaObj$hypotheses[["fus"]])]

@@ -262,58 +262,61 @@ momaRunner <- setRefClass("momaRunner", fields =
       genomic.saturation <<- coverage.subtypes
       coverage.summaryStats <<- tmp.summaryStats
       checkpoints <<- tmp.checkpoints
-  },
-
-  makeSaturationPlots = function(clustering.solution = NULL, important.genes = NULL, max.muts = 25, max.cnvs = 10) {
-    
-    # print(sample.clustering)
-    # get clustering solution to use for calculations
-    if (is.null(clustering.solution)) {
-      if (is.null(sample.clustering)) {
-        stop("No clustering solution provided. Provide one as an argument or save one
-               to the momaObj. Quitting...")
-      } else {
-        clustering.solution <- sample.clustering
-      }
-    }
-    
-    # **** incorporate checkpoint specificity here later ****
-    
-    tmp.identity.plots <- list()
-    
-    # get subtype event tables
-    # print(checkpoints)
-    subtype.tables <- get.subtype.event.tables(genomic.saturation, clustering.solution, checkpoints)
-    
-    # get summary table of unique events added in for each regulator 
-    ## could be clarified/improved
-    ## also potential improvement: look for inflection points of huge jumps of new unique events and highlight those regulators in particular?
-    tissue.coverage.df <- merge.data.by.subtype(genomic.saturation, clustering.solution, 100)
-    
-    gene2band <- gene.loc.mapping$Gene.Symbol
-    names(gene2band) <- gene.loc.mapping$Cytoband
-    
-    # Make plots each subtype
-    for (k in seq_len(length(subtype.tables))) {
-      # genomic events descriptive bar plot
-      samples.total <- sum(clustering.solution == k)
-      print(paste0("Number of samples in cluster ", k, ": ", samples.total))
-      print("Getting events to plot...")
-      p.identities <- plot.events(subtype.tables[[k]], important.genes, gene2band, samples.total, max.muts = 25, max.cnv = 10)
-      tmp.identity.plots[["bar.plots"]][[k]] <- p.identities
-    }
-    
-    for (k in seq_len(length(subtype.tables))) {
-      # genomic coverage plot, top 100
-      #subtype.df <- tissue.coverage.df[(tissue.coverage.df$subtype == k),]
-      p.coverage <- genomic.plot.small(tissue.coverage.df, fraction=0.85, tissue.cluster=k)
-      tmp.identity.plots[["curve.plots"]][[k]] <- p.coverage
-    }
-    
-    
-    identity.plots <<- tmp.identity.plots
-    
   }
+#,
+# 
+
+#### Removing these to make them isolated functions
+#   makeSaturationPlots = function(clustering.solution = NULL, important.genes = NULL, max.muts = 25, max.cnvs = 10) {
+#     
+#     # print(sample.clustering)
+#     # get clustering solution to use for calculations
+#     if (is.null(clustering.solution)) {
+#       if (is.null(sample.clustering)) {
+#         stop("No clustering solution provided. Provide one as an argument or save one
+#                to the momaObj. Quitting...")
+#       } else {
+#         clustering.solution <- sample.clustering
+#       }
+#     }
+#     
+#     # **** incorporate checkpoint specificity here later ****
+#     
+#     tmp.identity.plots <- list()
+#     
+#     # get subtype event tables
+#     # print(checkpoints)
+#     subtype.tables <- get.subtype.event.tables(genomic.saturation, clustering.solution, checkpoints)
+#     
+#     # get summary table of unique events added in for each regulator 
+#     ## could be clarified/improved
+#     ## also potential improvement: look for inflection points of huge jumps of new unique events and highlight those regulators in particular?
+#     tissue.coverage.df <- merge.data.by.subtype(genomic.saturation, clustering.solution, 100)
+#     
+#     gene2band <- gene.loc.mapping$Gene.Symbol
+#     names(gene2band) <- gene.loc.mapping$Cytoband
+#     
+#     # Make plots each subtype
+#     for (k in seq_len(length(subtype.tables))) {
+#       # genomic events descriptive bar plot
+#       samples.total <- sum(clustering.solution == k)
+#       print(paste0("Number of samples in cluster ", k, ": ", samples.total))
+#       print("Getting events to plot...")
+#       p.identities <- plot.events(subtype.tables[[k]], important.genes, gene2band, samples.total, max.muts = 25, max.cnv = 10)
+#       tmp.identity.plots[["bar.plots"]][[k]] <- p.identities
+#     }
+#     
+#     for (k in seq_len(length(subtype.tables))) {
+#       # genomic coverage plot, top 100
+#       #subtype.df <- tissue.coverage.df[(tissue.coverage.df$subtype == k),]
+#       p.coverage <- genomic.plot.small(tissue.coverage.df, fraction=0.85, tissue.cluster=k)
+#       tmp.identity.plots[["curve.plots"]][[k]] <- p.coverage
+#     }
+#     
+#     
+#     identity.plots <<- tmp.identity.plots
+#     
+#   }
 
 
 
@@ -374,7 +377,7 @@ moma_constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist 
         fusions <- as.matrix(fusions[, nVM])
         print(paste("Number of samples in VIPER + Fusion data:", length(nVM)))
         if (length(nVM) < 2) {
-            print("Error: VIPER and CNV matrix samples don't match!")
+            print("Error: VIPER and Fusions matrix samples don't match!")
             q()
         }
     }
