@@ -46,7 +46,7 @@ graphics and plotting functions.
 
 
 ```{r setup}
-library(moma)
+library(MOMA)
 ```
 
 

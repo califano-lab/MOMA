@@ -1,4 +1,4 @@
-Package: moma
+Package: MOMA
 Title: Multi Omic Master Regulator Analysis
 Version: 0.99.0
 Authors@R: c(person("Evan", "Paull", email = "evanpaull@gmail.com", role = c("aut")), 
