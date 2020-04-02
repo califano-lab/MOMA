@@ -15,6 +15,23 @@
 #' @import grDevices
 #' @import readr
 #' @import tibble
+#' @field viper matrix of inferred activity score inferred by viper
+#' @field mut binary mutation matrix 1 for presence of mutation, 0 for not, NA if not determined
+#' @field cnv matrix of cnv values. Can be binary or a range. 
+#' @field fusions binary matrix of fusion events if appliable
+#' @field pathways list of pathways/connections to consider as extra evidence in the analysis
+#' @field gene.blacklist character vector of genes to not include (because of high mutation frequency)
+#' @field output.folder character vector of location to save files if desired
+#' @field gene.loc.mapping data frame of gene names, entrez ids and cytoband locations
+#' @field nes field for saving Normalized Enrichment Matrices from the associate events step
+#' @field interactions field for saving the MR-interactions list
+#' @field clustering.results results from clustering are saved here
+#' @field ranks results field for ranking of MRs based on event association analysis
+#' @field hypotheses results field for saving events that have enough occurences to be considered 
+#' @field genomic.saturation results field for genomic saturation analysis
+#' @field coverage.summaryStats results field for genomic saturation analysis
+#' @field checkpoints results field with the MRs determined to be the checkpoint for each cluster
+#' @field sample.clustering field to save sample clustering vector. Numbers are cluster assignments, names are sample ids
 #' @export
 momaRunner <- setRefClass("momaRunner", fields = 
                             list(viper = "matrix", 
@@ -33,11 +50,12 @@ momaRunner <- setRefClass("momaRunner", fields =
                                  genomic.saturation = "list", 
                                  coverage.summaryStats = "list", 
                                  checkpoints = "list", 
-                                 sample.clustering = "numeric", # numbers are cluster assignments, names are sample ids matching other data
-                                 identity.plots = "list"), # result field
+                                 sample.clustering = "numeric" # numbers are cluster assignments, names are sample ids matching other data
+                                 ), # result field
                           methods = list(
   runDIGGIT = function(fCNV = NULL, cnvthr = 0.5, min.events = 4, verbose = FALSE) {
-      
+    "Run DIGGIT association function to get associations for driver genomic events"
+    
       cnv.local <- NULL
       if (is.null(fCNV)) {
           print("Warning: no fCNV supplied, using no CNV filter!")
@@ -90,9 +108,9 @@ momaRunner <- setRefClass("momaRunner", fields =
       } else {
         print(paste("Writing hypotheses to:", output.folder))
         dir.create(output.folder, showWarnings = FALSE)
-        write.table(amps.hypotheses, file = paste0(output.folder, "/hypotheses.amps.txt"), quote = F, sep = "\t")
-        write.table(dels.hypotheses, file = paste0(output.folder, "/hypotheses.dels.txt"), quote = F, sep = "\t")
-        write.table(muts.hypotheses, file = paste0(output.folder, "/hypotheses.muts.txt"), quote = F, sep = "\t")
+        write.table(amps.hypotheses, file = paste0(output.folder, "/hypotheses.amps.txt"), quote = FALSE, sep = "\t")
+        write.table(dels.hypotheses, file = paste0(output.folder, "/hypotheses.dels.txt"), quote = FALSE, sep = "\t")
+        write.table(muts.hypotheses, file = paste0(output.folder, "/hypotheses.muts.txt"), quote = FALSE, sep = "\t")
       }
       hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, amp = amps.hypotheses)
       
@@ -106,7 +124,7 @@ momaRunner <- setRefClass("momaRunner", fields =
           fus.hypotheses <- rownames(fusions[apply(fusions, 1, sum, na.rm = TRUE) >= min.events, ])
           hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, amp = amps.hypotheses, fus = fus.hypotheses)
           if(!is.na(output.folder)) {
-            write.table(fus.hypotheses, file = paste0(output.folder, "/hypotheses.fusions.txt"), quote = F, sep = "\t")
+            write.table(fus.hypotheses, file = paste0(output.folder, "/hypotheses.fusions.txt"), quote = FALSE, sep = "\t")
           }
           nes.fusions <- associate.events(viper, fusions, min.events = min.events, event.type = "Fusions")
       }
@@ -120,7 +138,8 @@ momaRunner <- setRefClass("momaRunner", fields =
 }, 
 
   makeInteractions = function(genomic.event.types = c("amp", "del", "mut", "fus"), cindy.only = FALSE) {
-      
+    "Make interaction web for significant MRs based on their associated events"
+    
       # NULL TFs : from the VIPER matrix, calculate p-values of the absolute mean NES score for each.  (2-tailed test, -pnorm*2).  BH-FDR < 0.05 are sig.
       # Take everything else as the background model.
       ranks[["viper"]] <<- viper.getTFScores(viper)
@@ -146,8 +165,10 @@ momaRunner <- setRefClass("momaRunner", fields =
       interactions <<- local.interactions
 }, 
 
-  Rank = function(use.cindy = TRUE, genomic.event.types = c("amp", "del", "mut", "fus"), use.parallel = F, cores = 1) {
-      # ranks from DIGGIT scores
+  Rank = function(use.cindy = TRUE, genomic.event.types = c("amp", "del", "mut", "fus"), use.parallel = FALSE, cores = 1) {
+    "Rank MRs based on DIGGIT scores and number of associated events"  
+    
+    # ranks from DIGGIT scores
       integrated.z <- list()
       for (type in genomic.event.types) {
           
@@ -194,7 +215,8 @@ momaRunner <- setRefClass("momaRunner", fields =
       ranks[["integrated"]] <<- conditional.model(viper.scores, integrated.z, pathway.z)
 }, 
 
-  Cluster = function(use.parallel = F, cores = 1) {
+  Cluster = function(use.parallel = FALSE, cores = 1) {
+    "Cluster the samples after applying the MOMA weights to the VIPER scores"
       
       if(use.parallel) {
         if(cores <= 1) {
@@ -217,6 +239,7 @@ momaRunner <- setRefClass("momaRunner", fields =
 }, 
 
   saturationCalculation = function(clustering.solution = NULL, cov.fraction = 0.85) {
+    "Calculate the number of MRs it takes to represent the desired coverage fraction of events"
       
       # get clustering solution to use for calculations
       if (is.null(clustering.solution)) {
@@ -240,7 +263,7 @@ momaRunner <- setRefClass("momaRunner", fields =
           stouffer.zscores <- apply(viper[, viper.samples], 1, function(x) {
               sum(na.omit(x))/sqrt(length(na.omit(x)))
           })
-          pvals <- pnorm(sort(stouffer.zscores, decreasing = T), lower.tail = F)
+          pvals <- pnorm(sort(stouffer.zscores, decreasing = TRUE), lower.tail = FALSE)
           sig.active.mrs <- names(pvals[p.adjust(pvals, method = "bonferroni") < 0.01])
           # ranked list of cMRs for this subtype
           subtype.specific.MR_ranks <- sort(ranks[["integrated"]][sig.active.mrs])
@@ -263,70 +286,15 @@ momaRunner <- setRefClass("momaRunner", fields =
       coverage.summaryStats <<- tmp.summaryStats
       checkpoints <<- tmp.checkpoints
   }
-#,
-# 
-
-#### Removing these to make them isolated functions
-#   makeSaturationPlots = function(clustering.solution = NULL, important.genes = NULL, max.muts = 25, max.cnvs = 10) {
-#     
-#     # print(sample.clustering)
-#     # get clustering solution to use for calculations
-#     if (is.null(clustering.solution)) {
-#       if (is.null(sample.clustering)) {
-#         stop("No clustering solution provided. Provide one as an argument or save one
-#                to the momaObj. Quitting...")
-#       } else {
-#         clustering.solution <- sample.clustering
-#       }
-#     }
-#     
-#     # **** incorporate checkpoint specificity here later ****
-#     
-#     tmp.identity.plots <- list()
-#     
-#     # get subtype event tables
-#     # print(checkpoints)
-#     subtype.tables <- get.subtype.event.tables(genomic.saturation, clustering.solution, checkpoints)
-#     
-#     # get summary table of unique events added in for each regulator 
-#     ## could be clarified/improved
-#     ## also potential improvement: look for inflection points of huge jumps of new unique events and highlight those regulators in particular?
-#     tissue.coverage.df <- merge.data.by.subtype(genomic.saturation, clustering.solution, 100)
-#     
-#     gene2band <- gene.loc.mapping$Gene.Symbol
-#     names(gene2band) <- gene.loc.mapping$Cytoband
-#     
-#     # Make plots each subtype
-#     for (k in seq_len(length(subtype.tables))) {
-#       # genomic events descriptive bar plot
-#       samples.total <- sum(clustering.solution == k)
-#       print(paste0("Number of samples in cluster ", k, ": ", samples.total))
-#       print("Getting events to plot...")
-#       p.identities <- plot.events(subtype.tables[[k]], important.genes, gene2band, samples.total, max.muts = 25, max.cnv = 10)
-#       tmp.identity.plots[["bar.plots"]][[k]] <- p.identities
-#     }
-#     
-#     for (k in seq_len(length(subtype.tables))) {
-#       # genomic coverage plot, top 100
-#       #subtype.df <- tissue.coverage.df[(tissue.coverage.df$subtype == k),]
-#       p.coverage <- genomic.plot.small(tissue.coverage.df, fraction=0.85, tissue.cluster=k)
-#       tmp.identity.plots[["curve.plots"]][[k]] <- p.coverage
-#     }
-#     
-#     
-#     identity.plots <<- tmp.identity.plots
-#     
-#   }
-
-
 
   )
 
 )
 
-
+utils::globalVariables(c("gene.map"))
 
 #' @title MOMA Constructor
+#' see vignette for more information on how to set up and run the MOMA object
 #' @param viper VIPER protein activity matrix with samples as columns and rows as protein IDs
 #' @param mut An indicator matrix (0/1) of mutation events with samples as columns and genes as rows
 #' @param fusions An indicator matrix (0/1) of fusion events with samples as columns and genes as rows
@@ -336,11 +304,20 @@ momaRunner <- setRefClass("momaRunner", fields =
 #' @param output.folder Location to store output and intermediate results 
 #' @param gene.blacklist A vector of genes to exclude from mutational/CNV/fusion analysis
 #' @importFrom utils data
+#' @examples 
+#' data("gbm.example")
+#' momaObj <- moma_constructor(gbm.example$vipermat, 
+#' gbm.example$rawsnp, 
+#' gbm.example$rawcnv, 
+#' gbm.example$fusions, 
+#' pathways = list(cindy=gbm.example$cindy, preppi=gbm.example$preppi), 
+#' gene.blacklist=gbm.example$mutSig)
+#' 
 #' @return an instance of class momaRunner
 #' @export
 moma_constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist = NA_character_, 
                              output.folder = NA_character_, gene.loc.mapping = gene.map) {
-    data("gene.map")
+    utils::data("gene.map")
     viper <- samplename.filter(viper)
     mut <- samplename.filter(mut)
     cnv <- samplename.filter(cnv)

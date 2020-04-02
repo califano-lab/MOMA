@@ -2,7 +2,7 @@
 % Please edit documentation in R/extra.functions.r
 \name{samplename.filter}
 \alias{samplename.filter}
-\title{Retain TCGA sample ids without the final letter designation ('A/B/C') -- WHERE??}
+\title{Retain TCGA sample ids without the final letter designation ('A/B/C')}
 \usage{
 samplename.filter(mat)
 }
@@ -13,5 +13,8 @@ samplename.filter(mat)
 An identical matrix with new (shorter) column names
 }
 \description{
-Retain TCGA sample ids without the final letter designation ('A/B/C') -- WHERE??
+Retain TCGA sample ids without the final letter designation ('A/B/C')
+}
+\examples{
+samplename.filter(gbm.example$vipermat)
 }

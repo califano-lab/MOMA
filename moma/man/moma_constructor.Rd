@@ -2,7 +2,8 @@
 % Please edit documentation in R/moma.r
 \name{moma_constructor}
 \alias{moma_constructor}
-\title{MOMA Constructor}
+\title{MOMA Constructor
+see vignette for more information on how to set up and run the MOMA object}
 \usage{
 moma_constructor(
   viper,
@@ -37,4 +38,15 @@ an instance of class momaRunner
 }
 \description{
 MOMA Constructor
+see vignette for more information on how to set up and run the MOMA object
+}
+\examples{
+data("gbm.example")
+momaObj <- moma_constructor(gbm.example$vipermat, 
+gbm.example$rawsnp, 
+gbm.example$rawcnv, 
+gbm.example$fusions, 
+pathways = list(cindy=gbm.example$cindy, preppi=gbm.example$preppi), 
+gene.blacklist=gbm.example$mutSig)
+
 }

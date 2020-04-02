@@ -128,8 +128,12 @@ in the generated clustering object is k-1).*
 ```{r clustering}
 momaObj$Cluster()
 
-# pick the 3 cluster solution and save it to the moma Object
-momaObj$sample.clustering <- momaObj$clustering.results[[2]]$clustering
+# get the reliability scores. The 4th value is the highest and this corresponds
+# with the 5 cluster solution
+sapply(momaObj$clustering.results, "[[", "reliability")
+
+# pick the 5 cluster solution and save it to the moma Object
+momaObj$sample.clustering <- momaObj$clustering.results[[4]]$clustering
 ```
 
   
@@ -166,42 +170,46 @@ The primary results of the analysis are the master regululators of each particul
 cluster's checkpoint, as displayed above. You can plot the original VIPER matrix 
 subset down to only these regulators using whatever heatmap function you like. 
 
+
 ## Visualizing the Genomic Saturation and Events Plots
 
 The other important results of the analysis are the statisically significant
 genomic events found to be upstream of each of the checkpoint master regulators. 
-The `makeSaturationPlots()` function takes the subtype specific genomic event interactions
-calculated in the previous step and makes customizable plots for viewing the results. These
-are saved to the $identity.plots() part of the momaObj.
+The `makeSaturationPlots()` function takes the subtype specific genomic event 
+interactionscalculated in the previous step and makes plots for viewing the 
+results. Because there are usually quite a large number of events that are 
+detected only the most frequently occurring events will be plotted. 
+(Note: to account for amplifications and deletions being events that can occur
+across multiple genes, these events are considered on a cytoband basis. Providing
+a list of oncogenes of interest will look for these genes in the regions at the 
+top of the list).
 
-```{r make plots, warning=FALSE}
-#momaObj$makeSaturationPlots()
-
-test <- makeSaturationPlots(momaObj)
-
-
+```{r make plots, warning=FALSE, include=FALSE}
+plots <- makeSaturationPlots(momaObj, fCNV = gbm.example$fCNV)
 ```
 
 
 The two plot types are: 
 
-- **Genomic Event Bar Plots** : these plot the frequency of the different types of 
-genomic events found to be upstream of the regulators in the checkpoint.  
+- **Genomic Event Oncoprint Plots** : these plot the different types of 
+genomic events found to be upstream of the regulators in the checkpoint,
+using the style of cBioPortal's plotting. The samples in that cluster are in
+the columns and the rows are the top significant events to be plotted (max
+number can be changed). Summary bar plots are on the top and right side.
 - **Saturation Curves** : these plot the number of regulators needed to capture
 a certain percentage of genomic events. The inflection points plotted on
 this graph match up with the cut off for which regulators make up a particular
 cluster's checkpoint.   
 
-The data for these plots are stored as ggplot objects so layers can be added afterwards
-for further customization.
+The data for these plots are stored as grobs and ggplot objects so layers or other 
+graphic modifications can be added afterwards for further customization.
 
 ```{r visualize plots}
 library(ggplot2)
-#momaObj$identity.plots$bar.plots[[1]]
-#momaObj$identity.plots$curve.plots[[1]] + 
-#show(test$oncoprint.plots[[1]])
-test$curve.plots[[1]] +
-  ggtitle("Genomic Saturation Curve for GBM Subtype 1")
+library(grid)
+grid.draw(plots$oncoprint.plots[[3]])
+plots$curve.plots[[3]] +
+  ggtitle("Genomic Saturation Curve for GBM Subtype 3")
   
 ```
 

@@ -3,7 +3,7 @@
 \name{sREA}
 \alias{sREA}
 \title{Simple one-tail rank based enrichment analysis sREA
-(for cluster analysis?)}
+(for cluster analysis)}
 \usage{
 sREA(signatures, groups)
 }

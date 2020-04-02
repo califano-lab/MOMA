@@ -13,21 +13,26 @@ makeSaturationPlots(
 )
 }
 \arguments{
+\item{momaObj}{: momaObj that has already run the saturationCalculation function}
+
+\item{clustering.solution}{: clustering vector with sample names and cluster designations}
+
 \item{important.genes}{: vector of gene names to prioritize when plotting. 
 Can be general genes of interest, oncogenes, tumor supressors etc}
 
 \item{fCNV}{: vector of confirmed functional CNVs if calculated. Will filter for only those CNVs}
 
-\item{max.events}{: maximum number of events to plot for the oncoplots
-If desired a vector of two numbers can be supplied indicating the max number of mutations and cnvs (respectively)}
-
-\item{moma.obj}{: momaObj that has already run the saturationCalculation function}
-
-\item{cluster.solution}{: clustering vector with sample names and cluster designations}
+\item{max.events}{: maximum number of events to plot for the oncoplots}
 }
 \value{
 object with both types of summary plot for each subtype
 }
 \description{
 Main function to generate the summary plots of the analysis
+}
+\examples{
+
+\dontrun{
+makeSaturationPlots(momaObj, max.events = 20)
+}
 }

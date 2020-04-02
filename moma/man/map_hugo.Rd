@@ -15,3 +15,9 @@ map_hugo(hugo.ids)
 \description{
 Convert from hugo gene names to entrez ids
 }
+\examples{
+map_hugo(c("A1CF","PTEN"))
+}
+\seealso{
+\code{\link[moma]{map_entrez}}
+}

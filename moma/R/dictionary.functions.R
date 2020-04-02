@@ -1,7 +1,13 @@
+utils::globalVariables(c("gene.map"))
+
 #' Convert from entrez ids to hugo gene names
 #' @importFrom utils data
 #' @param entrez.ids : vector of entrez ids requires hugo2entrez to be loaded
+#' @examples
+#' map_entrez(c("29974", "5728"))
+#' @seealso \code{\link[moma]{map_hugo}}
 #' @return : vector of hugo gene names
+#' @export
 map_entrez <- function(entrez.ids) {
   utils::data("gene.map")
   # make sure no empty spaces around the entrez ids
@@ -10,7 +16,7 @@ map_entrez <- function(entrez.ids) {
   mapped <- gene.map$Gene.Symbol[idx]
   
   if(sum(is.na(mapped)) > 0 ) {
-    #print("Some entrez ids not mapped to genenames! Replaced with their original input")
+    print("Some entrez ids not mapped to genenames! Replaced with their original input")
     na.idx <- which(is.na(mapped))
     for (na in na.idx) {
       old.name <- entrez.ids[na]
@@ -26,7 +32,11 @@ map_entrez <- function(entrez.ids) {
 #' Convert from hugo gene names to entrez ids
 #' @importFrom utils data
 #' @param hugo.ids : vector of hugo gene names, requires hugo2entrez to be loaded
+#' @examples
+#' map_hugo(c("A1CF","PTEN"))
+#' @seealso \code{\link[moma]{map_entrez}}
 #' @return : vector of entrez ids 
+#' @export
 map_hugo <- function(hugo.ids) {
   utils::data("gene.map")
   idx <- match(hugo.ids, gene.map$Gene.Symbol)

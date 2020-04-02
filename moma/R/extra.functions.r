@@ -30,7 +30,7 @@ aREA.regulon_enrich <- function(regulon, vipermat) {
 
 
 #' Simple one-tail rank based enrichment analysis sREA
-#' (for cluster analysis?)
+#' (for cluster analysis)
 #' 
 #' This function performs simple 1-tail rank based enrichment analysis
 #' 
@@ -54,7 +54,7 @@ sREA <- function(signatures, groups) {
   return(es * sqrt(nn))
 }
 
-#' Utility function -- WHERE???
+#' Utility function 
 #' 
 #' @param corrected.scores - corrected p-values processed by 'qvals' package
 #' @return A matrix of p-values for scores between genes/events (rows) and TFs (columns)
@@ -72,10 +72,13 @@ get.pvals.matrix <- function(corrected.scores) {
 }
 
 
-#' Retain TCGA sample ids without the final letter designation ('A/B/C') -- WHERE??
+#' Retain TCGA sample ids without the final letter designation ('A/B/C') 
 #' 
 #' @param mat Matrix of expression or protein activity scores. Columns are sample names, rows are genes
+#' @examples 
+#' samplename.filter(gbm.example$vipermat)
 #' @return An identical matrix with new (shorter) column names
+#' @export
 samplename.filter <- function(mat) {
   # filter down to sample Id without the 'A/B/C sample class'.
   sample.ids <- vapply(colnames(mat), function(x) substr(x, 1, 15), FUN.VALUE = character(1))

@@ -17,3 +17,6 @@ A vector of normalized z-scores, named by TF id
 \description{
 Utility function
 }
+\examples{
+viper.getTFScores(gbm.example$vipermat)
+}

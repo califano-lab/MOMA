@@ -96,7 +96,7 @@ valid.diggit.interactions <- function(interactions, gene.loc.mapping, selected.t
         geneNames <- I[[as.character(x)]]
         band.names <- unique(as.character(gene.loc.mapping[which(gene.loc.mapping$Entrez.IDs %in% geneNames), "Cytoband"]))
         if (length(band.names) == 0 & length(geneNames) == 0) {
-            print(paste("No amplification events associated with", as.character(x)))
+            #print(paste("No amplification events associated with", as.character(x)))
             band.names <- NA 
         } else if (length(band.names) == 0) {
             warning(paste("Warning: could not map entrez IDs to Cytoband for IDS, skipping...", geneNames))
@@ -117,7 +117,7 @@ valid.diggit.interactions <- function(interactions, gene.loc.mapping, selected.t
         geneNames <- I[[as.character(x)]]
         band.names <- unique(as.character(gene.loc.mapping[which(gene.loc.mapping$Entrez.IDs %in% geneNames), "Cytoband"]))
         if (length(band.names) == 0 & length(geneNames) == 0) {
-            print(paste("No deletion events associated with", as.character(x)))
+            #print(paste("No deletion events associated with", as.character(x)))
             band.names <- NA 
         } else if (length(band.names) == 0) {
             warning(paste("Warning: could not map entrez IDs to Cytoband for IDS, skipping...", geneNames))

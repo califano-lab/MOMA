@@ -2,7 +2,7 @@
 % Please edit documentation in R/extra.functions.r
 \name{get.pvals.matrix}
 \alias{get.pvals.matrix}
-\title{Utility function -- WHERE???}
+\title{Utility function}
 \usage{
 get.pvals.matrix(corrected.scores)
 }
@@ -13,5 +13,5 @@ get.pvals.matrix(corrected.scores)
 A matrix of p-values for scores between genes/events (rows) and TFs (columns)
 }
 \description{
-Utility function -- WHERE???
+Utility function
 }

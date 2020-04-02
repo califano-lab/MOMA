@@ -2,7 +2,10 @@
 #' 
 #' @param vipermat - matrix of VIPER scores with columns as samples, rows as protein names
 #' @param fdr.thresh - BH-FDR threshold (default 0.05 FDR rate)
+#' @examples
+#' viper.getTFScores(gbm.example$vipermat)
 #' @return A vector of normalized z-scores, named by TF id
+#' @export
 viper.getTFScores <- function(vipermat, fdr.thresh = 0.05) {
   
   # for each gene, count the number samples with scores for each, and weight by that

@@ -33,8 +33,7 @@ Amp/Deletion CNV events are in genomic band location}
 
 \item{band2gene}{: mapping of genomic location IDs to gene name: vector of HUGO gene ids, named by genomic location}
 
-\item{max.events}{: maximum number of events to plot for the oncoplots
-If desired a vector of two numbers can be supplied indicating the max number of mutations and cnvs (respectively)}
+\item{max.events}{: maximum number of events to plot for the oncoplots}
 
 \item{k}{: current cluster number}
 }

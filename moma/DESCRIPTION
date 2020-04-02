@@ -13,10 +13,13 @@ LazyData: true
 RoxygenNote: 7.0.2
 biocViews: Software, NetworkEnrichment, NetworkInference, Network, FeatureExtraction, Clustering, FunctionalGenomics, Transcriptomics, SystemsBiology
 Imports:
+	circlize (>= 0.4.8),
 	cluster (>= 2.0.0),
+	ComplexHeatmap (>= 2.2.0),
 	dplyr (>= 0.8.0),
 	ggplot2 (>= 3.2.0),
 	graphics (>= 3.5.0),
+	grid (>= 3.6.2),
 	grDevices (>= 3.5.0),
 	magrittr (>= 1.5.0),
 	methods (>= 3.5.0),
@@ -28,6 +31,7 @@ Imports:
 	reshape2 (>= 1.4.3),
 	rlang (>= 0.4.0),
 	stats (>= 3.5.0),
+	stringr (>= 1.4.0),
 	survival (>= 2.40-1),
 	tibble (>= 2.1.1),
 	tidyr (>= 1.0.0),
