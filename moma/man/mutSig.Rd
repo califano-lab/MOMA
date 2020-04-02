@@ -4,7 +4,9 @@
 \name{mutSig}
 \alias{mutSig}
 \title{MutSig Blacklisted genes}
-\format{A character vector of Entrez Gene IDs}
+\format{
+A character vector of Entrez Gene IDs
+}
 \source{
 \url{https://software.broadinstitute.org/cancer/cga/mutsig}
 }

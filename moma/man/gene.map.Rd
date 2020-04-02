@@ -4,14 +4,16 @@
 \name{gene.map}
 \alias{gene.map}
 \title{Gene Location Mapping}
-\format{A Data frame with 4 columns
+\format{
+A Data frame with 4 columns
 \describe{
 \item{Gene.Symbol}{Approved Symbol gene name}
 \item{Entrez.IDs}{NCBI Gene ID}
 \item{Cytoband}{Chromosome location}
 \item{Ensembl}{Ensembl gene ID}
 }
- @source \url{https://www.genenames.org/download/custom/}}
+ @source \url{https://www.genenames.org/download/custom/}
+}
 \usage{
 gene.map
 }
