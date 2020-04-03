@@ -4,17 +4,19 @@
 \alias{samplename.filter}
 \title{Retain TCGA sample ids without the final letter designation ('A/B/C')}
 \usage{
-samplename.filter(mat)
+samplename.filter(input)
 }
 \arguments{
-\item{mat}{Matrix of expression or protein activity scores. Columns are sample names, rows are genes}
+\item{input}{Matrix of expression or protein activity scores. Columns are sample names, rows are genes.
+Input can also just be an input vector of sample names.}
 }
 \value{
-An identical matrix with new (shorter) column names
+An identical matrix with new (shorter) column names, or a vector with the shortened names.
 }
 \description{
 Retain TCGA sample ids without the final letter designation ('A/B/C')
 }
 \examples{
-samplename.filter(gbm.example$vipermat)
+sample.names <- c("TCGA-14-1825-01A", "TCGA-76-4931-01B", "TCGA-06-5418-01A")
+samplename.filter(sample.names)
 }

@@ -18,5 +18,7 @@ A vector of normalized z-scores, named by TF id
 Utility function
 }
 \examples{
+library(moma.gbmexample)
+data("gbm.example")
 viper.getTFScores(gbm.example$vipermat)
 }

@@ -1,8 +1,10 @@
-#' Utility function
+#' Function to normalize TF scores
 #' 
 #' @param vipermat - matrix of VIPER scores with columns as samples, rows as protein names
 #' @param fdr.thresh - BH-FDR threshold (default 0.05 FDR rate)
 #' @examples
+#' library(moma.gbmexample)
+#' data("gbm.example")
 #' viper.getTFScores(gbm.example$vipermat)
 #' @return A vector of normalized z-scores, named by TF id
 #' @export

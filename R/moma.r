@@ -15,6 +15,7 @@
 #' @import grDevices
 #' @import readr
 #' @import tibble
+#' @import moma.gbmexample
 #' @field viper matrix of inferred activity score inferred by viper
 #' @field mut binary mutation matrix 1 for presence of mutation, 0 for not, NA if not determined
 #' @field cnv matrix of cnv values. Can be binary or a range. 
