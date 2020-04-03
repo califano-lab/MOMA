@@ -41,6 +41,7 @@ MOMA Constructor
 see vignette for more information on how to set up and run the MOMA object
 }
 \examples{
+library(moma.gbmexample) 
 data("gbm.example")
 momaObj <- moma_constructor(gbm.example$vipermat, 
 gbm.example$rawsnp, 

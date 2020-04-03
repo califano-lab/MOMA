@@ -1,4 +1,4 @@
 library(testthat)
-library(moma)
+library(MOMA)
 
-test_check("moma")
+test_check("MOMA")

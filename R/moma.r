@@ -304,7 +304,8 @@ utils::globalVariables(c("gene.map"))
 #' @param output.folder Location to store output and intermediate results 
 #' @param gene.blacklist A vector of genes to exclude from mutational/CNV/fusion analysis
 #' @importFrom utils data
-#' @examples 
+#' @examples
+#' library(moma.gbmexample) 
 #' data("gbm.example")
 #' momaObj <- moma_constructor(gbm.example$vipermat, 
 #' gbm.example$rawsnp, 
