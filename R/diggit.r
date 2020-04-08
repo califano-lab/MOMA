@@ -8,7 +8,7 @@
 #' @param min.events Only compute enrichment if the number of samples with these events is GTE to this
 #' @param event.type Name of the event type being analyzed
 #' @return A matrix of aREA scores, dimensions are nrow(events.mat) x nrow(vipermat) 
-associate.events <- function(vipermat, events.mat, min.events = NA, whitelist = NA, event.type = c("Amplifications", "Deletions", "Mutations", "Fusions", NA)) {
+associateEvents <- function(vipermat, events.mat, min.events = NA, whitelist = NA, event.type = c("Amplifications", "Deletions", "Mutations", "Fusions", NA)) {
     event.type <- match.arg(event.type)
     if (is.null(events.mat)) {
         print(paste("Null", event.type, "matrix, skipping.."))
@@ -41,7 +41,7 @@ associate.events <- function(vipermat, events.mat, min.events = NA, whitelist = 
         return(NULL)
     }
     
-    nes <- aREA.enrich(events.mat, vipermat, event.type)
+    nes <- areaEnrich(events.mat, vipermat, event.type)
     nes
 }
 
@@ -52,7 +52,7 @@ associate.events <- function(vipermat, events.mat, min.events = NA, whitelist = 
 #' @param vipermat A VIPER network of inferred activity scores with columns as samples, and rows as proteins
 #' @param event.type Name of the event type for printing purposes
 #' @return A matrix of enrichment scores with rows as event/gene names and columns as VIPER protein names
-aREA.enrich <- function(events.mat, vipermat, event.type) {
+areaEnrich <- function(events.mat, vipermat, event.type) {
     
     # Convert mutations into a regulon-like object
     events.regulon <- apply(events.mat, 1, function(x) {

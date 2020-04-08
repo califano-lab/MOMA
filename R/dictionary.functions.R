@@ -8,7 +8,7 @@ utils::globalVariables(c("gene.map"))
 #' @seealso \code{\link[moma]{map_hugo}}
 #' @return : vector of hugo gene names
 #' @export
-map_entrez <- function(entrez.ids) {
+mapEntrez <- function(entrez.ids) {
   utils::data("gene.map")
   # make sure no empty spaces around the entrez ids
   entrez.ids <- gsub(" ", "", entrez.ids)
@@ -37,7 +37,7 @@ map_entrez <- function(entrez.ids) {
 #' @seealso \code{\link[moma]{map_entrez}}
 #' @return : vector of entrez ids 
 #' @export
-map_hugo <- function(hugo.ids) {
+mapHugo <- function(hugo.ids) {
   utils::data("gene.map")
   idx <- match(hugo.ids, gene.map$Gene.Symbol)
   mapped <- gene.map$Entrez.IDs[idx]

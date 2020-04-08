@@ -7,7 +7,7 @@
 #' @param from.p Integrate p-values or z-scores (default z-scores; from.p = FALSE)
 #' @param pos.nes.only Use only positive NES scores to rank proteins (default TRUE)
 #' @return A list indexed by TF, a stouffer integrated z-score
-stouffer.integrate.diggit <- function(interactions, from.p = FALSE, pos.nes.only = TRUE) {
+stoufferIntegrateDiggit <- function(interactions, from.p = FALSE, pos.nes.only = TRUE) {
   
   ## Integrate p-values for each TF
   diggit.integrated.z <- unlist(lapply(interactions, function(scores) {
@@ -47,7 +47,7 @@ stouffer.integrate.diggit <- function(interactions, from.p = FALSE, pos.nes.only
 #' @param interactions List of MR - Genomic Event interactions, inferred by DIGGIT
 #' @param cytoband.map Data.frame mapping Entrez.IDs to cytoband locations
 #' @return Z-scores for each MR
-stouffer.integrate <- function(interactions, cytoband.map = NULL) {
+stoufferIntegrate <- function(interactions, cytoband.map = NULL) {
   z <- NULL
   if (!is.null(cytoband.map)) {
     # need to create a vector with gene
@@ -55,7 +55,7 @@ stouffer.integrate <- function(interactions, cytoband.map = NULL) {
     names(map.vec) <- cytoband.map$Entrez.IDs
     z <- cnvScoreStouffer(map.vec, interactions)
   } else {
-    z <- stouffer.integrate.diggit(interactions)
+    z <- stoufferIntegrateDiggit(interactions)
   }
   z
 }
@@ -72,7 +72,7 @@ stouffer.integrate <- function(interactions, cytoband.map = NULL) {
 #' @return A vector of z-scores, named by the Master Regulators in 'diggit.interactions' 
 cnvScoreStouffer <- function(mapping, diggit.interactions, cytoband = TRUE, from.p = FALSE, pos.nes.only = TRUE) {
   
-  mapped.diggit <- mapScores.cnvBand(mapping, diggit.interactions, from.p = FALSE, pos.nes.only = TRUE)
+  mapped.diggit <- mapScoresCnvBand(mapping, diggit.interactions, from.p = FALSE, pos.nes.only = TRUE)
   
   # apply over each TF/MR: sum the named vector of scores
   integrated.z.scores <- unlist(lapply(mapped.diggit, function(scores) {
@@ -102,7 +102,7 @@ cnvScoreStouffer <- function(mapping, diggit.interactions, cytoband = TRUE, from
 #' @param pos.nes.only Only consider positive associations with NES scores (default=TRUE)
 #' each points to a named vector of NES / z-scores associated with entrez IDs for each interacting event.
 #' @return A list of input scores, now named by cytoband location
-mapScores.cnvBand <- function(mapping, diggit.interactions, from.p = FALSE, pos.nes.only = TRUE) {
+mapScoresCnvBand <- function(mapping, diggit.interactions, from.p = FALSE, pos.nes.only = TRUE) {
   
   # apply over each TF/MR:
   mapped.scores <- lapply(diggit.interactions, function(x) {
@@ -186,7 +186,7 @@ mapScores.cnvBand <- function(mapping, diggit.interactions, from.p = FALSE, pos.
 #' @param pos.nes.only Only use positive associations between MR activity and presence of events (default = True)
 #' @param cores Number of cores to use if parallel is selected
 #' @return numeric vector, zscores for each TF/MR
-pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only = TRUE, cores = 1) {
+pathwayDiggitIntersect <- function(diggit.int, pathway, pos.nes.only = TRUE, cores = 1) {
   
   
   pathway.pvals <- parallel::mclapply(names(diggit.int), function(tf) {
@@ -248,20 +248,20 @@ pathway.diggit.intersect <- function(diggit.int, pathway, pos.nes.only = TRUE, c
 #' @param pathway.scores List , double indexed by each pathway dataset, then with type char. Each points to a numeric score vectors in [0,R+] for each
 #' @param diggit.scores List indexed by type char, with numeric score vectors in [0,R+] for each
 #' @return a named vector of empirical p-values for each protein/candidate Master Regulator
-conditional.model <- function(viper.scores, diggit.scores, pathway.scores) {
+conditionalModel <- function(viper.scores, diggit.scores, pathway.scores) {
   
   integrated.pvals <- unlist(lapply(names(viper.scores), function(VIP) {
     # VIP = Viper Inferred Protein
     
     # VIPER scores are the independent model component
-    viper.p <- empirical.p(VIP, viper.scores)
+    viper.p <- empiricalP(VIP, viper.scores)
     
     # for each type, produce p-values for DIGGIT as well as each dependent pathway or pathway based algorithm (including CINDy)
     all.pvals <- c(viper.p)
     for (type in names(diggit.scores)) {
       
       # DIGGIT is conditioned on VIPER scores
-      diggit.p <- conditional.p(VIP, viper.scores, diggit.scores[[type]])
+      diggit.p <- conditionalP(VIP, viper.scores, diggit.scores[[type]])
       # Pathway scores are conditioned on DIGGIT
       pathway.pvals <- c()
       for (pathway in names(pathway.scores)) {
@@ -270,7 +270,7 @@ conditional.model <- function(viper.scores, diggit.scores, pathway.scores) {
         } else if (!(type %in% names(pathway.scores[[pathway]]))) {
           stop(paste("Error: can't find entry for ", type, " in pathway ranks ", pathway))
         }
-        pathway.p <- conditional.p(VIP, diggit.scores[[type]], pathway.scores[[pathway]][[type]])
+        pathway.p <- conditionalP(VIP, diggit.scores[[type]], pathway.scores[[pathway]][[type]])
         pathway.pvals <- c(pathway.p, pathway.pvals)
       }
       all.pvals <- unlist(c(all.pvals, diggit.p, pathway.pvals))
@@ -291,7 +291,7 @@ conditional.model <- function(viper.scores, diggit.scores, pathway.scores) {
 #' @param gene.name Character
 #' @param x named Vector of scores for the distribution
 #' @return a numeric p-value between 0 and 1
-empirical.p <- function(gene.name, x) {
+empiricalP <- function(gene.name, x) {
   
   # unranked genes in either distribution should get no score from this
   if (!(as.character(gene.name) %in% names(x))) {
@@ -310,7 +310,7 @@ empirical.p <- function(gene.name, x) {
 #' @param condition.on named Vector of scores for the distribution we are conditioning ON
 #' @param x named Vector of scores for the dependent distribution
 #' @return a numeric p-value between 0 and 1
-conditional.p <- function(gene.name, condition.on, x) {
+conditionalP <- function(gene.name, condition.on, x) {
   
   # null ranks for all: return NA
   if (all(x == 0)) {

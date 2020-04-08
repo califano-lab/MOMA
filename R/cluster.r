@@ -43,7 +43,9 @@ clusterRange <- function(dis, range = c(2, 100), step = 1, cores = 1, method = c
     #}
     
     ret <- NULL
-    list(centers = centers, clustering = clustering, k = k, reliability = as.numeric(cr), element.reliability = element.cr, cluster.reliability = cluster.cr)
+    list(centers = centers, clustering = clustering, k = k, 
+         reliability = as.numeric(cr), element.reliability = element.cr, 
+         cluster.reliability = cluster.cr)
     
   }, dis = dis, mc.cores = cores)
   
@@ -57,9 +59,11 @@ clusterRange <- function(dis, range = c(2, 100), step = 1, cores = 1, method = c
 #' @param cluster Vector of cluster memberships or list of cluster memberships
 #' @param similarity Similarity matrix
 #' @param xlim Optional vector of 2 components indicating the limits for computing AUC
-#' @param method Character string indicating the mthod to compute reliability, either by element, by cluster or global
+#' @param method Character string indicating the mthod to compute reliability, 
+#' either by element, by cluster or global
 #' @return Reliability score for each element
-clusterReliability <- function(cluster, similarity, xlim = NULL, method = c("element", "cluster", "global")) {
+clusterReliability <- function(cluster, similarity, xlim = NULL, 
+                               method = c("element", "cluster", "global")) {
   method <- match.arg(method)
   if (!is.list(cluster)) 
     cluster <- list(cluster = cluster)
@@ -99,6 +103,30 @@ clusterReliability <- function(cluster, similarity, xlim = NULL, method = c("ele
   })
 }
 
+#' Simple one-tail rank based enrichment analysis sREA
+#' (for cluster analysis)
+#' 
+#' This function performs simple 1-tail rank based enrichment analysis
+#' 
+#' @param signatures Numeric matrix of signatures
+#' @param groups List containing the groups as vectors of sample names
+#' @return Matrix of Normalized Enrichment Zcores
+sREA <- function(signatures, groups) {
+  if (is.null(nrow(signatures))) 
+    signatures <- matrix(signatures, length(signatures), 1, dimnames = list(names(signatures), "sample1"))
+  # ranked signatures matrix: samples are rows. Rank
+  sig <- qnorm(apply(signatures, 2, rank)/(nrow(signatures) + 1))
+  gr <- sapply(groups, function(x, samp) {
+    samp %in% x
+  }, samp = rownames(sig))
+  gr <- t(gr)
+  # non negative counts
+  nn <- rowSums(gr)
+  # fractions of prev computation rows are groups
+  gr <- gr/nn
+  es <- gr %*% sig
+  return(es * sqrt(nn))
+}
 
 #' Numerical integration of functions
 #' 

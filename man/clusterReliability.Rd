@@ -18,7 +18,8 @@ clusterReliability(
 
 \item{xlim}{Optional vector of 2 components indicating the limits for computing AUC}
 
-\item{method}{Character string indicating the mthod to compute reliability, either by element, by cluster or global}
+\item{method}{Character string indicating the mthod to compute reliability, 
+either by element, by cluster or global}
 }
 \value{
 Reliability score for each element

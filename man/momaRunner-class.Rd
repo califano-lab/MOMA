@@ -51,17 +51,17 @@ Main class encapsulating the input data and logic of the MOMA algorithm
 \describe{
 \item{\code{Cluster(use.parallel = FALSE, cores = 1)}}{Cluster the samples after applying the MOMA weights to the VIPER scores}
 
-\item{\code{makeInteractions(
-  genomic.event.types = c("amp", "del", "mut", "fus"),
-  cindy.only = FALSE
-)}}{Make interaction web for significant MRs based on their associated events}
-
 \item{\code{Rank(
   use.cindy = TRUE,
   genomic.event.types = c("amp", "del", "mut", "fus"),
   use.parallel = FALSE,
   cores = 1
 )}}{Rank MRs based on DIGGIT scores and number of associated events}
+
+\item{\code{makeInteractions(
+  genomic.event.types = c("amp", "del", "mut", "fus"),
+  cindy.only = FALSE
+)}}{Make interaction web for significant MRs based on their associated events}
 
 \item{\code{runDIGGIT(fCNV = NULL, cnvthr = 0.5, min.events = 4, verbose = FALSE)}}{Run DIGGIT association function to get associations for driver genomic events}
 

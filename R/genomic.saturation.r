@@ -6,7 +6,7 @@
 #' @param topN Compute coverage for only the top -N- Master Regulators
 #' @param mutation.filter Retain only mutation events in this (positive) list
 #' @return A list of lists, indexed by sample name, with coverage statistics/data for each sample
-get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, mutation.filter = NULL) {
+getCoverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, mutation.filter = NULL) {
     
     if (!is(momaObj, "momaRunner")) {
         stop("Error: must have instantiated momaRunner class object passed!")
@@ -30,7 +30,7 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, mutati
     }
     
     # For each event type, gets names of cMRs that have those events
-    interaction.map <- valid.diggit.interactions(momaObj$interactions, momaObj$gene.loc.mapping, selected.tfs)
+    interaction.map <- validDiggitInteractions(momaObj$interactions, momaObj$gene.loc.mapping, selected.tfs)
     
     # another assert statment: make sure we have non-zero interactions for each
     sapply(names(interaction.map), function(key) {
@@ -40,7 +40,7 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, mutati
         }
     })
     
-    oc <- sample.overlap(momaObj, viper.samples, selected.tfs, interaction.map, mutation.filter = mutation.filter)
+    oc <- sampleOverlap(momaObj, viper.samples, selected.tfs, interaction.map, mutation.filter = mutation.filter)
     # count mutations/amps/dels covered at this point. Aggregate stats
     
     oc
@@ -52,7 +52,7 @@ get.coverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, mutati
 #' @param gene.loc.mapping Data.frame mapping entrezIDs to cytoband locations
 #' @param selected.tfs For each event type list, search within only these cMRS
 #' @return a list of events 'covered' by the supplied interactions of type mut/amp/del/fus
-valid.diggit.interactions <- function(interactions, gene.loc.mapping, selected.tfs) {
+validDiggitInteractions <- function(interactions, gene.loc.mapping, selected.tfs) {
     
     if (length(selected.tfs) == 0) {
         stop("No TFs input to diggit function")
@@ -70,24 +70,24 @@ valid.diggit.interactions <- function(interactions, gene.loc.mapping, selected.t
         warning("No valid fusion interactions...")
     }
     
-    mut.I <- subset.list.interactions(interactions[["mut"]], mut.tfs)
-    del.I <- subset.list.interactions(interactions[["del"]], del.tfs)
-    amp.I <- subset.list.interactions(interactions[["amp"]], amp.tfs)
+    mut.I <- subsetListInteractions(interactions[["mut"]], mut.tfs)
+    del.I <- subsetListInteractions(interactions[["del"]], del.tfs)
+    amp.I <- subsetListInteractions(interactions[["amp"]], amp.tfs)
     
     # only subset if fusions exist fusions IDs are unique , nothing else necessary
     if (length(fus.tfs) >= 1) {
-        fus.I <- subset.list.interactions(interactions[["fus"]], fus.tfs)
+        fus.I <- subsetListInteractions(interactions[["fus"]], fus.tfs)
         covered.fusions <- fus.I
     }
     
     
     # Add cnv events to mutation coverage, as either copy number variation is valid evidence for explaining a patient's mutation
-    covered.mutations <- merge.lists(mut.I, del.I)
-    covered.mutations <- merge.lists(covered.mutations, amp.I)
+    covered.mutations <- mergeLists(mut.I, del.I)
+    covered.mutations <- mergeLists(covered.mutations, amp.I)
     
     # Add mut events to cnv coverage, as it is a valid type of evidence for explaining a patient's CNV change
-    covered.amps <- merge.lists(amp.I, mut.I)
-    covered.dels <- merge.lists(del.I, mut.I)
+    covered.amps <- mergeLists(amp.I, mut.I)
+    covered.dels <- mergeLists(del.I, mut.I)
     
     
     
@@ -155,7 +155,7 @@ valid.diggit.interactions <- function(interactions, gene.loc.mapping, selected.t
 #' @param idx.range Number of tfs to check for genomic saturation calculation, default is 1253
 #' @param verbose Output status during the run (default=FALSE)
 #' @return A list of lists, indexed by sample name, with coverage statistics/data for each sample
-sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
+sampleOverlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
                            cnv.threshold = 0.5, mutation.filter = NULL, 
                            idx.range = NULL, verbose = FALSE) {
     
@@ -344,7 +344,7 @@ sample.overlap <- function(momaObj, viper.samples, selected.tfs, interaction.map
 #' @param int.l List of interactions, at each index this is a numeric named vector
 #' @param keys Keys used to reduce interactions
 #' @return Returns a filtered list of interactions in the same format as the input
-subset.list.interactions <- function(int.l, keys) {
+subsetListInteractions <- function(int.l, keys) {
     
     filtered.I <- lapply(keys, function(key, interactions) {
         I <- interactions[[as.character(key)]]
@@ -357,7 +357,7 @@ subset.list.interactions <- function(int.l, keys) {
     filtered.I
 }
 
-merge.lists <- function(l1, l2) {
+mergeLists <- function(l1, l2) {
     
     merged <- list()
     inter <- intersect(names(l1), names(l2))
@@ -377,11 +377,11 @@ merge.lists <- function(l1, l2) {
 }
 
 
-#' @title merge.genomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events
+#' @title mergeGenomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events
 #' @param coverage.range List indexed by sample, then sub-indexed by # of master regulators, then by event type (mut/amp/del/fus). Holds all events by sample
 #' @param topN Maximum number of master regulators to compute coverage
 #' @return A data frame with summary statistics for genomic saturation at each 'k'
-merge.genomicSaturation <- function(coverage.range, topN) {
+mergeGenomicSaturation <- function(coverage.range, topN) {
     
     data <- c()
     for (i in seq_len(topN)) {
@@ -416,7 +416,7 @@ merge.genomicSaturation <- function(coverage.range, topN) {
 #' @param sweep Numeric vector of genomic coverage values, named by -k- threshold 
 #' @param frac Fraction of coverage to use as a threshold (default .85 = 85 percent)
 #' @return The -k- integer where coverage is acheived
-fit.curve.percent <- function(sweep, frac = 0.85) {
+fitCurvePercent <- function(sweep, frac = 0.85) {
     fractional <- as.numeric(as.character(sweep))/max(sweep)
     best.k <- names(sweep[which(fractional >= frac)])[1]
     return(as.numeric(best.k))

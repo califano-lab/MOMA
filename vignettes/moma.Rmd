@@ -93,7 +93,7 @@ to do the full analysis:
 - **Output Folder** : (optional) will save intermediate DIGGIT results here
 
 ```{r moma object}
-momaObj <- moma_constructor(gbm.example$vipermat, gbm.example$rawsnp,
+momaObj <- momaConstructor(gbm.example$vipermat, gbm.example$rawsnp,
         gbm.example$rawcnv, gbm.example$fusions, pathways,
         gene.blacklist=gbm.example$mutSig)
 ```

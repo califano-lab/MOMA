@@ -5,10 +5,10 @@
 #' @examples
 #' library(moma.gbmexample)
 #' data("gbm.example")
-#' viper.getTFScores(gbm.example$vipermat)
+#' viperGetTFScores(gbm.example$vipermat)
 #' @return A vector of normalized z-scores, named by TF id
 #' @export
-viper.getTFScores <- function(vipermat, fdr.thresh = 0.05) {
+viperGetTFScores <- function(vipermat, fdr.thresh = 0.05) {
   
   # for each gene, count the number samples with scores for each, and weight by that
   w.counts <- apply(vipermat, 1, function(x) {
@@ -44,7 +44,7 @@ viper.getTFScores <- function(vipermat, fdr.thresh = 0.05) {
 #' @param zscores Vector of normally distributed z-scores representing protein activities. 
 #' @param fdr.thresh Threshold for false discovery rate, default is 0.05
 #' @return Get the names of proteins with significant z-scores, after multi-hypothesis correction
-viper.getSigTFS <- function(zscores, fdr.thresh = 0.05) {
+viperGetSigTFS <- function(zscores, fdr.thresh = 0.05) {
   
   # calculate pseudo-pvalues and look at just significant pvals/scores
   pvals <- -pnorm(abs(zscores), log.p = TRUE) * 2
@@ -66,7 +66,7 @@ viper.getSigTFS <- function(zscores, fdr.thresh = 0.05) {
 #' @param null.TFs low-importance TFs used to calculate null distributions
 #' @param alternative Alternative defaults to 'both' : significant p-values can come from both sides of the null distribution 
 #' @return A named list of qvalues for each TF/cMR protein. Each entry contains a vector of q-values for all associated events; names are gene ids 
-get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alternative = "both") {
+getDiggitEmpiricalQvalues <- function(vipermat, nes, null.TFs, alternative = "both") {
   
   # subset NES to Viper Proteins in the vipermat only
   nes <- nes[, as.character(rownames(vipermat))]
@@ -76,7 +76,7 @@ get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alternative = "
     null.VEC <- x[as.character(null.TFs)]
     null.VEC <- null.VEC[which(!is.na(null.VEC))]
     # get empirical q-values for both upper and lower tails of NES / DIGGIT statistics
-    qvals <- get.empirical.qvals(x, null.VEC, alternative)
+    qvals <- getEmpiricalQvals(x, null.VEC, alternative)
     qvals
   }, alternative = alternative)
   
@@ -85,13 +85,13 @@ get.diggit.empiricalQvalues <- function(vipermat, nes, null.TFs, alternative = "
 }
 
 
-#' Get.empirical.qvals
+#' Get empirical qvals
 #' 
 #' @param test.statistics P-values generated from the test comparisons
 #' @param null.statistics P-values generated under the null (permutation) model
 #' @param alternative Optional : 1 or 2 tails used to generate the p-value (default='both')
 #' @return A list with both the qvalues and empirical p-values from the supplied test and null stats
-get.empirical.qvals <- function(test.statistics, null.statistics, alternative = "both") {
+getEmpiricalQvals <- function(test.statistics, null.statistics, alternative = "both") {
   
   # calculate the upper and lower tail
   if (alternative == "both") {
@@ -129,9 +129,9 @@ get.empirical.qvals <- function(test.statistics, null.statistics, alternative = 
 #' @param cindy.only Consider only CINDy validated interactions (default=TRUE)
 #' @return a list (indexed by VIPER protein) of significant genomic interactions 
 #' and associated pvals over the background (null TF) model, and NES scores
-sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh = 0.05, cindy.only = TRUE) {
+sigInteractorsDIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh = 0.05, cindy.only = TRUE) {
   
-  pvals.matrix <- get.pvals.matrix(corrected.scores)
+  pvals.matrix <- getPvalsMatrix(corrected.scores)
   
   # input validation
   if (!is.numeric(p.thresh)) {
@@ -199,3 +199,20 @@ sig.interactors.DIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh
   viper.interactors
 }
 
+
+#' Utility function 
+#' 
+#' @param corrected.scores - corrected p-values processed by 'qvals' package
+#' @return A matrix of p-values for scores between genes/events (rows) and TFs (columns)
+getPvalsMatrix <- function(corrected.scores) {
+  # order of VIPER proteins/TFs
+  tf.names.order <- names(corrected.scores[[1]]$qvals)
+  pvals.matrix <- matrix(unlist(lapply(corrected.scores, function(x) {
+    pvals <- x$pvals[tf.names.order]
+    pvals
+  })), byrow = TRUE, ncol = length(tf.names.order))
+  
+  colnames(pvals.matrix) <- tf.names.order
+  rownames(pvals.matrix) <- names(corrected.scores)
+  pvals.matrix
+}

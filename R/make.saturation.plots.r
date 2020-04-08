@@ -51,7 +51,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL, important.g
   snpmat <- momaObj$mut
   snpmat[snpmat == 1] <- "mut"
   snpmat[snpmat == 0] <- NA
-  rownames(snpmat) <- map_entrez(rownames(snpmat))
+  rownames(snpmat) <- mapEntrez(rownames(snpmat))
   
   # Fusions if they exist
   fusions.mat <- NULL
@@ -82,7 +82,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL, important.g
   dels[dels <= -0.5] <- "del"
   
   
-  rownames(amps) <- rownames(dels) <- map_entrez(rownames(cnv))
+  rownames(amps) <- rownames(dels) <- mapEntrez(rownames(cnv))
   
   ##########################
   # Restructure saturation data 
@@ -91,12 +91,12 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL, important.g
 
   
   # get subtype event tables
-  subtype.tables <- get.subtype.event.tables(genomic.saturation, clustering.solution, checkpoints)
+  subtype.tables <- getSubtypeEventTables(genomic.saturation, clustering.solution, checkpoints)
   
   # get summary table of unique events added in for each regulator 
   ## could be clarified/improved
   ## also potential improvement: look for inflection points of huge jumps of new unique events and highlight those regulators in particular?
-  tissue.coverage.df <- merge.data.by.subtype(genomic.saturation, clustering.solution, 100)
+  tissue.coverage.df <- mergeDataBySubtype(genomic.saturation, clustering.solution, 100)
   
 
   # initalize object to save plots in
@@ -128,14 +128,14 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL, important.g
       }
     }
     
-    p.oncoprint <- oncoprint.plot(summary.vec = subtype.tables[[k]], snpmat.thisClus, amps.thisClus, dels.thisClus, fusions.thisClus, 
+    p.oncoprint <- oncoprintPlot(summary.vec = subtype.tables[[k]], snpmat.thisClus, amps.thisClus, dels.thisClus, fusions.thisClus, 
                                   important.genes, band2gene, max.events, k)
     tmp.oncoplots[[k]] <- p.oncoprint
     
     #########
     # Saturation Curve Plots
     #########
-    p.coverage <- genomic.plot.small(tissue.coverage.df, fraction=0.85, tissue.cluster=k)
+    p.coverage <- genomicPlotSmall(tissue.coverage.df, fraction=0.85, tissue.cluster=k)
     tmp.curveplots[[k]] <- p.coverage
     
   }
@@ -159,7 +159,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL, important.g
 #' @param sample.clustering : clustering vector with sample names and cluster designations
 #' @param checkpoints : from momaObj
 #' @return a table that has counts of how many times a particular event happens in a cluster
-get.subtype.event.tables <- function(saturation.data, sample.clustering, checkpoints) {
+getSubtypeEventTables <- function(saturation.data, sample.clustering, checkpoints) {
   
   subtype.coverage <- list()
   coverage.allSubtypes <- saturation.data
@@ -181,7 +181,7 @@ get.subtype.event.tables <- function(saturation.data, sample.clustering, checkpo
      # mr.cutoff <- length(momaObj$checkpoints[[cluster.id]])
     #}
     
-    subtype.coverage[[cluster.id]] <- make.coverage.df(coverage, cutoff=mr.cutoff)
+    subtype.coverage[[cluster.id]] <- makeCoverageDf(coverage, cutoff=mr.cutoff)
     
   }
   names(subtype.coverage) <- unique(clustering)
@@ -198,7 +198,7 @@ get.subtype.event.tables <- function(saturation.data, sample.clustering, checkpo
 #' @param coverage.list : List indexed by sample name, contains $mut, $fus, $amp, $del interactions
 #' @param cutoff : number of regulators to include
 #' @return dataframe with each sample and which events are captured by the checkpoint mrs
-make.coverage.df <- function(coverage.list, cutoff) {
+makeCoverageDf <- function(coverage.list, cutoff) {
 
 df <- c()
 for (name in names(coverage.list)) {
@@ -231,18 +231,8 @@ df
 #' @param sample.clustering : clustering vector with sample names and cluster designations
 #' @param topN : number of regulators to look through. default is 100
 #' @return dataframe with coverage data for genomic events
-merge.data.by.subtype <- function(genomic.saturation, sample.clustering, topN = 100)  {
-  
-  ### unnecessary ### remove after testing
-  # flatten the coverage into a single list for all samples
-  # coverage.allSamples <- list()
-  # for (clus in 1:length(genomic.saturation)) {
-  #   ll <- genomic.saturation[[clus]]
-  #   for (sample in names(ll)) {
-  #     coverage.allSamples[[sample]] <- ll[[sample]]
-  #   }
-  # }
-  
+mergeDataBySubtype <- function(genomic.saturation, sample.clustering, topN = 100)  {
+
   # generate summary stats for each subtype	
   full.df <- c()
   for (subtype in unique(sample.clustering)) {	
@@ -250,7 +240,7 @@ merge.data.by.subtype <- function(genomic.saturation, sample.clustering, topN = 
     # unnecessary 
     # subtype.samples <- names(sample.clustering[sample.clustering==subtype])
     coverage.subtype <- genomic.saturation[[subtype]]
-    df <- merge.data(coverage.subtype, topN)
+    df <- mergeData(coverage.subtype, topN)
     
     # append a column specifying the subtype	
     df$subtype <- rep(subtype, nrow(df))
@@ -261,11 +251,11 @@ merge.data.by.subtype <- function(genomic.saturation, sample.clustering, topN = 
 }
 
 
-#' Helper function for merge.data.by.subtype
+#' Helper function for mergeDataBySubtype
 #' @param coverage.range : genomic saturation for a particular subtype
 #' @param topN : max number of top regulators to search through
 #' @return dataframe with coverage data for genomic events
-merge.data <- function(coverage.range, topN)  {
+mergeData <- function(coverage.range, topN)  {
   
   data <- c()
   for (i in seq_len(topN)) {
@@ -315,7 +305,7 @@ merge.data <- function(coverage.range, topN)  {
 #' @param max.events : maximum number of events to plot for the oncoplots
 #' @param k : current cluster number
 #' @return oncoprint event plot
-oncoprint.plot <- function(summary.vec, snpmat.thisClus, amps.thisClus, dels.thisClus, fusions.thisClus, 
+oncoprintPlot <- function(summary.vec, snpmat.thisClus, amps.thisClus, dels.thisClus, fusions.thisClus, 
                            important.genes, band2gene, max.events, k) {
   
   data <- data.frame(coverage=names(summary.vec), freq=as.numeric(summary.vec)) %>%
@@ -324,7 +314,7 @@ oncoprint.plot <- function(summary.vec, snpmat.thisClus, amps.thisClus, dels.thi
   
   ## Split into separate data types
   mut.data <- data[data$type == "mut",] %>% 
-    dplyr::mutate(id = map_entrez(.data$id)) %>% 
+    dplyr::mutate(id = mapEntrez(.data$id)) %>% 
     dplyr::select(.data$id, .data$freq) %>% 
     tibble::deframe()
   
@@ -599,7 +589,7 @@ oncoprint.plot <- function(summary.vec, snpmat.thisClus, amps.thisClus, dels.thi
 #' @param max.muts : maximum number of mutations to get per sample, default is 10
 #' @param max.cnv : maximum number of cnvs to per sample, default is 5
 #' @return plot object 
-plot.events <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NULL, samples.total, max.muts = 10, max.cnv = 5) {
+plotEvents <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NULL, samples.total, max.muts = 10, max.cnv = 5) {
   
   data <- data.frame(coverage=names(summary.vec), Freq=as.numeric(summary.vec))
   # order by individual frequency
@@ -608,7 +598,7 @@ plot.events <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NUL
   data$id <- unlist(lapply(data$coverage, function(label) {
     label <- as.character(label)
     name <- strsplit(label, ':')[[1]][1]
-    hugo <- map_entrez(as.character(name))
+    hugo <- mapEntrez(as.character(name))
     if (is.na(hugo)) {
       return (name)
     } else {
@@ -623,7 +613,7 @@ plot.events <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NUL
   }))
   
   # get order dataframe of events 
-  mapped <- get.data.frame(data, highlight.genes, genomeBand_2_gene, max.muts = 10, max.cnv = 5)
+  mapped <- getDataFrame(data, highlight.genes, genomeBand_2_gene, max.muts = 10, max.cnv = 5)
   # check the size: if we have too many events to display, then select the top N unique IDs
   # already sorted by frequency of occurence. 
   if (nrow(mapped) > 50) {
@@ -691,7 +681,7 @@ plot.events <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NUL
 #' @param max.muts : maximum number of mutations to get per sample, default is 10
 #' @param max.cnv : maximum number of cnvs to per sample, default is 5
 #' @return ordered data frame with each genomic event and it's frequency
-get.data.frame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 10, max.cnv = 5) {
+getDataFrame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 10, max.cnv = 5) {
   
   #### edit logic of this section ?
   
@@ -772,7 +762,7 @@ get.data.frame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 
 #' @param fraction : what fraction coverage to use for genomic curve threshold
 #' @param tissue.cluster : which cluster subsample to look at
 #' @return output .png
-genomic.plot.small <- function(input.df, fraction=0.85, tissue.cluster=NULL)  { 
+genomicPlotSmall <- function(input.df, fraction=0.85, tissue.cluster=NULL)  { 
   
   #### need to add in null matrix function ###
   
@@ -790,7 +780,7 @@ genomic.plot.small <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
   
   sweep <- subtype.df$fraction
   names(sweep) <- sort(unique(subtype.df$k))
-  best.k <- fit.curve.percent(sweep, frac=fraction)
+  best.k <- fitCurvePercent(sweep, frac=fraction)
   print (paste("Threshold for MR cutoff: ", best.k))
   
   
@@ -829,52 +819,4 @@ genomic.plot.small <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
   p.100 
 }
 
-
-# #'  Helper function to do inflection point fitting. 
-# #'  Use the heuristic, or if supplied, the definitions file to set the MR threshold
-# #'  @param sweep : numeric vector of genomic coverage values, named by -k- threshold
-# #'  @param frac : Fraction of coverage to use as a threshold (default .85 = 85 percent)
-# #'  @return The -k- integer where coverage is acheived
-# fit.threshold <- function(sweep, frac=NULL) {
-#   k <- fit.curve.percent(sweep, frac)
-#   return (k)
-# }
-
-
-# # Make multiplot layout
-# multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
-#   library(grid)
-#   
-#   # Make a list from the ... arguments and plotlist
-#   plots <- c(list(...), plotlist)
-#   
-#   numPlots = length(plots)
-#   
-#   # If layout is NULL, then use 'cols' to determine layout
-#   if (is.null(layout)) {
-#     # Make the panel
-#     # ncol: Number of columns of plots
-#     # nrow: Number of rows needed, calculated from # of cols
-#     layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-#                      ncol = cols, nrow = ceiling(numPlots/cols))
-#   }
-#   
-#   if (numPlots==1) {
-#     print(plots[[1]])
-#     
-#   } else {
-#     # Set up the page
-#     grid.newpage()
-#     pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-#     
-#     # Make each plot, in the correct location
-#     for (i in 1:numPlots) {
-#       # Get the i,j matrix positions of the regions that contain this subplot
-#       matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-#       
-#       print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-#                                       layout.pos.col = matchidx$col))
-#     }
-#   }
-# }
 

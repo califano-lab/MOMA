@@ -116,9 +116,9 @@ momaRunner <- setRefClass("momaRunner", fields =
       hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, amp = amps.hypotheses)
       
       # do aREA association
-      nes.amps <- associate.events(viper, amps.mat, min.events = min.events, event.type = "Amplifications")
-      nes.dels <- associate.events(viper, dels.mat, min.events = min.events, event.type = "Deletions")
-      nes.muts <- associate.events(viper, muts.mat, min.events = min.events, event.type = "Mutations")
+      nes.amps <- associateEvents(viper, amps.mat, min.events = min.events, event.type = "Amplifications")
+      nes.dels <- associateEvents(viper, dels.mat, min.events = min.events, event.type = "Deletions")
+      nes.muts <- associateEvents(viper, muts.mat, min.events = min.events, event.type = "Mutations")
       
       nes.fusions <- NULL
       if (!is.null(fusions)) {
@@ -127,7 +127,7 @@ momaRunner <- setRefClass("momaRunner", fields =
           if(!is.na(output.folder)) {
             write.table(fus.hypotheses, file = paste0(output.folder, "/hypotheses.fusions.txt"), quote = FALSE, sep = "\t")
           }
-          nes.fusions <- associate.events(viper, fusions, min.events = min.events, event.type = "Fusions")
+          nes.fusions <- associateEvents(viper, fusions, min.events = min.events, event.type = "Fusions")
       }
       
       # Save aREA results if desired
@@ -143,8 +143,8 @@ momaRunner <- setRefClass("momaRunner", fields =
     
       # NULL TFs : from the VIPER matrix, calculate p-values of the absolute mean NES score for each.  (2-tailed test, -pnorm*2).  BH-FDR < 0.05 are sig.
       # Take everything else as the background model.
-      ranks[["viper"]] <<- viper.getTFScores(viper)
-      sig.tfs <- viper.getSigTFS(ranks[["viper"]])
+      ranks[["viper"]] <<- viperGetTFScores(viper)
+      sig.tfs <- viperGetSigTFS(ranks[["viper"]])
       null.TFs <- setdiff(rownames(viper), sig.tfs)
       print(paste("Found ", length(sig.tfs), " significant TFs from VIPER scores ... "))
       print(paste("Building background model from ", length(null.TFs), " nulls..."))
@@ -158,9 +158,9 @@ momaRunner <- setRefClass("momaRunner", fields =
           if (is.null(nes.thisType)) {
               next
           }
-          corrected.scores <- get.diggit.empiricalQvalues(viper, nes.thisType, null.TFs)
+          corrected.scores <- getDiggitEmpiricalQvalues(viper, nes.thisType, null.TFs)
           print("Generating final interactions...")
-          local.interactions[[type]] <- sig.interactors.DIGGIT(corrected.scores, nes[[type]], pathways[["cindy"]], cindy.only = cindy.only)
+          local.interactions[[type]] <- sigInteractorsDIGGIT(corrected.scores, nes[[type]], pathways[["cindy"]], cindy.only = cindy.only)
       }
       
       interactions <<- local.interactions
@@ -178,9 +178,9 @@ momaRunner <- setRefClass("momaRunner", fields =
           }
           # deletions/amp CNV events need to be corrected for genome location...
           if (type == "amp" || type == "del") {
-              integrated.z[[type]] <- stouffer.integrate(interactions[[type]], gene.loc.mapping)
+              integrated.z[[type]] <- stoufferIntegrate(interactions[[type]], gene.loc.mapping)
           } else {
-              integrated.z[[type]] <- stouffer.integrate(interactions[[type]], NULL)
+              integrated.z[[type]] <- stoufferIntegrate(interactions[[type]], NULL)
           }
       }
       # generate integrated rankings from additional sources of evidence, including CINDy and pathway databases and/or structural databases like PrePPI
@@ -206,14 +206,14 @@ momaRunner <- setRefClass("momaRunner", fields =
               if (is.null(interactions[[type]])) {
                   next
               }
-              pathway.z[[pathway]][[type]] <- pathway.diggit.intersect(interactions[[type]], 
-                                                                       pathways[[pathway]], pos.nes.only = TRUE, cores)
+              pathway.z[[pathway]][[type]] <- pathwayDiggitIntersect(interactions[[type]], 
+                                  pathways[[pathway]], pos.nes.only = TRUE, cores)
           }
       }
       
       viper.scores <- ranks[["viper"]]
       print("Integrating all data in Bayesian conditional model...")
-      ranks[["integrated"]] <<- conditional.model(viper.scores, integrated.z, pathway.z)
+      ranks[["integrated"]] <<- conditionalModel(viper.scores, integrated.z, pathway.z)
 }, 
 
   Cluster = function(use.parallel = FALSE, cores = 1) {
@@ -269,17 +269,17 @@ momaRunner <- setRefClass("momaRunner", fields =
           # ranked list of cMRs for this subtype
           subtype.specific.MR_ranks <- sort(ranks[["integrated"]][sig.active.mrs])
           
-          coverage.range <- get.coverage(.self, names(subtype.specific.MR_ranks), viper.samples, topN = 100)
+          coverage.range <- getCoverage(.self, names(subtype.specific.MR_ranks), viper.samples, topN = 100)
           coverage.subtypes[[clus.id]] <- coverage.range
           
           # 'solve' the checkpoint for each subtype
           
           # 1) generate summary stats for mean fractional coverage
-          tmp.summaryStats[[clus.id]] <- merge.genomicSaturation(coverage.range, topN = 100)
+          tmp.summaryStats[[clus.id]] <- mergeGenomicSaturation(coverage.range, topN = 100)
           # compute best K based on fractional coverage
           sweep <- tmp.summaryStats[[clus.id]]$fraction
           names(sweep) <- tmp.summaryStats[[clus.id]]$k
-          best.k <- fit.curve.percent(sweep, frac = cov.fraction)
+          best.k <- fitCurvePercent(sweep, frac = cov.fraction)
           # pick the top cMRs based on this
           tmp.checkpoints[[clus.id]] <- names(subtype.specific.MR_ranks[seq_len(best.k)])
       }
@@ -308,7 +308,7 @@ utils::globalVariables(c("gene.map"))
 #' @examples
 #' library(moma.gbmexample) 
 #' data("gbm.example")
-#' momaObj <- moma_constructor(gbm.example$vipermat, 
+#' momaObj <- momaConstructor(gbm.example$vipermat, 
 #' gbm.example$rawsnp, 
 #' gbm.example$rawcnv, 
 #' gbm.example$fusions, 
@@ -317,12 +317,12 @@ utils::globalVariables(c("gene.map"))
 #' 
 #' @return an instance of class momaRunner
 #' @export
-moma_constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist = NA_character_, 
+momaConstructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist = NA_character_, 
                              output.folder = NA_character_, gene.loc.mapping = gene.map) {
     utils::data("gene.map")
-    viper <- samplename.filter(viper)
-    mut <- samplename.filter(mut)
-    cnv <- samplename.filter(cnv)
+    viper <- sampleNameFilter(viper)
+    mut <- sampleNameFilter(mut)
+    cnv <- sampleNameFilter(cnv)
     
     # validate viper matrix
     if (ncol(viper) < 2) {
@@ -392,5 +392,27 @@ moma_constructor <- function(viper, mut, cnv, fusions, pathways, gene.blacklist 
     obj <- momaRunner$new(viper = viper, mut = mut, cnv = cnv, fusions = fusions, pathways = pathways, gene.blacklist = as.character(gene.blacklist), 
         output.folder = output.folder, gene.loc.mapping = gene.loc.mapping)
     obj
+}
+
+
+#' Retain TCGA sample ids without the final letter designation ('A/B/C') 
+#' 
+#' @param input Matrix of expression or protein activity scores. Columns are sample names, rows are genes.
+#' Input can also just be an input vector of sample names.
+#' @examples 
+#' sample.names <- c("TCGA-14-1825-01A", "TCGA-76-4931-01B", "TCGA-06-5418-01A")
+#' sampleNameFilter(sample.names)
+#' @return An identical matrix with new (shorter) column names, or a vector with the shortened names. 
+#' @export
+sampleNameFilter <- function(input) {
+  # filter down to sample Id without the 'A/B/C sample class'.
+  if(is.matrix(input)) {
+    sample.ids <- vapply(colnames(input), function(x) substr(x, 1, 15), FUN.VALUE = character(1))
+    colnames(input) <- sample.ids
+  } else if (is.vector(input)) {
+    input <- substr(input, 1, 15)
+  }
+  
+  input
 }
 
