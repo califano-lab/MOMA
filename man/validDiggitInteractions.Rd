@@ -7,15 +7,18 @@
 validDiggitInteractions(interactions, gene.loc.mapping, selected.tfs)
 }
 \arguments{
-\item{interactions}{List indexed by amp/mut/del/fus - from cMRs to interacting events}
+\item{interactions}{List indexed by amp/mut/del/fus from cMRs to interacting 
+events}
 
 \item{gene.loc.mapping}{Data.frame mapping entrezIDs to cytoband locations}
 
 \item{selected.tfs}{For each event type list, search within only these cMRS}
 }
 \value{
-a list of events 'covered' by the supplied interactions of type mut/amp/del/fus
+a list of events 'covered' by the supplied interactions of 
+type mut/amp/del/fus
 }
 \description{
 Return a set of events 'covered' by specified cMR-event interactions
 }
+\keyword{internal}

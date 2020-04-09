@@ -13,15 +13,18 @@ Main class encapsulating the input data and logic of the MOMA algorithm
 \describe{
 \item{\code{viper}}{matrix of inferred activity score inferred by viper}
 
-\item{\code{mut}}{binary mutation matrix 1 for presence of mutation, 0 for not, NA if not determined}
+\item{\code{mut}}{binary mutation matrix 1 for presence of mutation, 0 for not, NA 
+if not determined}
 
 \item{\code{cnv}}{matrix of cnv values. Can be binary or a range.}
 
 \item{\code{fusions}}{binary matrix of fusion events if appliable}
 
-\item{\code{pathways}}{list of pathways/connections to consider as extra evidence in the analysis}
+\item{\code{pathways}}{list of pathways/connections to consider as extra evidence 
+in the analysis}
 
-\item{\code{gene.blacklist}}{character vector of genes to not include (because of high mutation frequency)}
+\item{\code{gene.blacklist}}{character vector of genes to not include because of 
+high mutation frequency}
 
 \item{\code{output.folder}}{character vector of location to save files if desired}
 
@@ -43,7 +46,8 @@ Main class encapsulating the input data and logic of the MOMA algorithm
 
 \item{\code{checkpoints}}{results field with the MRs determined to be the checkpoint for each cluster}
 
-\item{\code{sample.clustering}}{field to save sample clustering vector. Numbers are cluster assignments, names are sample ids}
+\item{\code{sample.clustering}}{field to save sample clustering vector. Numbers are 
+cluster assignments, names are sample ids}
 }}
 
 \section{Methods}{
@@ -51,17 +55,17 @@ Main class encapsulating the input data and logic of the MOMA algorithm
 \describe{
 \item{\code{Cluster(use.parallel = FALSE, cores = 1)}}{Cluster the samples after applying the MOMA weights to the VIPER scores}
 
+\item{\code{makeInteractions(
+  genomic.event.types = c("amp", "del", "mut", "fus"),
+  cindy.only = FALSE
+)}}{Make interaction web for significant MRs based on their associated events}
+
 \item{\code{Rank(
   use.cindy = TRUE,
   genomic.event.types = c("amp", "del", "mut", "fus"),
   use.parallel = FALSE,
   cores = 1
 )}}{Rank MRs based on DIGGIT scores and number of associated events}
-
-\item{\code{makeInteractions(
-  genomic.event.types = c("amp", "del", "mut", "fus"),
-  cindy.only = FALSE
-)}}{Make interaction web for significant MRs based on their associated events}
 
 \item{\code{runDIGGIT(fCNV = NULL, cnvthr = 0.5, min.events = 4, verbose = FALSE)}}{Run DIGGIT association function to get associations for driver genomic events}
 

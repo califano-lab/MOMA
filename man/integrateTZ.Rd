@@ -17,3 +17,4 @@ Number
 \description{
 This function integrate over a numerical range using the trapezoid method
 }
+\keyword{internal}

@@ -4,8 +4,8 @@ utils::globalVariables(c("gene.map"))
 #' @importFrom utils data
 #' @param entrez.ids : vector of entrez ids requires hugo2entrez to be loaded
 #' @examples
-#' map_entrez(c("29974", "5728"))
-#' @seealso \code{\link[moma]{map_hugo}}
+#' mapEntrez(c("29974", "5728"))
+#' @seealso \code{\link[moma]{mapHugo}}
 #' @return : vector of hugo gene names
 #' @export
 mapEntrez <- function(entrez.ids) {
@@ -33,8 +33,8 @@ mapEntrez <- function(entrez.ids) {
 #' @importFrom utils data
 #' @param hugo.ids : vector of hugo gene names, requires hugo2entrez to be loaded
 #' @examples
-#' map_hugo(c("A1CF","PTEN"))
-#' @seealso \code{\link[moma]{map_entrez}}
+#' mapHugo(c("A1CF","PTEN"))
+#' @seealso \code{\link[moma]{mapEntrez}}
 #' @return : vector of entrez ids 
 #' @export
 mapHugo <- function(hugo.ids) {

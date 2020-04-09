@@ -11,10 +11,12 @@ Description: This package implements the inference of candidate master regulator
 Depends: R (>= 4.0)
 License: GPL-3
 Encoding: UTF-8
-LazyData: false
+LazyData: true
 BugReports: https://github.com/califano-lab/MOMA/issues
 RoxygenNote: 7.1.0
-biocViews: Software, NetworkEnrichment, NetworkInference, Network, FeatureExtraction, Clustering, FunctionalGenomics, Transcriptomics, SystemsBiology
+biocViews: Software, NetworkEnrichment, NetworkInference, Network, 
+  FeatureExtraction, Clustering, FunctionalGenomics, Transcriptomics, 
+  SystemsBiology
 Imports:
 	circlize (>= 0.4),
 	cluster (>= 2.0),

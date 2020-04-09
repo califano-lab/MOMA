@@ -15,7 +15,9 @@
 #' makeSaturationPlots(momaObj, max.events = 20)
 #' }
 #' @export
-makeSaturationPlots <- function(momaObj, clustering.solution = NULL, important.genes = NULL, fCNV = NULL, max.events = 30) {
+makeSaturationPlots <- function(momaObj, clustering.solution = NULL, 
+                                important.genes = NULL, fCNV = NULL, 
+                                max.events = 30) {
   
   # check for required components of previous saturation analysis and set as local variables
   if (length(momaObj$checkpoints) == 0) {
@@ -155,24 +157,30 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL, important.g
 
 #' Helper function to get subtype specific events
 #' @param saturation.data : genomic saturation object from moma. List indexed by 
-#' cluster then sample then regulator with the number of events associated with each additional regulator
-#' @param sample.clustering : clustering vector with sample names and cluster designations
+#' cluster then sample then regulator with the number of events associated with 
+#' each additional regulator
+#' @param sample.clustering : clustering vector with sample names and 
+#' cluster designations
 #' @param checkpoints : from momaObj
-#' @return a table that has counts of how many times a particular event happens in a cluster
-getSubtypeEventTables <- function(saturation.data, sample.clustering, checkpoints) {
+#' @return a table that has counts of how many times a particular event 
+#' happens in a cluster
+#' @keywords internal
+getSubtypeEventTables <- function(saturation.data, sample.clustering, 
+                                  checkpoints) {
   
   subtype.coverage <- list()
   coverage.allSubtypes <- saturation.data
   clustering <- sample.clustering
   
-  # aggregate statistics across all samples, but use different subtype specific solutions
+  # aggregate statistics across all samples, but use different subtype 
+  # specific solutions
   for (cluster.id in unique(clustering)) {
     # dataframe with sample, type, gene names for each 
     # amp/del events can be locations. 
     coverage <- coverage.allSubtypes[[cluster.id]]
     sample.set <- names(coverage)
     
-    # get number of regulators decided for this checkpoint depending on coverage threshold 
+    # get number of regulators decided for this checkpoint depending on threshold 
     mr.cutoff <- length(checkpoints[[cluster.id]])
     
     #if (isTRUE(checkpoint.spec)) {
@@ -194,10 +202,13 @@ getSubtypeEventTables <- function(saturation.data, sample.clustering, checkpoint
 }
 
 
-#' Helper function for making the coverage dataframe (might)
-#' @param coverage.list : List indexed by sample name, contains $mut, $fus, $amp, $del interactions
+#' Helper function for making the coverage dataframe 
+#' @param coverage.list : List indexed by sample name, 
+#' contains mut/fus/amp/del interactions
 #' @param cutoff : number of regulators to include
-#' @return dataframe with each sample and which events are captured by the checkpoint mrs
+#' @return dataframe with each sample and which events are 
+#' captured by the checkpoint mrs
+#' @keywords internal
 makeCoverageDf <- function(coverage.list, cutoff) {
 
 df <- c()
@@ -226,12 +237,16 @@ df
 }
 
 
-#' Create data frame from coverage data, including number of total events 'covered' and unique events
+#' Create data frame from coverage data, including number of total events 
+#' 'covered' and unique events
 #' @param genomic.saturation : data from genomic saturation function
-#' @param sample.clustering : clustering vector with sample names and cluster designations
+#' @param sample.clustering : clustering vector with sample names and 
+#' cluster designations
 #' @param topN : number of regulators to look through. default is 100
 #' @return dataframe with coverage data for genomic events
-mergeDataBySubtype <- function(genomic.saturation, sample.clustering, topN = 100)  {
+#' @keywords internal
+mergeDataBySubtype <- function(genomic.saturation, sample.clustering, 
+                               topN = 100)  {
 
   # generate summary stats for each subtype	
   full.df <- c()
@@ -255,6 +270,7 @@ mergeDataBySubtype <- function(genomic.saturation, sample.clustering, topN = 100
 #' @param coverage.range : genomic saturation for a particular subtype
 #' @param topN : max number of top regulators to search through
 #' @return dataframe with coverage data for genomic events
+#' @keywords internal
 mergeData <- function(coverage.range, topN)  {
   
   data <- c()
@@ -301,12 +317,15 @@ mergeData <- function(coverage.range, topN)  {
 #' @param dels.thisClus : CNV matrix subset to samples in current cluster (just deletions)
 #' @param fusions.thisClus : Fusion matrix subset to samples in current cluster
 #' @param important.genes : well known genes to highlight in the analysis
-#' @param band2gene : mapping of genomic location IDs to gene name: vector of HUGO gene ids, named by genomic location
+#' @param band2gene : mapping of genomic location IDs to gene name: vector of 
+#' HUGO gene ids, named by genomic location
 #' @param max.events : maximum number of events to plot for the oncoplots
 #' @param k : current cluster number
 #' @return oncoprint event plot
-oncoprintPlot <- function(summary.vec, snpmat.thisClus, amps.thisClus, dels.thisClus, fusions.thisClus, 
-                           important.genes, band2gene, max.events, k) {
+#' @keywords internal
+oncoprintPlot <- function(summary.vec, snpmat.thisClus, amps.thisClus, 
+                          dels.thisClus, fusions.thisClus, important.genes, 
+                          band2gene, max.events, k) {
   
   data <- data.frame(coverage=names(summary.vec), freq=as.numeric(summary.vec)) %>%
     tidyr::separate(.data$coverage, c("id", "type"), ":", remove = FALSE) %>%
@@ -584,12 +603,15 @@ oncoprintPlot <- function(summary.vec, snpmat.thisClus, amps.thisClus, dels.this
 #' where type is 'mut', 'amp', 'del', 'fus'. Mutations are in Entrez ID
 #' Amp/Deletion CNV events are in genomic band location
 #' @param highlight.genes : well known genes to highlight in the analysis in 
-#' @param genomeBand_2_gene : mapping of genomic location IDs to gene name: vector of HUGO gene ids, named by genomic loci
+#' @param genomeBand_2_gene : mapping of genomic location IDs to gene name: 
+#' vector of HUGO gene ids, named by genomic loci
 #' @param samples.total : number of samples in the subtype, used to calculate percentages
 #' @param max.muts : maximum number of mutations to get per sample, default is 10
 #' @param max.cnv : maximum number of cnvs to per sample, default is 5
-#' @return plot object 
-plotEvents <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NULL, samples.total, max.muts = 10, max.cnv = 5) {
+#' @return plot object
+#' @keywords internal 
+plotEvents <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NULL,
+                       samples.total, max.muts = 10, max.cnv = 5) {
   
   data <- data.frame(coverage=names(summary.vec), Freq=as.numeric(summary.vec))
   # order by individual frequency
@@ -675,13 +697,17 @@ plotEvents <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NULL
 
 #' Helper function to get data frame for bar plot plot.events function
 
-#' @param data : data.frame with $type, $id, $Freq per event
-#' @param highlight.genes : genes to look for in mutations/cnv lists (if looking for specific genes because of prior knowledge)
-#' @param genomeBand_2_gene : mapping of genomic location IDs to gene name: vector of HUGO gene ids, named by genomic loci
-#' @param max.muts : maximum number of mutations to get per sample, default is 10
-#' @param max.cnv : maximum number of cnvs to per sample, default is 5
+#' @param data data.frame with $type, $id, $Freq per event
+#' @param highlight.genes genes to look for in mutations/cnv lists (if looking
+#'  for specific genes because of prior knowledge)
+#' @param genomeBand_2_gene mapping of genomic location IDs to gene name: 
+#' vector of HUGO gene ids, named by genomic loci
+#' @param max.muts maximum number of mutations to get per sample, default is 10
+#' @param max.cnv maximum number of cnvs to per sample, default is 5
 #' @return ordered data frame with each genomic event and it's frequency
-getDataFrame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 10, max.cnv = 5) {
+#' @keywords internal
+getDataFrame <- function(data, highlight.genes, genomeBand_2_gene, 
+                         max.muts = 10, max.cnv = 5) {
   
   #### edit logic of this section ?
   
@@ -690,7 +716,7 @@ getDataFrame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 10
   MAX.CNV.loc <- max.cnv
   ## all all highlight genes and events to the 
   
-  ## for each CNV location event, find genes in that overlap with the highlight list. 
+  ## for each CNV location event, find genes that overlap with the highlight list. 
   ## add duplicate entries for those genes
   mapped <- c()
   loc.data <- data[data$type=='del',]
@@ -701,7 +727,10 @@ getDataFrame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 10
     
     if (length(hgIB)==0) { next }
     
-    mapped <- rbind(mapped, data.frame(coverage=loc.data[row, 1], Freq=loc.data[row, 2], id=hgIB, type=loc.data[row, 4]))
+    mapped <- rbind(mapped, data.frame(coverage=loc.data[row, 1], 
+                                       Freq=loc.data[row, 2], 
+                                       id=hgIB, 
+                                       type=loc.data[row, 4]))
   }
   loc.data <- data[data$type=='amp',]
   for (row in seq_len(nrow(loc.data))) {
@@ -711,7 +740,10 @@ getDataFrame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 10
     
     if (length(hgIB)==0) { next }
     
-    mapped <- rbind(mapped, data.frame(coverage=loc.data[row, 1], Freq=loc.data[row, 2], id=hgIB, type=loc.data[row, 4]))
+    mapped <- rbind(mapped, data.frame(coverage=loc.data[row, 1], 
+                                       Freq=loc.data[row, 2], 
+                                       id=hgIB, 
+                                       type=loc.data[row, 4]))
   }
   
   # find mutations in key regions
@@ -720,7 +752,10 @@ getDataFrame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 10
     gene <- loc.data[row, 3]
     hgIB <- intersect(gene, highlight.genes)
     if (length(hgIB)==0) { next }
-    mapped <- rbind(mapped, data.frame(coverage=loc.data[row, 1], Freq=loc.data[row, 2], id=hgIB, type=loc.data[row, 4]))
+    mapped <- rbind(mapped, data.frame(coverage=loc.data[row, 1], 
+                                       Freq=loc.data[row, 2], 
+                                       id=hgIB, 
+                                       ype=loc.data[row, 4]))
   }
   
   # HUGO ids: add additional mutation events outside of the highlight genes
@@ -758,10 +793,11 @@ getDataFrame <- function(data, highlight.genes, genomeBand_2_gene, max.muts = 10
 #' @importFrom grDevices colorRampPalette
 #' @import ggplot2
 #' @import magrittr
-#' @param input.df : tissue.coverage.df with mean, k, fraction and unique events. has all samples
+#' @param input.df : tissue.coverage.df with mean, k, fraction and unique events.
 #' @param fraction : what fraction coverage to use for genomic curve threshold
 #' @param tissue.cluster : which cluster subsample to look at
 #' @return output .png
+#' @keywords internal
 genomicPlotSmall <- function(input.df, fraction=0.85, tissue.cluster=NULL)  { 
   
   #### need to add in null matrix function ###

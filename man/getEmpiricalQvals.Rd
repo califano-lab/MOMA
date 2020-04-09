@@ -11,11 +11,13 @@ getEmpiricalQvals(test.statistics, null.statistics, alternative = "both")
 
 \item{null.statistics}{P-values generated under the null (permutation) model}
 
-\item{alternative}{Optional : 1 or 2 tails used to generate the p-value (default='both')}
+\item{alternative}{Optional : 1 or 2 tails used to generate the p-value}
 }
 \value{
-A list with both the qvalues and empirical p-values from the supplied test and null stats
+A list with both the qvalues and empirical p-values from the supplied
+test and null stats
 }
 \description{
 Get empirical qvals
 }
+\keyword{internal}

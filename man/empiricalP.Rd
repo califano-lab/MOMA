@@ -17,3 +17,4 @@ a numeric p-value between 0 and 1
 \description{
 Get the empirical p-value from a distribution (vector)
 }
+\keyword{internal}

@@ -11,6 +11,7 @@
 #' @param data Original data matrix
 #' @return list of cluster reliability scores by 'k', 'clustering' (the vector solution) and 'reliability' 
 #' as well as 'medoids' labels
+#' @keywords internal
 clusterRange <- function(dis, range = c(2, 100), step = 1, cores = 1, method = c("pam", "kmeans"), data = NULL) {
   
   #set.seed(1, kind = "L'Ecuyer-CMRG")
@@ -62,6 +63,7 @@ clusterRange <- function(dis, range = c(2, 100), step = 1, cores = 1, method = c
 #' @param method Character string indicating the mthod to compute reliability, 
 #' either by element, by cluster or global
 #' @return Reliability score for each element
+#' @keywords internal
 clusterReliability <- function(cluster, similarity, xlim = NULL, 
                                method = c("element", "cluster", "global")) {
   method <- match.arg(method)
@@ -111,6 +113,7 @@ clusterReliability <- function(cluster, similarity, xlim = NULL,
 #' @param signatures Numeric matrix of signatures
 #' @param groups List containing the groups as vectors of sample names
 #' @return Matrix of Normalized Enrichment Zcores
+#' @keywords internal
 sREA <- function(signatures, groups) {
   if (is.null(nrow(signatures))) 
     signatures <- matrix(signatures, length(signatures), 1, dimnames = list(names(signatures), "sample1"))
@@ -138,6 +141,7 @@ sREA <- function(signatures, groups) {
 #' @param steps Integer indicating the number of steps to evaluate
 #' @param ... Additional arguments for \code{f}
 #' @return Number
+#' @keywords internal
 integrateFunction <- function(f, xmin, xmax, steps = 100, ...) {
   x <- seq(xmin, xmax, length = steps)
   y <- f(x, ...)
@@ -151,6 +155,7 @@ integrateFunction <- function(f, xmin, xmax, steps = 100, ...) {
 #' @param x Numeric vector of x values
 #' @param y Numeric vector of y values
 #' @return Number
+#' @keywords internal
 integrateTZ <- function(x, y) {
   pos <- order(x)
   x <- x[pos]

@@ -7,11 +7,13 @@
 sampleNameFilter(input)
 }
 \arguments{
-\item{input}{Matrix of expression or protein activity scores. Columns are sample names, rows are genes.
-Input can also just be an input vector of sample names.}
+\item{input}{Matrix of expression or protein activity scores. Columns are 
+sample names, rows are genes. Input can also just be an input vector of 
+sample names.}
 }
 \value{
-An identical matrix with new (shorter) column names, or a vector with the shortened names.
+An identical matrix with new (shorter) column names, 
+or a vector with the shortened names.
 }
 \description{
 Retain TCGA sample ids without the final letter designation ('A/B/C')

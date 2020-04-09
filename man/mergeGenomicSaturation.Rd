@@ -2,18 +2,22 @@
 % Please edit documentation in R/genomic.saturation.r
 \name{mergeGenomicSaturation}
 \alias{mergeGenomicSaturation}
-\title{mergeGenomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events}
+\title{mergeGenomicSaturation Create data frame from coverage data, including
+ number of total events 'covered' and unique events}
 \usage{
 mergeGenomicSaturation(coverage.range, topN)
 }
 \arguments{
-\item{coverage.range}{List indexed by sample, then sub-indexed by # of master regulators, then by event type (mut/amp/del/fus). Holds all events by sample}
+\item{coverage.range}{List indexed by sample, then sub-indexed by # of master
+regulators, then by event type (mut/amp/del/fus). Holds all events by sample}
 
 \item{topN}{Maximum number of master regulators to compute coverage}
 }
 \value{
-A data frame with summary statistics for genomic saturation at each 'k'
+A data frame with summary statistics for genomic saturation at each k
 }
 \description{
-mergeGenomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events
+mergeGenomicSaturation Create data frame from coverage data, including
+ number of total events 'covered' and unique events
 }
+\keyword{internal}

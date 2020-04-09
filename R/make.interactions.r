@@ -1,6 +1,7 @@
 #' Function to normalize TF scores
 #' 
-#' @param vipermat - matrix of VIPER scores with columns as samples, rows as protein names
+#' @param vipermat - matrix of VIPER scores with columns as samples, 
+#' rows as protein names
 #' @param fdr.thresh - BH-FDR threshold (default 0.05 FDR rate)
 #' @examples
 #' library(moma.gbmexample)
@@ -41,9 +42,12 @@ viperGetTFScores <- function(vipermat, fdr.thresh = 0.05) {
 
 #' Calculate p-values from pseudo zscores / VIPER aREA scores, threshold
 #' 
-#' @param zscores Vector of normally distributed z-scores representing protein activities. 
+#' @param zscores Vector of normally distributed z-scores representing protein 
+#' activities. 
 #' @param fdr.thresh Threshold for false discovery rate, default is 0.05
-#' @return Get the names of proteins with significant z-scores, after multi-hypothesis correction
+#' @return Get the names of proteins with significant z-scores, after 
+#' multi-hypothesis correction
+#' @keywords internal
 viperGetSigTFS <- function(zscores, fdr.thresh = 0.05) {
   
   # calculate pseudo-pvalues and look at just significant pvals/scores
@@ -59,14 +63,20 @@ viperGetSigTFS <- function(zscores, fdr.thresh = 0.05) {
 
 #' Compute the empirical q-values of each genomic-event/VIPER gene pair 
 #' 
-#' Use against the background distribution of associations with a given set of 'null' VIPER genes (i.e. low activity TFs) 
+#' Use against the background distribution of associations with a given set of 
+#' 'null' VIPER genes (i.e. low activity TFs) 
 #' 
-#' @param vipermat viper inferences matrix, samples are columns, rows are TF entrez gene IDs 
+#' @param vipermat viper inferences matrix, samples are columns, 
+#' rows are TF entrez gene IDs 
 #' @param nes scores for each mutation (rows) against each TF (columns) 
 #' @param null.TFs low-importance TFs used to calculate null distributions
-#' @param alternative Alternative defaults to 'both' : significant p-values can come from both sides of the null distribution 
-#' @return A named list of qvalues for each TF/cMR protein. Each entry contains a vector of q-values for all associated events; names are gene ids 
-getDiggitEmpiricalQvalues <- function(vipermat, nes, null.TFs, alternative = "both") {
+#' @param alternative Alternative defaults to 'both' : significant p-values can 
+#' come from both sides of the null distribution 
+#' @return A named list of qvalues for each TF/cMR protein. Each entry contains 
+#' a vector of q-values for all associated events; names are gene ids 
+#' @keywords internal
+getDiggitEmpiricalQvalues <- function(vipermat, nes, null.TFs, 
+                                      alternative = "both") {
   
   # subset NES to Viper Proteins in the vipermat only
   nes <- nes[, as.character(rownames(vipermat))]
@@ -89,9 +99,12 @@ getDiggitEmpiricalQvalues <- function(vipermat, nes, null.TFs, alternative = "bo
 #' 
 #' @param test.statistics P-values generated from the test comparisons
 #' @param null.statistics P-values generated under the null (permutation) model
-#' @param alternative Optional : 1 or 2 tails used to generate the p-value (default='both')
-#' @return A list with both the qvalues and empirical p-values from the supplied test and null stats
-getEmpiricalQvals <- function(test.statistics, null.statistics, alternative = "both") {
+#' @param alternative Optional : 1 or 2 tails used to generate the p-value
+#' @return A list with both the qvalues and empirical p-values from the supplied
+#' test and null stats
+#' @keywords internal
+getEmpiricalQvals <- function(test.statistics, null.statistics, 
+                              alternative = "both") {
   
   # calculate the upper and lower tail
   if (alternative == "both") {
@@ -116,20 +129,23 @@ getEmpiricalQvals <- function(test.statistics, null.statistics, alternative = "b
 }
 
 
-#' Filter interactions from NES (DIGGIT) scores and corresponding background-corrected scores. 
+#' Filter interactions from NES (DIGGIT) scores and corresponding 
+#' background-corrected scores. 
 #' 
 #' Use this version in the Bayes model to rank TFs
 #' 
 #' @import stats
-#' @param corrected.scores A list indexed by the genomic event/gene with corresponding pvals and qvals for
-#' each TF
+#' @param corrected.scores A list indexed by the genomic event/gene with 
+#' corresponding pvals and qvals for each TF
 #' @param nes.scores Matrix with tfs as columns, rows are genomic events
 #' @param cindy CINDy algorithm output matrix
 #' @param p.thresh P-value threshold (default=0.05)
 #' @param cindy.only Consider only CINDy validated interactions (default=TRUE)
 #' @return a list (indexed by VIPER protein) of significant genomic interactions 
 #' and associated pvals over the background (null TF) model, and NES scores
-sigInteractorsDIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh = 0.05, cindy.only = TRUE) {
+#' @keywords internal
+sigInteractorsDIGGIT <- function(corrected.scores, nes.scores, cindy, 
+                                 p.thresh = 0.05, cindy.only = TRUE) {
   
   pvals.matrix <- getPvalsMatrix(corrected.scores)
   
@@ -203,7 +219,9 @@ sigInteractorsDIGGIT <- function(corrected.scores, nes.scores, cindy, p.thresh =
 #' Utility function 
 #' 
 #' @param corrected.scores - corrected p-values processed by 'qvals' package
-#' @return A matrix of p-values for scores between genes/events (rows) and TFs (columns)
+#' @return A matrix of p-values for scores between genes/events (rows) and 
+#' TFs (columns)
+#' @keywords internal
 getPvalsMatrix <- function(corrected.scores) {
   # order of VIPER proteins/TFs
   tf.names.order <- names(corrected.scores[[1]]$qvals)

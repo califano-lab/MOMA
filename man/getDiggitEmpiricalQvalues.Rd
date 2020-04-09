@@ -7,17 +7,22 @@
 getDiggitEmpiricalQvalues(vipermat, nes, null.TFs, alternative = "both")
 }
 \arguments{
-\item{vipermat}{viper inferences matrix, samples are columns, rows are TF entrez gene IDs}
+\item{vipermat}{viper inferences matrix, samples are columns, 
+rows are TF entrez gene IDs}
 
 \item{nes}{scores for each mutation (rows) against each TF (columns)}
 
 \item{null.TFs}{low-importance TFs used to calculate null distributions}
 
-\item{alternative}{Alternative defaults to 'both' : significant p-values can come from both sides of the null distribution}
+\item{alternative}{Alternative defaults to 'both' : significant p-values can 
+come from both sides of the null distribution}
 }
 \value{
-A named list of qvalues for each TF/cMR protein. Each entry contains a vector of q-values for all associated events; names are gene ids
+A named list of qvalues for each TF/cMR protein. Each entry contains 
+a vector of q-values for all associated events; names are gene ids
 }
 \description{
-Use against the background distribution of associations with a given set of 'null' VIPER genes (i.e. low activity TFs)
+Use against the background distribution of associations with a given set of 
+'null' VIPER genes (i.e. low activity TFs)
 }
+\keyword{internal}

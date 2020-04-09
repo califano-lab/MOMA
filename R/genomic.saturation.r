@@ -5,8 +5,11 @@
 #' @param cMR.ranking A vector entrez IDs, in order
 #' @param topN Compute coverage for only the top -N- Master Regulators
 #' @param mutation.filter Retain only mutation events in this (positive) list
-#' @return A list of lists, indexed by sample name, with coverage statistics/data for each sample
-getCoverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, mutation.filter = NULL) {
+#' @return A list of lists, indexed by sample name, with coverage statistics
+#' for each sample
+#' @keywords internal
+getCoverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, 
+                        mutation.filter = NULL) {
     
     if (!is(momaObj, "momaRunner")) {
         stop("Error: must have instantiated momaRunner class object passed!")
@@ -30,17 +33,21 @@ getCoverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, mutatio
     }
     
     # For each event type, gets names of cMRs that have those events
-    interaction.map <- validDiggitInteractions(momaObj$interactions, momaObj$gene.loc.mapping, selected.tfs)
+    interaction.map <- validDiggitInteractions(momaObj$interactions, 
+                                               momaObj$gene.loc.mapping, 
+                                               selected.tfs)
     
     # another assert statment: make sure we have non-zero interactions for each
     sapply(names(interaction.map), function(key) {
         if (sum(sapply(interaction.map[[key]], function(x) length(x))) < 1) {
-            print(paste("Warning: didn't find any positive DIGGIT associations for data type ", key))
+            print(paste("Warning: didn't find any positive DIGGIT 
+                        associations for data type ", key))
             print(paste("(in subtype)"))
         }
     })
     
-    oc <- sampleOverlap(momaObj, viper.samples, selected.tfs, interaction.map, mutation.filter = mutation.filter)
+    oc <- sampleOverlap(momaObj, viper.samples, selected.tfs, interaction.map, 
+                        mutation.filter = mutation.filter)
     # count mutations/amps/dels covered at this point. Aggregate stats
     
     oc
@@ -48,11 +55,15 @@ getCoverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, mutatio
 
 
 #' Return a set of events 'covered' by specified cMR-event interactions 
-#' @param interactions List indexed by amp/mut/del/fus - from cMRs to interacting events
+#' @param interactions List indexed by amp/mut/del/fus from cMRs to interacting 
+#' events
 #' @param gene.loc.mapping Data.frame mapping entrezIDs to cytoband locations
 #' @param selected.tfs For each event type list, search within only these cMRS
-#' @return a list of events 'covered' by the supplied interactions of type mut/amp/del/fus
-validDiggitInteractions <- function(interactions, gene.loc.mapping, selected.tfs) {
+#' @return a list of events 'covered' by the supplied interactions of 
+#' type mut/amp/del/fus
+#' @keywords internal
+validDiggitInteractions <- function(interactions, gene.loc.mapping, 
+                                    selected.tfs) {
     
     if (length(selected.tfs) == 0) {
         stop("No TFs input to diggit function")
@@ -81,11 +92,13 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping, selected.tfs
     }
     
     
-    # Add cnv events to mutation coverage, as either copy number variation is valid evidence for explaining a patient's mutation
+    # Add cnv events to mutation coverage, as either copy number variation is 
+    # valid evidence for explaining a patient's mutation
     covered.mutations <- mergeLists(mut.I, del.I)
     covered.mutations <- mergeLists(covered.mutations, amp.I)
     
-    # Add mut events to cnv coverage, as it is a valid type of evidence for explaining a patient's CNV change
+    # Add mut events to cnv coverage, as it is a valid type of evidence for 
+    # explaining a patient's CNV change
     covered.amps <- mergeLists(amp.I, mut.I)
     covered.dels <- mergeLists(del.I, mut.I)
     
@@ -99,7 +112,8 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping, selected.tfs
             #print(paste("No amplification events associated with", as.character(x)))
             band.names <- NA 
         } else if (length(band.names) == 0) {
-            warning(paste("Warning: could not map entrez IDs to Cytoband for IDS, skipping...", geneNames))
+            warning(paste("Warning: could not map entrez IDs to Cytoband for IDS,
+                          skipping...", geneNames))
             band.names <- NA
         }
         band.names
@@ -108,7 +122,8 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping, selected.tfs
     covered.amps.LOC <- covered.amps.LOC[!is.na(covered.amps.LOC)]
     
     if (sum(sapply(covered.amps.LOC, function(x) length(x))) == 0) {
-        print("Error: something went wrong when mapping amplification Entrez.IDs to Cytoband IDs. Quitting...")
+        print("Error: something went wrong when mapping amplification Entrez.IDs
+              to Cytoband IDs. Quitting...")
         quit(status = 1)
     }
     
@@ -120,7 +135,8 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping, selected.tfs
             #print(paste("No deletion events associated with", as.character(x)))
             band.names <- NA 
         } else if (length(band.names) == 0) {
-            warning(paste("Warning: could not map entrez IDs to Cytoband for IDS, skipping...", geneNames))
+            warning(paste("Warning: could not map entrez IDs to Cytoband for IDS,
+                          skipping...", geneNames))
             band.names <- NA
         }
         band.names
@@ -129,32 +145,40 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping, selected.tfs
     covered.dels.LOC <- covered.dels.LOC[!is.na(covered.dels.LOC)]
     
     if (sum(sapply(covered.dels.LOC, function(x) length(x))) == 0) {
-        print("Error: something went wrong when mapping deletion Entrez.IDs to Cytoband IDs. Quitting...")
+        print("Error: something went wrong when mapping deletion Entrez.IDs
+              to Cytoband IDs. Quitting...")
         quit(status = 1)
     }
     
     # don't incorporate fusions into final list object unless they exist
     if (length(fus.tfs) >= 1) {
-        return(list(mut = covered.mutations, amp = covered.amps.LOC, del = covered.dels.LOC, fus = covered.fusions))
+        return(list(mut = covered.mutations, amp = covered.amps.LOC, 
+                    del = covered.dels.LOC, fus = covered.fusions))
     } else {
-        return(list(mut = covered.mutations, amp = covered.amps.LOC, del = covered.dels.LOC))
+        return(list(mut = covered.mutations, amp = covered.amps.LOC, 
+                    del = covered.dels.LOC))
     }
 }
 
 
-#' The core function to compute which sample-specific alterations overlap with genomic events that are explained 
+#' The core function to compute which sample-specific alterations overlap with 
+#' genomic events that are explained 
 #' via DIGGIT. 
 #' @importFrom utils head
 #' @param momaObj Object reference of momaRunner class
 #' @param viper.samples Sample vector to restrict sample-specific analysis to
 #' @param selected.tfs Transcription factors being analyzed
-#' @param interaction.map List object of events 'covered' by the supplied interactions of type mut/amp/del/fus
+#' @param interaction.map List object of events 'covered' by the supplied 
+#' interactions of type mut/amp/del/fus
 #' @param cnv.threshold Numeric absolute value to threshold SNP6 and/or GISTIC 
-#' or other CNV scores at. Above that absolute value is considered a positive event. 
+#' or other CNV scores. Above that absolute value is considered a positive event. 
 #' @param mutation.filter A vector of whitelisted mutation events, in entrez gene IDs
-#' @param idx.range Number of tfs to check for genomic saturation calculation, default is 1253
+#' @param idx.range Number of tfs to check for genomic saturation calculation, 
+#' default is 1253
 #' @param verbose Output status during the run (default=FALSE)
-#' @return A list of lists, indexed by sample name, with coverage statistics/data for each sample
+#' @return A list of lists, indexed by sample name, with coverage 
+#' statistics/data for each sample
+#' @keywords internal
 sampleOverlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
                            cnv.threshold = 0.5, mutation.filter = NULL, 
                            idx.range = NULL, verbose = FALSE) {
@@ -344,6 +368,7 @@ sampleOverlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
 #' @param int.l List of interactions, at each index this is a numeric named vector
 #' @param keys Keys used to reduce interactions
 #' @return Returns a filtered list of interactions in the same format as the input
+#' @keywords internal
 subsetListInteractions <- function(int.l, keys) {
     
     filtered.I <- lapply(keys, function(key, interactions) {
@@ -357,6 +382,11 @@ subsetListInteractions <- function(int.l, keys) {
     filtered.I
 }
 
+#' Helper function
+#' @param l1 list 1
+#' @param l2 list 2
+#' @return single merged list
+#' @keywords internal
 mergeLists <- function(l1, l2) {
     
     merged <- list()
@@ -377,10 +407,13 @@ mergeLists <- function(l1, l2) {
 }
 
 
-#' @title mergeGenomicSaturation Create data frame from coverage data, including number of total events 'covered' and unique events
-#' @param coverage.range List indexed by sample, then sub-indexed by # of master regulators, then by event type (mut/amp/del/fus). Holds all events by sample
+#' @title mergeGenomicSaturation Create data frame from coverage data, including
+#'  number of total events 'covered' and unique events
+#' @param coverage.range List indexed by sample, then sub-indexed by # of master
+#'  regulators, then by event type (mut/amp/del/fus). Holds all events by sample
 #' @param topN Maximum number of master regulators to compute coverage
-#' @return A data frame with summary statistics for genomic saturation at each 'k'
+#' @return A data frame with summary statistics for genomic saturation at each k
+#' @keywords internal
 mergeGenomicSaturation <- function(coverage.range, topN) {
     
     data <- c()
@@ -416,6 +449,7 @@ mergeGenomicSaturation <- function(coverage.range, topN) {
 #' @param sweep Numeric vector of genomic coverage values, named by -k- threshold 
 #' @param frac Fraction of coverage to use as a threshold (default .85 = 85 percent)
 #' @return The -k- integer where coverage is acheived
+#' @keywords internal
 fitCurvePercent <- function(sweep, frac = 0.85) {
     fractional <- as.numeric(as.character(sweep))/max(sweep)
     best.k <- names(sweep[which(fractional >= frac)])[1]

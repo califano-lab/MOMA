@@ -24,8 +24,10 @@ getCoverage(
 \item{mutation.filter}{Retain only mutation events in this (positive) list}
 }
 \value{
-A list of lists, indexed by sample name, with coverage statistics/data for each sample
+A list of lists, indexed by sample name, with coverage statistics
+for each sample
 }
 \description{
 Get coverage of interactions
 }
+\keyword{internal}

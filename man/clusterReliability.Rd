@@ -27,3 +27,4 @@ Reliability score for each element
 \description{
 This function estimates the cluster membership reliability using aREA
 }
+\keyword{internal}

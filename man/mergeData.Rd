@@ -17,3 +17,4 @@ dataframe with coverage data for genomic events
 \description{
 Helper function for mergeDataBySubtype
 }
+\keyword{internal}

@@ -10,8 +10,10 @@ getPvalsMatrix(corrected.scores)
 \item{corrected.scores}{- corrected p-values processed by 'qvals' package}
 }
 \value{
-A matrix of p-values for scores between genes/events (rows) and TFs (columns)
+A matrix of p-values for scores between genes/events (rows) and 
+TFs (columns)
 }
 \description{
 Utility function
 }
+\keyword{internal}

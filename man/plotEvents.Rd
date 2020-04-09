@@ -20,7 +20,8 @@ Amp/Deletion CNV events are in genomic band location}
 
 \item{highlight.genes}{: well known genes to highlight in the analysis in}
 
-\item{genomeBand_2_gene}{: mapping of genomic location IDs to gene name: vector of HUGO gene ids, named by genomic loci}
+\item{genomeBand_2_gene}{: mapping of genomic location IDs to gene name: 
+vector of HUGO gene ids, named by genomic loci}
 
 \item{samples.total}{: number of samples in the subtype, used to calculate percentages}
 
@@ -34,3 +35,4 @@ plot object
 \description{
 Plot barchart of genomic events
 }
+\keyword{internal}

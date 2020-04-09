@@ -7,7 +7,7 @@
 genomicPlotSmall(input.df, fraction = 0.85, tissue.cluster = NULL)
 }
 \arguments{
-\item{input.df}{: tissue.coverage.df with mean, k, fraction and unique events. has all samples}
+\item{input.df}{: tissue.coverage.df with mean, k, fraction and unique events.}
 
 \item{fraction}{: what fraction coverage to use for genomic curve threshold}
 
@@ -19,3 +19,4 @@ output .png
 \description{
 Make small genomic plot
 }
+\keyword{internal}

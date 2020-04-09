@@ -31,7 +31,8 @@ Amp/Deletion CNV events are in genomic band location}
 
 \item{important.genes}{: well known genes to highlight in the analysis}
 
-\item{band2gene}{: mapping of genomic location IDs to gene name: vector of HUGO gene ids, named by genomic location}
+\item{band2gene}{: mapping of genomic location IDs to gene name: vector of 
+HUGO gene ids, named by genomic location}
 
 \item{max.events}{: maximum number of events to plot for the oncoplots}
 
@@ -43,3 +44,4 @@ oncoprint event plot
 \description{
 Function to plot genomic events in the style of oncoPrint/cBioPortal
 }
+\keyword{internal}

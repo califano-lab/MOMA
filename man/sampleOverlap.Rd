@@ -2,7 +2,8 @@
 % Please edit documentation in R/genomic.saturation.r
 \name{sampleOverlap}
 \alias{sampleOverlap}
-\title{The core function to compute which sample-specific alterations overlap with genomic events that are explained 
+\title{The core function to compute which sample-specific alterations overlap with 
+genomic events that are explained 
 via DIGGIT.}
 \usage{
 sampleOverlap(
@@ -23,21 +24,26 @@ sampleOverlap(
 
 \item{selected.tfs}{Transcription factors being analyzed}
 
-\item{interaction.map}{List object of events 'covered' by the supplied interactions of type mut/amp/del/fus}
+\item{interaction.map}{List object of events 'covered' by the supplied 
+interactions of type mut/amp/del/fus}
 
 \item{cnv.threshold}{Numeric absolute value to threshold SNP6 and/or GISTIC 
-or other CNV scores at. Above that absolute value is considered a positive event.}
+or other CNV scores. Above that absolute value is considered a positive event.}
 
 \item{mutation.filter}{A vector of whitelisted mutation events, in entrez gene IDs}
 
-\item{idx.range}{Number of tfs to check for genomic saturation calculation, default is 1253}
+\item{idx.range}{Number of tfs to check for genomic saturation calculation, 
+default is 1253}
 
 \item{verbose}{Output status during the run (default=FALSE)}
 }
 \value{
-A list of lists, indexed by sample name, with coverage statistics/data for each sample
+A list of lists, indexed by sample name, with coverage 
+statistics/data for each sample
 }
 \description{
-The core function to compute which sample-specific alterations overlap with genomic events that are explained 
+The core function to compute which sample-specific alterations overlap with 
+genomic events that are explained 
 via DIGGIT.
 }
+\keyword{internal}

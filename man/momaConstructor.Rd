@@ -17,17 +17,22 @@ momaConstructor(
 )
 }
 \arguments{
-\item{viper}{VIPER protein activity matrix with samples as columns and rows as protein IDs}
+\item{viper}{VIPER protein activity matrix with samples as columns 
+and rows as protein IDs}
 
-\item{mut}{An indicator matrix (0/1) of mutation events with samples as columns and genes as rows}
+\item{mut}{An indicator matrix (0/1) of mutation events with samples as 
+columns and genes as rows}
 
-\item{cnv}{A matrix of CNV scores (typically SNP6 array scores from TCGA) with samples as columns and genes as rows}
+\item{cnv}{A matrix of CNV scores (typically SNP6 array scores from TCGA) 
+with samples as columns and genes as rows}
 
-\item{fusions}{An indicator matrix (0/1) of fusion events with samples as columns and genes as rows}
+\item{fusions}{An indicator matrix (0/1) of fusion events with samples as 
+columns and genes as rows}
 
-\item{pathways}{A named list of lists. Each named list represents interactions between proteins (keys) and their associated partners}
+\item{pathways}{A named list of lists. Each named list represents 
+interactions between proteins (keys) and their associated partners}
 
-\item{gene.blacklist}{A vector of genes to exclude from mutational/CNV/fusion analysis}
+\item{gene.blacklist}{A vector of genes to exclude from the analysis}
 
 \item{output.folder}{Location to store output and intermediate results}
 

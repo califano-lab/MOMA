@@ -16,8 +16,8 @@ mapEntrez(entrez.ids)
 Convert from entrez ids to hugo gene names
 }
 \examples{
-map_entrez(c("29974", "5728"))
+mapEntrez(c("29974", "5728"))
 }
 \seealso{
-\code{\link[moma]{map_hugo}}
+\code{\link[moma]{mapHugo}}
 }

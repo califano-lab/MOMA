@@ -18,3 +18,4 @@ Matrix of Normalized Enrichment Zcores
 \description{
 This function performs simple 1-tail rank based enrichment analysis
 }
+\keyword{internal}

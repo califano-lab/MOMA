@@ -2,7 +2,8 @@
 % Please edit documentation in R/make.interactions.r
 \name{sigInteractorsDIGGIT}
 \alias{sigInteractorsDIGGIT}
-\title{Filter interactions from NES (DIGGIT) scores and corresponding background-corrected scores.}
+\title{Filter interactions from NES (DIGGIT) scores and corresponding 
+background-corrected scores.}
 \usage{
 sigInteractorsDIGGIT(
   corrected.scores,
@@ -13,8 +14,8 @@ sigInteractorsDIGGIT(
 )
 }
 \arguments{
-\item{corrected.scores}{A list indexed by the genomic event/gene with corresponding pvals and qvals for
-each TF}
+\item{corrected.scores}{A list indexed by the genomic event/gene with 
+corresponding pvals and qvals for each TF}
 
 \item{nes.scores}{Matrix with tfs as columns, rows are genomic events}
 
@@ -31,3 +32,4 @@ and associated pvals over the background (null TF) model, and NES scores
 \description{
 Use this version in the Bayes model to rank TFs
 }
+\keyword{internal}

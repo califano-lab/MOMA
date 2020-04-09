@@ -19,3 +19,4 @@ Returns a filtered list of interactions in the same format as the input
 Helper function: subset a list to the set of keys supplied return the 
 names of interactions with positive values, in a list structure
 }
+\keyword{internal}

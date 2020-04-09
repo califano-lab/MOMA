@@ -17,3 +17,4 @@ The -k- integer where coverage is acheived
 \description{
 Fit based on fractional overall coverage of genomic events
 }
+\keyword{internal}

@@ -13,15 +13,17 @@ getDataFrame(
 )
 }
 \arguments{
-\item{data}{: data.frame with $type, $id, $Freq per event}
+\item{data}{data.frame with $type, $id, $Freq per event}
 
-\item{highlight.genes}{: genes to look for in mutations/cnv lists (if looking for specific genes because of prior knowledge)}
+\item{highlight.genes}{genes to look for in mutations/cnv lists (if looking
+for specific genes because of prior knowledge)}
 
-\item{genomeBand_2_gene}{: mapping of genomic location IDs to gene name: vector of HUGO gene ids, named by genomic loci}
+\item{genomeBand_2_gene}{mapping of genomic location IDs to gene name: 
+vector of HUGO gene ids, named by genomic loci}
 
-\item{max.muts}{: maximum number of mutations to get per sample, default is 10}
+\item{max.muts}{maximum number of mutations to get per sample, default is 10}
 
-\item{max.cnv}{: maximum number of cnvs to per sample, default is 5}
+\item{max.cnv}{maximum number of cnvs to per sample, default is 5}
 }
 \value{
 ordered data frame with each genomic event and it's frequency
@@ -29,3 +31,4 @@ ordered data frame with each genomic event and it's frequency
 \description{
 Helper function to get data frame for bar plot plot.events function
 }
+\keyword{internal}

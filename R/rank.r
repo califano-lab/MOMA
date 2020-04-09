@@ -181,12 +181,17 @@ mapScoresCnvBand <- function(mapping, diggit.interactions, from.p = FALSE, pos.n
 
 
 #' @title Combine DIGGIT inferences with pathway knowledge 
-#' @param diggit.int List of interactions between MRs - Genomic events, inferred by DIGGIT
-#' @param pathway - a list indexed by TF/MR entrez ID, contains the named vector of p-values for interactions 
-#' @param pos.nes.only Only use positive associations between MR activity and presence of events (default = True)
+#' @param diggit.int List of interactions between MRs - Genomic events, inferred
+#'  by DIGGIT
+#' @param pathway - a list indexed by TF/MR entrez ID, contains the named vector
+#'  of p-values for interactions 
+#' @param pos.nes.only Only use positive associations between MR activity and 
+#' presence of events (default = True)
 #' @param cores Number of cores to use if parallel is selected
 #' @return numeric vector, zscores for each TF/MR
-pathwayDiggitIntersect <- function(diggit.int, pathway, pos.nes.only = TRUE, cores = 1) {
+#' @keywords internal
+pathwayDiggitIntersect <- function(diggit.int, pathway, 
+                                   pos.nes.only = TRUE, cores = 1) {
   
   
   pathway.pvals <- parallel::mclapply(names(diggit.int), function(tf) {
@@ -211,7 +216,6 @@ pathwayDiggitIntersect <- function(diggit.int, pathway, pos.nes.only = TRUE, cor
     if (length(pvals) == 1) {
       return(as.numeric(pvals))
     }
-    # print (paste0('found this many relevant interactions: ', length(pvals))) print (pvals)
     pvals
   }, mc.cores = cores)
   names(pathway.pvals) <- names(diggit.int)
@@ -242,12 +246,15 @@ pathwayDiggitIntersect <- function(diggit.int, pathway, pos.nes.only = TRUE, cor
 }
 
 
-#' Implements the conditional Bayes model to combine VIPER scores with diggit and pathway scores
+#' Implements the conditional Bayes model to combine VIPER scores with diggit 
+#' and pathway scores
 #'
 #' @param viper.scores numeric Vector 
-#' @param pathway.scores List , double indexed by each pathway dataset, then with type char. Each points to a numeric score vectors in [0,R+] for each
+#' @param pathway.scores List , double indexed by each pathway dataset, 
+#' then with type char. Each points to a numeric score vectors in [0,R+] for each
 #' @param diggit.scores List indexed by type char, with numeric score vectors in [0,R+] for each
 #' @return a named vector of empirical p-values for each protein/candidate Master Regulator
+#' @keywords internal
 conditionalModel <- function(viper.scores, diggit.scores, pathway.scores) {
   
   integrated.pvals <- unlist(lapply(names(viper.scores), function(VIP) {
@@ -256,7 +263,8 @@ conditionalModel <- function(viper.scores, diggit.scores, pathway.scores) {
     # VIPER scores are the independent model component
     viper.p <- empiricalP(VIP, viper.scores)
     
-    # for each type, produce p-values for DIGGIT as well as each dependent pathway or pathway based algorithm (including CINDy)
+    # for each type, produce p-values for DIGGIT as well as each dependent 
+    # pathway or pathway based algorithm (including CINDy)
     all.pvals <- c(viper.p)
     for (type in names(diggit.scores)) {
       
@@ -291,6 +299,7 @@ conditionalModel <- function(viper.scores, diggit.scores, pathway.scores) {
 #' @param gene.name Character
 #' @param x named Vector of scores for the distribution
 #' @return a numeric p-value between 0 and 1
+#' @keywords internal
 empiricalP <- function(gene.name, x) {
   
   # unranked genes in either distribution should get no score from this
@@ -310,6 +319,7 @@ empiricalP <- function(gene.name, x) {
 #' @param condition.on named Vector of scores for the distribution we are conditioning ON
 #' @param x named Vector of scores for the dependent distribution
 #' @return a numeric p-value between 0 and 1
+#' @keywords internal
 conditionalP <- function(gene.name, condition.on, x) {
   
   # null ranks for all: return NA
@@ -326,11 +336,13 @@ conditionalP <- function(gene.name, condition.on, x) {
   }
   
   # these names are GTE the gene of interest
-  gte <- names(which(rank(condition.on) >= rank(condition.on)[as.character(gene.name)]))
+  gte <- names(which(rank(condition.on) >= 
+                       rank(condition.on)[as.character(gene.name)]))
   
   conditional.dist <- x[gte]
   
-  n.gte <- length(which(rank(conditional.dist) >= rank(conditional.dist)[as.character(gene.name)]))
+  n.gte <- length(which(rank(conditional.dist) >= 
+                          rank(conditional.dist)[as.character(gene.name)]))
   # empirical p-value: note the GTE means we count the value itself
   p.one.tail <- n.gte/(length(conditional.dist) + 1)
   p.one.tail

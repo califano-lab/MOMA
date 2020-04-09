@@ -1,14 +1,24 @@
-#' Use 'aREA' to calculate the enrichment between each genomic event - VIPER inferred protein pair. 
+#' Use 'aREA' to calculate the enrichment between each genomic event - 
+#' VIPER inferred protein pair. 
 #' 
-#' Requires pre-computed VIPER scores and a binary events matrix. Will use only samples in both event and VIPER matrices.
+#' Requires pre-computed VIPER scores and a binary events matrix. Will use only 
+#' samples in both event and VIPER matrices.
 #'  
-#' @param vipermat Pre-computed VIPER scores with samples as columns and proteins as rows 
-#' @param events.mat Binary 0/1 events matrix with samples as columns and genes or events as rows
+#' @param vipermat Pre-computed VIPER scores with samples as columns and proteins
+#'  as rows 
+#' @param events.mat Binary 0/1 events matrix with samples as columns and genes 
+#' or events as rows
 #' @param whitelist Only compute associations for events in this list
-#' @param min.events Only compute enrichment if the number of samples with these events is GTE to this
+#' @param min.events Only compute enrichment if the number of samples with these
+#'  events is GTE to this
 #' @param event.type Name of the event type being analyzed
 #' @return A matrix of aREA scores, dimensions are nrow(events.mat) x nrow(vipermat) 
-associateEvents <- function(vipermat, events.mat, min.events = NA, whitelist = NA, event.type = c("Amplifications", "Deletions", "Mutations", "Fusions", NA)) {
+#' @keywords internal
+associateEvents <- function(vipermat, events.mat, min.events = NA, 
+                            whitelist = NA, event.type = c("Amplifications", 
+                                                           "Deletions", 
+                                                           "Mutations", 
+                                                           "Fusions", NA)) {
     event.type <- match.arg(event.type)
     if (is.null(events.mat)) {
         print(paste("Null", event.type, "matrix, skipping.."))
@@ -30,7 +40,7 @@ associateEvents <- function(vipermat, events.mat, min.events = NA, whitelist = N
     }
     # filter to minmum number of somatic events
     if (!is.na(min.events)) {
-        events.mat <- events.mat[apply(events.mat, 1, sum, na.rm = TRUE) >= min.events, ]
+        events.mat <- events.mat[apply(events.mat, 1, sum, na.rm = TRUE) >= min.events,]
     }
     # test again after removing low freuquency events
     if (is.null(dim(events.mat))) {
@@ -46,12 +56,17 @@ associateEvents <- function(vipermat, events.mat, min.events = NA, whitelist = N
 }
 
 
-#' aREA.enrich Compute aREA enrichment between all pairwise combinations of VIPER proteins and gene-level events
+#' aREA.enrich Compute aREA enrichment between all pairwise combinations of 
+#' VIPER proteins and gene-level events
 #' 
-#' @param events.mat A Binary 0/1 matrix with columns as samples, and rows as proteins
-#' @param vipermat A VIPER network of inferred activity scores with columns as samples, and rows as proteins
+#' @param events.mat A Binary 0/1 matrix with columns as samples, and rows as 
+#' proteins
+#' @param vipermat A VIPER network of inferred activity scores with columns as 
+#' samples, and rows as proteins
 #' @param event.type Name of the event type for printing purposes
-#' @return A matrix of enrichment scores with rows as event/gene names and columns as VIPER protein names
+#' @return A matrix of enrichment scores with rows as event/gene names and 
+#' columns as VIPER protein names
+#' @keywords internal
 areaEnrich <- function(events.mat, vipermat, event.type) {
     
     # Convert mutations into a regulon-like object
@@ -60,7 +75,8 @@ areaEnrich <- function(events.mat, vipermat, event.type) {
         return(l)
     })
     
-    # Calculate raw enrichment scores: each mutation against each TF columns are TFs, rownames are mutations
+    # Calculate raw enrichment scores: each mutation against each TF 
+    # columns are TFs, rownames are mutations
     es <- rea(t(vipermat), events.regulon, event.type = event.type)
     # Analytical correction
     dnull <- reaNULL(events.regulon)
@@ -82,11 +98,13 @@ areaEnrich <- function(events.mat, vipermat, event.type) {
 }
 
 
-#' This function calculates an Enrichment Score of Association based on how the features rank on the samples sorted by a specific gene
+#' This function calculates an Enrichment Score of Association based on how the
+#' features rank on the samples sorted by a specific gene
 #' 
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @param eset Numerical matrix
-#' @param regulon A list with genomic features as its names and samples as its entries, indicating presence of event
+#' @param regulon A list with genomic features as its names and samples as its 
+#' entries, indicating presence of event
 #' @param minsize The minimum number of events to use when calculating enrichment
 #' @param maxsize The maximum number of events to use when calculating enrichment 
 #' @param event.type Type of event being analyzed
@@ -95,6 +113,7 @@ areaEnrich <- function(events.mat, vipermat, event.type) {
 #' \item{groups}{Regulon-specific NULL model containing the enrichment scores}
 #' \item{ss}{Direction of the regulon-specific NULL model}
 #' }
+#' @keywords internal
 rea <- function(eset, regulon, minsize = 1, maxsize = Inf, event.type = NA) {
     # Filter for minimum sizes
     sizes <- vapply(regulon, length, FUN.VALUE = numeric(1))
@@ -122,11 +141,12 @@ rea <- function(eset, regulon, minsize = 1, maxsize = Inf, event.type = NA) {
     }
     
     # Print some progress bar
-    message("\nComputing associations of ", length(regulon)," ", event.type," with ", ncol(eset), " regulators")
+    message("\nComputing associations of ", length(regulon)," ", 
+            event.type," with ", ncol(eset), " regulators")
     message("Process started at ", date())
     pb <- txtProgressBar(max = length(regulon), style = 3)
     
-    temp <- lapply(seq_len(length(regulon)), function(i, regulon, t1, t2, tw, pb) {
+    temp <- lapply(seq_len(length(regulon)), function(i,regulon,t1,t2,tw,pb) {
         hitsamples <- regulon[[i]]
         hitsamples <- intersect(hitsamples, rownames(t1))
         
@@ -140,23 +160,29 @@ rea <- function(eset, regulon, minsize = 1, maxsize = Inf, event.type = NA) {
         ss[ss == 0] <- 1
         setTxtProgressBar(pb, i)
         sum2 <- matrix(0 * heretw, 1, length(hitsamples)) %*% t1[pos, ]
-        return(list(es = as.vector(abs(sum1) + sum2 * (sum2 > 0))/sum(heretw), ss = ss))
+        return(list(es = as.vector(abs(sum1) + sum2 * (sum2 > 0))/sum(heretw), 
+                    ss = ss))
     }, regulon = regulon, pb = pb, t1 = t1, t2 = t2, tw = tw)
     names(temp) <- names(regulon)
     message("\nProcess ended at ", date())
-    es <- t(vapply(temp, function(x) x$es, FUN.VALUE = numeric(length(temp[[1]][[1]]))))
-    ss <- t(vapply(temp, function(x) x$ss, FUN.VALUE = numeric(length(temp[[1]][[1]]))))
+    es <- t(vapply(temp, function(x) x$es,
+                   FUN.VALUE = numeric(length(temp[[1]][[1]]))))
+    ss <- t(vapply(temp, function(x) x$ss, 
+                   FUN.VALUE = numeric(length(temp[[1]][[1]]))))
     colnames(es) <- colnames(ss) <- colnames(eset)
     return(list(groups = es, ss = ss))
 }
 
 
-#' This function generates the NULL model function, which computes the normalized enrichment score and associated p-value
+#' This function generates the NULL model function, which computes the 
+#' normalized enrichment score and associated p-value
 #' 
-#' @param regulon A list with genomic features as its names and samples as its entries
-#' @param minsize Minimum number of event (or size of regulon) to calculate the model with 
-#' @param maxsize Maximum number of event (or size of regulon) to calculate the model with 
+#' @param regulon A list with genomic features as its names and samples as its 
+#' entries
+#' @param minsize Minimum number of event (or size of regulon)  
+#' @param maxsize Maximum number of event (or size of regulon)  
 #' @return A list of functions to compute NES and p-value
+#' @keywords internal
 reaNULL <- function(regulon, minsize = 1, maxsize = Inf) {
     # Filter for minimum sizes
     sizes <- vapply(regulon, length, FUN.VALUE = numeric(1))
@@ -175,8 +201,9 @@ reaNULL <- function(regulon, minsize = 1, maxsize = Inf) {
         ww <- sqrt(sum(ww^2))
         return(function(x, alternative = "two.sided") {
             x <- x * ww
-            p <- switch(pmatch(alternative, c("two.sided", "less", "greater")), pnorm(abs(x), lower.tail = FALSE) * 2, pnorm(x, lower.tail = TRUE), pnorm(x, 
-                                                                                                                                                          lower.tail = FALSE))
+            p <- switch(pmatch(alternative, c("two.sided", "less", "greater")), 
+                        pnorm(abs(x), lower.tail = FALSE) * 2, 
+                        pnorm(x, lower.tail = TRUE), pnorm(x,lower.tail = FALSE))
             list(nes = x, p.value = p)
         })
     }, tw = tw)

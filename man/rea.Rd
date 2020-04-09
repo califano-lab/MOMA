@@ -2,14 +2,16 @@
 % Please edit documentation in R/diggit.r
 \name{rea}
 \alias{rea}
-\title{This function calculates an Enrichment Score of Association based on how the features rank on the samples sorted by a specific gene}
+\title{This function calculates an Enrichment Score of Association based on how the
+features rank on the samples sorted by a specific gene}
 \usage{
 rea(eset, regulon, minsize = 1, maxsize = Inf, event.type = NA)
 }
 \arguments{
 \item{eset}{Numerical matrix}
 
-\item{regulon}{A list with genomic features as its names and samples as its entries, indicating presence of event}
+\item{regulon}{A list with genomic features as its names and samples as its 
+entries, indicating presence of event}
 
 \item{minsize}{The minimum number of events to use when calculating enrichment}
 
@@ -25,5 +27,7 @@ A list containing two elements:
 }
 }
 \description{
-This function calculates an Enrichment Score of Association based on how the features rank on the samples sorted by a specific gene
+This function calculates an Enrichment Score of Association based on how the
+features rank on the samples sorted by a specific gene
 }
+\keyword{internal}

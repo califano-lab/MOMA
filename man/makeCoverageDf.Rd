@@ -2,18 +2,21 @@
 % Please edit documentation in R/make.saturation.plots.r
 \name{makeCoverageDf}
 \alias{makeCoverageDf}
-\title{Helper function for making the coverage dataframe (might)}
+\title{Helper function for making the coverage dataframe}
 \usage{
 makeCoverageDf(coverage.list, cutoff)
 }
 \arguments{
-\item{coverage.list}{: List indexed by sample name, contains $mut, $fus, $amp, $del interactions}
+\item{coverage.list}{: List indexed by sample name, 
+contains mut/fus/amp/del interactions}
 
 \item{cutoff}{: number of regulators to include}
 }
 \value{
-dataframe with each sample and which events are captured by the checkpoint mrs
+dataframe with each sample and which events are 
+captured by the checkpoint mrs
 }
 \description{
-Helper function for making the coverage dataframe (might)
+Helper function for making the coverage dataframe
 }
+\keyword{internal}

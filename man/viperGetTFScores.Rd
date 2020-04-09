@@ -7,7 +7,8 @@
 viperGetTFScores(vipermat, fdr.thresh = 0.05)
 }
 \arguments{
-\item{vipermat}{- matrix of VIPER scores with columns as samples, rows as protein names}
+\item{vipermat}{- matrix of VIPER scores with columns as samples, 
+rows as protein names}
 
 \item{fdr.thresh}{- BH-FDR threshold (default 0.05 FDR rate)}
 }

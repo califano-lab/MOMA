@@ -34,3 +34,4 @@ as well as 'medoids' labels
 This function generate an cluster structure with 'k' groups and computes the cluster reliability score
 where 'k' is a range of values
 }
+\keyword{internal}

@@ -2,7 +2,8 @@
 % Please edit documentation in R/rank.r
 \name{conditionalModel}
 \alias{conditionalModel}
-\title{Implements the conditional Bayes model to combine VIPER scores with diggit and pathway scores}
+\title{Implements the conditional Bayes model to combine VIPER scores with diggit 
+and pathway scores}
 \usage{
 conditionalModel(viper.scores, diggit.scores, pathway.scores)
 }
@@ -11,11 +12,14 @@ conditionalModel(viper.scores, diggit.scores, pathway.scores)
 
 \item{diggit.scores}{List indexed by type char, with numeric score vectors in [0,R+] for each}
 
-\item{pathway.scores}{List , double indexed by each pathway dataset, then with type char. Each points to a numeric score vectors in [0,R+] for each}
+\item{pathway.scores}{List , double indexed by each pathway dataset, 
+then with type char. Each points to a numeric score vectors in [0,R+] for each}
 }
 \value{
 a named vector of empirical p-values for each protein/candidate Master Regulator
 }
 \description{
-Implements the conditional Bayes model to combine VIPER scores with diggit and pathway scores
+Implements the conditional Bayes model to combine VIPER scores with diggit 
+and pathway scores
 }
+\keyword{internal}

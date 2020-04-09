@@ -23,3 +23,4 @@ Number
 \description{
 Integrates numerically a function over a range using the trapezoid method
 }
+\keyword{internal}

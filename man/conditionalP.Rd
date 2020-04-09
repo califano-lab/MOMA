@@ -19,3 +19,4 @@ a numeric p-value between 0 and 1
 \description{
 Get the conditional p-value of a gene
 }
+\keyword{internal}

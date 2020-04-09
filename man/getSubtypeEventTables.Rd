@@ -8,15 +8,19 @@ getSubtypeEventTables(saturation.data, sample.clustering, checkpoints)
 }
 \arguments{
 \item{saturation.data}{: genomic saturation object from moma. List indexed by 
-cluster then sample then regulator with the number of events associated with each additional regulator}
+cluster then sample then regulator with the number of events associated with 
+each additional regulator}
 
-\item{sample.clustering}{: clustering vector with sample names and cluster designations}
+\item{sample.clustering}{: clustering vector with sample names and 
+cluster designations}
 
 \item{checkpoints}{: from momaObj}
 }
 \value{
-a table that has counts of how many times a particular event happens in a cluster
+a table that has counts of how many times a particular event 
+happens in a cluster
 }
 \description{
 Helper function to get subtype specific events
 }
+\keyword{internal}
