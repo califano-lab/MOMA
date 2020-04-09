@@ -8,7 +8,7 @@
 #' data("gbm.example")
 #' viperGetTFScores(gbm.example$vipermat)
 #' @return A vector of normalized z-scores, named by TF id
-#' @export
+#' @keywords internal
 viperGetTFScores <- function(vipermat, fdr.thresh = 0.05) {
   
   # for each gene, count the number samples with scores for each, and weight by that
@@ -151,23 +151,24 @@ sigInteractorsDIGGIT <- function(corrected.scores, nes.scores, cindy,
   
   # input validation
   if (!is.numeric(p.thresh)) {
-    print("Error: invalid value supplied for p-value threshold!")
-    q()
+    stop("Invalid value supplied for p-value threshold!")
   }
   
   ## Apply joint NES + p-value over background (null TF) threshold over each Viper Protein return the raw NES scores only for those significant over the
   ## background and including CINDy (if applicable)
   viper.interactors <- lapply(colnames(pvals.matrix), function(viperProt) {
     
-    # find the over-null-TF-background scores with an significant, uncorrected p-value print (paste('Processing : ', viperProt))
+    # find the over-null-TF-background scores with an significant, uncorrected p-value 
     pvals <- as.numeric(pvals.matrix[, as.character(viperProt)])
     nes.vec <- as.numeric(nes.scores[, as.character(viperProt)])
-    # print (nes.vec) subset to significant p-values
+    
     row.idx <- which(pvals < p.thresh)
     pvals <- pvals[row.idx]
     names(pvals) <- rownames(pvals.matrix)[row.idx]
     
-    # if (!all(names(pvals) == names(nes.vec))) { print ('Error: data not aligned for aREA / aREA corrected p-values') }
+    if (!all(names(pvals) == names(nes.vec))) { 
+      stop('Data not aligned for aREA / aREA corrected p-values') 
+      }
     
     # subset the NES vector for this TF, threshold again on NES scores as a sanity check on the basic enrichment (i.e. remove those with high
     # over-background scores simply because the background is de-enriched)
@@ -207,7 +208,6 @@ sigInteractorsDIGGIT <- function(corrected.scores, nes.scores, cindy,
     nes.vec <- nes.vec[intersect(names(nes.vec), names(pvals))]
     nes.vec <- nes.vec[which(!is.na(nes.vec))]
     
-    # print (paste('num interactions:', length(nes.vec)))
     nes.vec <- sort(nes.vec, decreasing = TRUE)
     nes.vec
   })

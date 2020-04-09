@@ -106,7 +106,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
   tmp.curveplots <- list()
   
   if(!is.null(important.genes)) {
-    print("List of important genes has been provided. Will prioritize plotting these events first")
+    message("List of important genes has been provided. Will prioritize plotting these events first")
   }
   
   for(k in seq_along(subtype.tables)) {
@@ -115,7 +115,8 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
     # Oncoprint Events Plots
     ###########
     samples.thisCluster <- names(clustering.solution[clustering.solution == k])
-    print(paste0("Number of samples in cluster ", k, ": ", length(samples.thisCluster)))
+    message("")
+    message("Number of samples in cluster ", k, ": ", length(samples.thisCluster))
     
     # subset genomic event matrices for this cluster
     snpmat.thisClus <- snpmat[,colnames(snpmat) %in% samples.thisCluster]
@@ -309,6 +310,7 @@ mergeData <- function(coverage.range, topN)  {
 #' @importFrom tibble deframe as_tibble rownames_to_column tibble column_to_rownames
 #' @importFrom stringr str_split_fixed
 #' @importFrom rlang .data
+#' @importFrom grid textGrob
 #' @param summary.vec : named vector of the counts, named 'Event name':'Type'
 #' where type is 'mut', 'amp', 'del', 'fus'. Mutations are in Entrez ID
 #' Amp/Deletion CNV events are in genomic band location
@@ -413,7 +415,6 @@ oncoprintPlot <- function(summary.vec, snpmat.thisClus, amps.thisClus,
         dplyr::select(.data$genomic.event, .data$type, dplyr::everything())
     } else {
       fus.mat <- NULL
-      #print("No fusions this cluster")
     }
     
     
@@ -461,7 +462,7 @@ oncoprintPlot <- function(summary.vec, snpmat.thisClus, amps.thisClus,
         
         merged <- dplyr::bind_rows(amp.merged, del.merged)
       } else {
-        print ("ERROR MERGING DUPLICATES....")
+        warning("ERROR MERGING DUPLICATES....")
       }
       
       mat.to.plot <- dplyr::bind_rows(mat.to.plot, merged)
@@ -503,10 +504,10 @@ oncoprintPlot <- function(summary.vec, snpmat.thisClus, amps.thisClus,
     rownames(final.mat) <- final.plot.names[,1]
   }
   
-  print(paste("Plotting", nrow(final.mat), "total events for subtype", k))
+  message("Plotting ", nrow(final.mat), " total events for subtype ")
   
   if(nrow(final.mat) == 0) {
-    return(paste("No significant events to plot for this subtype"))
+    return(grid::textGrob("No significant events to plot for this subtype"))
   }
   
   
@@ -567,6 +568,8 @@ oncoprintPlot <- function(summary.vec, snpmat.thisClus, amps.thisClus,
   
   title <- paste("Genomic Events for Subtype", k)
   
+  # set NAs to empty string in final mat to avoid Complex Heatmap warning
+  final.mat[is.na(final.mat)] <- ""
   
   ht <- ComplexHeatmap::oncoPrint(final.mat,
                   alter_fun = alter_fun, col = col,
@@ -672,7 +675,7 @@ plotEvents <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NULL
   #   }
   # }
   
-  print (paste('Number of entries in events matrix: ', nrow(mapped)))
+  message('Number of entries in events matrix: ', nrow(mapped))
   #print (paste('Using font size ', y.textSize))
   
   
@@ -817,7 +820,7 @@ genomicPlotSmall <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
   sweep <- subtype.df$fraction
   names(sweep) <- sort(unique(subtype.df$k))
   best.k <- fitCurvePercent(sweep, frac=fraction)
-  print (paste("Threshold for MR cutoff: ", best.k))
+  message("Number of MRs in checkpoint: ", best.k)
   
   
   # mean statistic for these samples

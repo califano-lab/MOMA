@@ -4,12 +4,15 @@
 \alias{sampleNameFilter}
 \title{Retain TCGA sample ids without the final letter designation ('A/B/C')}
 \usage{
-sampleNameFilter(input)
+sampleNameFilter(input, desired.len = 15)
 }
 \arguments{
 \item{input}{Matrix of expression or protein activity scores. Columns are 
 sample names, rows are genes. Input can also just be an input vector of 
 sample names.}
+
+\item{desired.len}{length to reduce strings to. Default is 15 because of 
+TCGA naming conventions}
 }
 \value{
 An identical matrix with new (shorter) column names, 

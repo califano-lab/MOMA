@@ -139,7 +139,7 @@ mapScoresCnvBand <- function(mapping, diggit.interactions, from.p = FALSE, pos.n
       locations <- na.omit(mapping[as.character(names(x))])
       
       if (length(locations) == 0) {
-        print(paste("Warning: didn't find any genomic locations for", names(x)))
+        message("Warning: didn't find any genomic locations for ", names(x))
         return(0)
       }
       

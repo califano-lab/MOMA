@@ -23,3 +23,4 @@ library(moma.gbmexample)
 data("gbm.example")
 viperGetTFScores(gbm.example$vipermat)
 }
+\keyword{internal}

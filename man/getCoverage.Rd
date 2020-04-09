@@ -9,7 +9,8 @@ getCoverage(
   cMR.ranking,
   viper.samples,
   topN = 100,
-  mutation.filter = NULL
+  mutation.filter = NULL,
+  verbose = FALSE
 )
 }
 \arguments{

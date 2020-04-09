@@ -32,16 +32,13 @@ clusterRange <- function(dis, range = c(2, 100), step = 1, cores = 1, method = c
       clustering <- solution$cluster
       centers <- solution$centers
     } else {
-      print("Error: unrecognized clustering method")
-      return(NULL)
+      stop("Error: unrecognized clustering method")
     }
     
     cr <- clusterReliability(clustering, 1/as.matrix(dis), method = "global")
     element.cr <- clusterReliability(clustering, 1/as.matrix(dis), method = "element")
     cluster.cr <- clusterReliability(clustering, 1/as.matrix(dis), method = "cluster")
-    #if (debug) {
-    #   print(paste0(k, " ", as.numeric(cr)))
-    #}
+
     
     ret <- NULL
     list(centers = centers, clustering = clustering, k = k, 

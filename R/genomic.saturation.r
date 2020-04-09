@@ -9,18 +9,16 @@
 #' for each sample
 #' @keywords internal
 getCoverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, 
-                        mutation.filter = NULL) {
+                        mutation.filter = NULL, verbose = FALSE) {
     
     if (!is(momaObj, "momaRunner")) {
         stop("Error: must have instantiated momaRunner class object passed!")
     }
     
     # select considered cMRs
-    print(paste("Top : ", topN, " regulators"))
     selected.tfs <- cMR.ranking[seq_len(topN)]
     if (length(selected.tfs) == 0) {
-        print("Error: no TFs selected!")
-        q()
+        stop("Error: no TFs selected!")
     }
     
     # confirm they are in Entrez ID format
@@ -40,14 +38,13 @@ getCoverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100,
     # another assert statment: make sure we have non-zero interactions for each
     sapply(names(interaction.map), function(key) {
         if (sum(sapply(interaction.map[[key]], function(x) length(x))) < 1) {
-            print(paste("Warning: didn't find any positive DIGGIT 
-                        associations for data type ", key))
-            print(paste("(in subtype)"))
+            warning("Didn't find any positive DIGGIT associations for data type ",
+                    key, " in subtype")
         }
     })
     
     oc <- sampleOverlap(momaObj, viper.samples, selected.tfs, interaction.map, 
-                        mutation.filter = mutation.filter)
+                        mutation.filter = mutation.filter, verbose = verbose)
     # count mutations/amps/dels covered at this point. Aggregate stats
     
     oc
@@ -122,9 +119,8 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping,
     covered.amps.LOC <- covered.amps.LOC[!is.na(covered.amps.LOC)]
     
     if (sum(sapply(covered.amps.LOC, function(x) length(x))) == 0) {
-        print("Error: something went wrong when mapping amplification Entrez.IDs
+        stop("Error: something went wrong when mapping amplification Entrez.IDs
               to Cytoband IDs. Quitting...")
-        quit(status = 1)
     }
     
     # create a new mapping from TF in Entrez -> event location
@@ -135,8 +131,8 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping,
             #print(paste("No deletion events associated with", as.character(x)))
             band.names <- NA 
         } else if (length(band.names) == 0) {
-            warning(paste("Warning: could not map entrez IDs to Cytoband for IDS,
-                          skipping...", geneNames))
+            warning("Warning: could not map entrez IDs to Cytoband for IDS,
+                          skipping... ", geneNames)
             band.names <- NA
         }
         band.names
@@ -145,9 +141,8 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping,
     covered.dels.LOC <- covered.dels.LOC[!is.na(covered.dels.LOC)]
     
     if (sum(sapply(covered.dels.LOC, function(x) length(x))) == 0) {
-        print("Error: something went wrong when mapping deletion Entrez.IDs
+        stop("Error: something went wrong when mapping deletion Entrez.IDs
               to Cytoband IDs. Quitting...")
-        quit(status = 1)
     }
     
     # don't incorporate fusions into final list object unless they exist
@@ -211,11 +206,11 @@ sampleOverlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
     fus.HYP.filter <- momaObj$hypotheses[["fus"]]
     
     if (length(mut.HYP.filter) == 0) {
-        stop("Error: null hypotheses for mut!")
+        stop("No hypotheses for mut!")
     } else if (length(amp.HYP.filter) == 0) {
-        stop("Error: null hypotheses for amp!")
+        stop("No hypotheses for amp!")
     } else if (length(del.HYP.filter) == 0) {
-        stop("Error: null hypotheses for del!")
+        stop("No hypotheses for del!")
     } else if (length(fus.HYP.filter) == 0) {
         warning("Zero fusion hypotheses")
     }
@@ -224,13 +219,16 @@ sampleOverlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
     all.sample.names <- intersect(all.samples.genomics, viper.samples)
     coverage <- lapply(all.sample.names, function(sample) {
         
-        print(paste0("Computing coverage for sample ", sample))
+        if(verbose){
+            message("Computing coverage for sample ", sample)
+        }
+        
         
         # find active and inactive proteins in this sample
         viper.pvals <- (1 - pnorm(abs(momaObj$viper[, sample])))
         active.proteins <- rownames(momaObj$viper)[intersect(which(viper.pvals < 0.05), which(momaObj$viper[, sample] > 0))]
         if (length(active.proteins) == 0) {
-            warning(paste0("No active proteins found for sample: ", sample))
+            warning("No active proteins found for sample: ", sample)
         }
         
         # Collect mutation events in this sample's row:
@@ -255,14 +253,9 @@ sampleOverlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
             if (sample %in% colnames(momaObj$fusions)) {
                 fus.events <- names(which(momaObj$fusions[, sample] > 0))
                 if(length(fus.events) == 0) {
-                    #print(paste("No fusion events in", sample))
                     fus.events <- NULL
-                } else {
-                    #print(paste(fus.events, "found in", sample))
-                }
-            } else {
-                #print(paste0("Sample not recorded in fusions matrix:", sample))
-            }
+                } 
+            } 
         }
         fus.events <- fus.events[which(fus.events %in% momaObj$hypotheses[["fus"]])]
         
@@ -272,23 +265,20 @@ sampleOverlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
         validated.mut.events <- mut.events
         
         if (!is.null(mutation.filter)) {
-            print("Using mutation filter:")
+            message("Using mutation filter:")
             prev.count <- length(validated.mut.events)
             validated.mut.events <- intersect(mutation.filter, validated.mut.events)
             removed = prev.count - length(validated.mut.events)
-            print(paste("Filtered out: ", removed, " mutations using filter..."))
+            message("Filtered out: ", removed, " mutations using filter...")
         }
         
         
         if (verbose) {
-            print(paste("FUS:", length(validated.fusion.events),":"))
-            paste(head(validated.fusion.events))
-            print(paste("DELS:", length(validated.del.locations), ":"))
-            paste(head(validated.del.locations))
-            print(paste("AMPS:", length(validated.amp.locations), ":"))
-            print(head(validated.amp.locations))
-            print(paste("MUTS:", length(validated.mut.events), ":"))
-            print(head(validated.mut.events))
+            message("MUTS:", length(validated.mut.events))
+            message("DELS:", length(validated.del.locations))
+            message("AMPS:", length(validated.amp.locations))
+            message("FUS:", length(validated.fusion.events))
+            message(" ")
         }
         
         

@@ -16,7 +16,7 @@ mapEntrez <- function(entrez.ids) {
   mapped <- gene.map$Gene.Symbol[idx]
   
   if(sum(is.na(mapped)) > 0 ) {
-    print("Some entrez ids not mapped to genenames! Replaced with their original input")
+    message("Some entrez ids not mapped to genenames! Replaced with their original input")
     na.idx <- which(is.na(mapped))
     for (na in na.idx) {
       old.name <- entrez.ids[na]
@@ -43,7 +43,7 @@ mapHugo <- function(hugo.ids) {
   mapped <- gene.map$Entrez.IDs[idx]
   
   if(sum(is.na(mapped)) > 0 ) {
-    print("Some genenames not mapped to entrez ids! Replaced with their original input")
+    message("Some genenames not mapped to entrez ids! Replaced with their original input")
     na.idx <- which(is.na(mapped))
     for (na in na.idx) {
       old.name <- hugo.ids[na]

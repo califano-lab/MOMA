@@ -63,10 +63,11 @@ momaRunner <- setRefClass("momaRunner", fields =
     
       cnv.local <- NULL
       if (is.null(fCNV)) {
-          print("Warning: no fCNV supplied, using no CNV filter!")
-          cnv.local <- cnv
+        warning("Warning: no fCNV supplied, using no CNV filter!")
+        cnv.local <- cnv
       } else {
-          cnv.local <- cnv[intersect(fCNV, rownames(cnv)), ]
+        message("fCNV supplied, filtering for only functional CNVs")
+        cnv.local <- cnv[intersect(fCNV, rownames(cnv)), ]
       }
       
       somut <- mut
@@ -95,28 +96,27 @@ momaRunner <- setRefClass("momaRunner", fields =
       
       # Print info about 
       if(verbose) {
-        print(paste("Removing", length(gene.blacklist),"mutSig blacklist genes 
-                    from hypothesis testing"))
+        message("Removing ", length(gene.blacklist),
+                    " mutSig blacklist genes from hypothesis testing")
         
         amps.removed <- length(temp.amps) - length(amps.hypotheses)
-        print(paste(length(amps.hypotheses), "useable amplifications found.", 
-                    amps.removed, "removed for being on the gene blacklist."))
+        message(length(amps.hypotheses), " useable amplifications found. ", 
+                    amps.removed, " removed for being on the gene blacklist.")
         
         dels.removed <- length(temp.dels) - length(dels.hypotheses)
-        print(paste(length(dels.hypotheses), "useable deletions found.", 
-                    dels.removed, "removed for being on the gene blacklist."))
+        message(length(dels.hypotheses), " useable deletions found. ", 
+                    dels.removed, " removed for being on the gene blacklist.")
         
         muts.removed <- length(temp.muts) - length(muts.hypotheses)
-        print(paste(length(muts.hypotheses), "useable mutations found.", 
-                    muts.removed, "removed for being on the gene blacklist."))
+        message(length(muts.hypotheses), " useable mutations found. ", 
+                    muts.removed, " removed for being on the gene blacklist.")
       }
       
       # Save genomic hypotheses 
       if(is.na(output.folder)){
-        print("No output folder selected, saving genomic hypotheses 
-              directly to object without printing.")
+        message("No output folder selected, saving genomic hypotheses directly to object without printing.")
       } else {
-        print(paste("Writing hypotheses to:", output.folder))
+        message("Writing hypotheses to: ", output.folder)
         dir.create(output.folder, showWarnings = FALSE)
         write.table(amps.hypotheses, file = paste0(output.folder, "/hypotheses.amps.txt"), 
                     quote = FALSE, sep = "\t")
@@ -165,22 +165,22 @@ momaRunner <- setRefClass("momaRunner", fields =
       ranks[["viper"]] <<- viperGetTFScores(viper)
       sig.tfs <- viperGetSigTFS(ranks[["viper"]])
       null.TFs <- setdiff(rownames(viper), sig.tfs)
-      print(paste("Found ", length(sig.tfs), " significant TFs from VIPER scores ... "))
-      print(paste("Building background model from ", length(null.TFs), " nulls..."))
+      message("Found ", length(sig.tfs), " significant TFs from VIPER scores ... ")
+      message("Building background model from ", length(null.TFs), " nulls...")
       
       full.type.names <- c("Amplifications", "Deletions", "Mutations", "Fusions")
       local.interactions = list()
       for (i in seq_len(4)) {
           type <- genomic.event.types[i]
-          print(paste("Performing background correction for ", 
-                      full.type.names[i], " NES scores..."))
+          message("Performing background correction for ", 
+                      full.type.names[i], " NES scores...")
           nes.thisType <- nes[[type]]
           if (is.null(nes.thisType)) {
               next
           }
           corrected.scores <- getDiggitEmpiricalQvalues(viper, nes.thisType, 
                                                         null.TFs)
-          print("Generating final interactions...")
+          message("Generating final interactions...")
           local.interactions[[type]] <- sigInteractorsDIGGIT(corrected.scores, 
                                                              nes[[type]], pathways[["cindy"]], 
                                                              cindy.only = cindy.only)
@@ -218,7 +218,7 @@ momaRunner <- setRefClass("momaRunner", fields =
           stop("Parallel processing selected but a usable number of cores has not
                 been chosen. Please enter a number > 1")
         } else {
-          print(paste("Parallel processing selected, using", cores, "cores"))
+          message("Parallel processing selected, using", cores, "cores")
         }
       }
       
@@ -239,7 +239,7 @@ momaRunner <- setRefClass("momaRunner", fields =
       }
       
       viper.scores <- ranks[["viper"]]
-      print("Integrating all data in Bayesian conditional model...")
+      message("Integrating all data in Bayesian conditional model...")
       ranks[["integrated"]] <<- conditionalModel(viper.scores, 
                                                  integrated.z, 
                                                  pathway.z)
@@ -253,7 +253,7 @@ momaRunner <- setRefClass("momaRunner", fields =
           stop("Parallel processing selected but multiple number of cores have not
                   been chosen. Please enter a number > 1")
         } else {
-          print(paste("Parallel processing selected, using", cores, "cores"))
+          message("Parallel processing selected, using ", cores, " cores")
         }
       }
     
@@ -261,15 +261,16 @@ momaRunner <- setRefClass("momaRunner", fields =
       weights <- log(ranks[["integrated"]])^2
       weights <- weights[as.character(rownames(viper))]
       w.vipermat <- weights * viper
-      print("using pearson correlation with weighted vipermat")
+      message("using pearson correlation with weighted vipermat")
       dist.obj <- corDist(t(w.vipermat), method = "pearson")
-      print("testing clustering options, k = 2..15")
+      message("testing clustering options, k = 2..15")
       search.results <- clusterRange(dist.obj, range = as.numeric(c(2, 15)), 
                                      step = 1, cores = cores, method = "pam")
       clustering.results <<- search.results
 }, 
 
-  saturationCalculation = function(clustering.solution = NULL, cov.fraction = 0.85) {
+  saturationCalculation = function(clustering.solution = NULL, cov.fraction = 0.85, 
+                                   topN = 100, verbose = FALSE) {
     "Calculate the number of MRs it takes to represent the desired coverage fraction of events"
       
       # get clustering solution to use for calculations
@@ -287,7 +288,8 @@ momaRunner <- setRefClass("momaRunner", fields =
       tmp.checkpoints <- list()
       for (clus.id in unique(clustering.solution)) {
           
-          print(paste0("Analyzing cluster ", clus.id))
+          message("Analyzing cluster ", clus.id, " coverage using the top ", 
+                  topN, " regulators")
           viper.samples <- colnames(viper[, names(clustering.solution[clustering.solution == clus.id])])
           
           # Get subtype-specific rankings: use the main rank and include only those with high mean score
@@ -296,18 +298,20 @@ momaRunner <- setRefClass("momaRunner", fields =
           })
           pvals <- pnorm(sort(stouffer.zscores, decreasing = TRUE), lower.tail = FALSE)
           sig.active.mrs <- names(pvals[p.adjust(pvals, method = "bonferroni") < 0.01])
+          
           # ranked list of cMRs for this subtype
           subtype.specific.MR_ranks <- sort(ranks[["integrated"]][sig.active.mrs])
           
+          # calculate per sample event coverage
           coverage.range <- getCoverage(.self, names(subtype.specific.MR_ranks), 
-                                        viper.samples, topN = 100)
+                                        viper.samples, topN = topN, verbose = verbose)
           coverage.subtypes[[clus.id]] <- coverage.range
           
           # 'solve' the checkpoint for each subtype
           
           # 1) generate summary stats for mean fractional coverage
           tmp.summaryStats[[clus.id]] <- mergeGenomicSaturation(coverage.range, 
-                                                                topN = 100)
+                                                                topN = topN)
           # compute best K based on fractional coverage
           sweep <- tmp.summaryStats[[clus.id]]$fraction
           names(sweep) <- tmp.summaryStats[[clus.id]]$k
@@ -358,84 +362,83 @@ momaConstructor <- function(viper, mut, cnv, fusions, pathways,
                             gene.blacklist = NA_character_, 
                             output.folder = NA_character_, 
                             gene.loc.mapping = gene.map) {
-    utils::data("gene.map")
-    viper <- sampleNameFilter(viper)
-    mut <- sampleNameFilter(mut)
-    cnv <- sampleNameFilter(cnv)
-    
-    # validate viper matrix
-    if (ncol(viper) < 2) {
-        print("Error: fewer than 2 samples in VIPER matrix!")
-        q()
-    }
-    if (nrow(viper) < 2) {
-        print("Error: fewer than 2 rows in VIPER matrix!")
-        q()
-    }
-    
-    # check column overlap
-    nVM <- intersect(colnames(viper), colnames(mut))
-    mut <- mut[, nVM]
-    print(paste("Number of samples in VIPER + Mutation data:", length(nVM)))
+  
+  utils::data("gene.map")
+  
+  ### Filter sample names to be all the same length 
+  ### Particularly important for TCGA names
+  viper <- sampleNameFilter(viper)
+  mut <- sampleNameFilter(mut)
+  cnv <- sampleNameFilter(cnv)
+  
+  ### Confirm that a valid viper matrix has been supplied
+  if (!is.matrix(viper) || ncol(viper) < 2 || nrow(viper) < 2) {
+    stop("Too few samples or TFs in viper matrix. Please supply valid matrix")
+  }
+  
+  ### Check for sample overlap between viper matrix and multiomic data types
+  nVM <- intersect(colnames(viper), colnames(mut))
+  mut <- mut[, nVM, drop = FALSE]
+  message("Number of samples in VIPER + Mutation data: ", length(nVM))
+  if (length(nVM) < 2) {
+    stop("VIPER and mutation matrix samples don't match!")
+  }
+  nVM <- intersect(colnames(viper), colnames(cnv))
+  cnv <- cnv[, nVM, drop = FALSE]
+  message("Number of samples in VIPER + CNV data: ", length(nVM))
+  if (length(nVM) < 2) {
+    stop("VIPER and CNV matrix samples don't match!")
+  }
+  
+  if (!is.null(fusions)) {
+    nVM <- intersect(colnames(viper), colnames(fusions))
+    # redo type conversion to matrix: could have a single row with this 
+    # datatype so we must re-type it to guard against auto conversion to 'integer'
+    fusions <- as.matrix(fusions[, nVM, drop = FALSE])
+    message("Number of samples in VIPER + Fusion data: ", length(nVM))
     if (length(nVM) < 2) {
-        print("Error: VIPER and mutation matrix samples don't match!")
-        q()
+      stop("VIPER and Fusions matrix samples don't match!")
     }
-    nVM <- intersect(colnames(viper), colnames(cnv))
-    cnv <- cnv[, nVM]
-    print(paste("Number of samples in VIPER + CNV data:", length(nVM)))
-    if (length(nVM) < 2) {
-        print("Error: VIPER and CNV matrix samples don't match!")
-        q()
-    }
-    
-    if (!is.null(fusions)) {
-        nVM <- intersect(colnames(viper), colnames(fusions))
-        # redo type conversion to matrix: could have a single row with this 
-        # datatype so we must re-type it to guard against auto conversion to 'integer'
-        fusions <- as.matrix(fusions[, nVM])
-        print(paste("Number of samples in VIPER + Fusion data:", length(nVM)))
-        if (length(nVM) < 2) {
-            print("Error: VIPER and Fusions matrix samples don't match!")
-            q()
-        }
+  }
+  
+  ### Check that valid gene location mapping df has been supplied
+  if (!is.null(gene.loc.mapping)) {
+    # verify the column names
+    if (!is(gene.loc.mapping, "data.frame")) {
+      stop("Gene location mapping supplied is not a data.frame!")
+    } else if (!("Entrez.IDs" %in% colnames(gene.loc.mapping))) {
+      stop("Gene location mapping supplied does not have 'Entrez.IDs' attribute!")
+    } else if (!("Cytoband" %in% colnames(gene.loc.mapping))) {
+      stop("Gene location mapping supplied does not have 'Cytoband' attribute!")
+    } else if (!("Gene.Symbol" %in% colnames(gene.loc.mapping))){
+      stop("Gene location mapping supplied does not have 'Gene.Symbol' attribute!")
     }
     
-    if (!is.null(gene.loc.mapping)) {
-        # verify the column names
-        if (!is(gene.loc.mapping, "data.frame")) {
-            stop("Error: gene location mapping supplied is not a data.frame!")
-        } else if (!("Entrez.IDs" %in% colnames(gene.loc.mapping))) {
-            stop("Error: gene location mapping supplied does not have 'Entrez.IDs' attribute!")
-        } else if (!("Cytoband" %in% colnames(gene.loc.mapping))) {
-            stop("Error: gene location mapping supplied does not have 'Cytoband' attribute!")
-        }
-        
-    } else {
-        print("Warning: no gene - genomic location mapping provided!")
+  } else {
+    stop("No gene - genomic location mapping provided!")
+  }
+  
+  ### Check for overall sample overlap
+  samples.common <- intersect(intersect(colnames(viper), colnames(mut)), colnames(cnv))
+  message("Common samples with all data analysis: ", length(samples.common))
+  
+  
+  ### check TF rows in the indexes of the pathways
+  for (pathway in names(pathways)) {
+    message("Checking labels on pathway ", pathway)
+    I <- intersect(rownames(viper), names(pathways[[pathway]]))
+    if (length(I) == 0) {
+      stop("No intersection with supplied pathway! Double check formatting")
     }
-    
-    
-    samples.common <- intersect(intersect(colnames(viper), colnames(mut)), colnames(cnv))
-    print(paste("Common samples with all data analysis: ", length(samples.common)))
-    
-    # check TF rows in the indexes
-    for (pathway in names(pathways)) {
-        print(paste("Checking labels on pathway", pathway))
-        I <- intersect(rownames(viper), names(pathways[[pathway]]))
-        if (length(I) == 0) {
-            stop("No intersection with supplied pathway! 
-                 Assuming a formatting error and quitting...")
-        }
-        print(paste("Found labels for ", length(I), " TFs in VIPER matrix"))
-    }
-    
-    obj <- momaRunner$new(viper = viper, mut = mut, cnv = cnv, 
-                          fusions = fusions, pathways = pathways, 
-                          gene.blacklist = as.character(gene.blacklist), 
-                          output.folder = output.folder, 
-                          gene.loc.mapping = gene.loc.mapping)
-    obj
+    message("Found labels for ", length(I), " TFs in VIPER matrix")
+  }
+  
+  obj <- momaRunner$new(viper = viper, mut = mut, cnv = cnv, 
+                        fusions = fusions, pathways = pathways, 
+                        gene.blacklist = as.character(gene.blacklist), 
+                        output.folder = output.folder, 
+                        gene.loc.mapping = gene.loc.mapping)
+  obj
 }
 
 
@@ -444,20 +447,22 @@ momaConstructor <- function(viper, mut, cnv, fusions, pathways,
 #' @param input Matrix of expression or protein activity scores. Columns are 
 #' sample names, rows are genes. Input can also just be an input vector of 
 #' sample names.
+#' @param desired.len length to reduce strings to. Default is 15 because of 
+#' TCGA naming conventions
 #' @examples 
 #' sample.names <- c("TCGA-14-1825-01A", "TCGA-76-4931-01B", "TCGA-06-5418-01A")
 #' sampleNameFilter(sample.names)
 #' @return An identical matrix with new (shorter) column names, 
 #' or a vector with the shortened names. 
 #' @export
-sampleNameFilter <- function(input) {
+sampleNameFilter <- function(input, desired.len = 15) {
   # filter down to sample Id without the 'A/B/C sample class'.
   if(is.matrix(input)) {
-    sample.ids <- vapply(colnames(input), function(x) substr(x, 1, 15), 
+    sample.ids <- vapply(colnames(input), function(x) substr(x, 1, desired.len), 
                          FUN.VALUE = character(1))
     colnames(input) <- sample.ids
   } else if (is.vector(input)) {
-    input <- substr(input, 1, 15)
+    input <- substr(input, 1, desired.len)
   }
   
   input
