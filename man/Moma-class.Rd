@@ -53,7 +53,11 @@ cluster assignments, names are sample ids}
 \section{Methods}{
 
 \describe{
-\item{\code{Cluster(use.parallel = FALSE, cores = 1)}}{Cluster the samples after applying the MOMA weights to the VIPER scores}
+\item{\code{Cluster(
+  clus.eval = c("reliability", "silhouette"),
+  use.parallel = FALSE,
+  cores = 1
+)}}{Cluster the samples after applying the MOMA weights to the VIPER scores}
 
 \item{\code{Rank(
   use.cindy = TRUE,

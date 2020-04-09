@@ -245,7 +245,7 @@ Moma <- setRefClass("Moma", fields =
                                                  pathway.z)
 }, 
 
-  Cluster = function(use.parallel = FALSE, cores = 1) {
+  Cluster = function(clus.eval = c("reliability", "silhouette"), use.parallel = FALSE, cores = 1) {
     "Cluster the samples after applying the MOMA weights to the VIPER scores"
       
       if(use.parallel) {
@@ -262,11 +262,27 @@ Moma <- setRefClass("Moma", fields =
       weights <- weights[as.character(rownames(viper))]
       w.vipermat <- weights * viper
       message("using pearson correlation with weighted vipermat")
-      dist.obj <- corDist(t(w.vipermat), method = "pearson")
+      dist.obj <- MKmisc::corDist(t(w.vipermat), method = "pearson")
       message("testing clustering options, k = 2..15")
       search.results <- clusterRange(dist.obj, range = as.numeric(c(2, 15)), 
                                      step = 1, cores = cores, method = "pam")
       clustering.results <<- search.results
+      
+      # save the solution with the highest reliability/silhouette to the object
+      clus.eval <- match.arg(clus.eval)
+      if(clus.eval == "reliability"){
+        top.sol <- which.max(search.results$all.cluster.reliability)
+        sample.clustering <<- search.results[[top.sol]]$clustering
+      } else if (clus.eval == "silhouette") {
+        top.sol <- which.max(search.results$all.sil.avgs)
+        sample.clustering <<- search.results[[top.sol]]$clustering
+      } else {
+        stop('Invalid clustering evaluation method provide. Choose either "reliability" or "silhouette"')
+      }
+      
+      message("Using ", clus.eval, " scores to select best solution.")
+      message("Best solution is: ", names(top.sol))
+      
 }, 
 
   saturationCalculation = function(clustering.solution = NULL, cov.fraction = 0.85, 

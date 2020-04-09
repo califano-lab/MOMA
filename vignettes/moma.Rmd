@@ -122,21 +122,17 @@ momaObj$Rank()
 
 Clustering of the samples, using the protein ranks computed in the last step, 
 can then be performed using `Cluster()`. Multiple cluster solutions will be 
-calculated, ranging from 2 to 10 clusters by default. The silhouette or 
-reliability score of each can be assessed to determine an optimal 'k' number of 
-clusters; here, we are selecting the 3 cluster solution. 
-*(Because there are no 1 cluster solutions, the index of the desired solution 
-in the generated clustering object is k-1).* 
+calculated, ranging from 2 to 15 clusters by default. The reliability or 
+average silhouette scores of each can be assessed to determine an optimal 'k' 
+number of clusters. By default the clustering solution with the maximum 
+reliability will be saved to the object, but any solution can be saved in afterwards.
 
 ```{r clustering}
 momaObj$Cluster()
 
-# get the reliability scores. The 4th value is the highest and this corresponds
-# with the 5 cluster solution
-sapply(momaObj$clustering.results, "[[", "reliability")
+# Explore the reliability scores
+momaObj$clustering.results$all.cluster.reliability
 
-# pick the 5 cluster solution and save it to the moma Object
-momaObj$sample.clustering <- momaObj$clustering.results[[4]]$clustering
 ```
 
   

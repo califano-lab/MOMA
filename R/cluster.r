@@ -14,21 +14,22 @@
 #' @keywords internal
 clusterRange <- function(dis, range = c(2, 100), step = 1, cores = 1, method = c("pam", "kmeans"), data = NULL) {
   
-  #set.seed(1, kind = "L'Ecuyer-CMRG")
-  #debug = TRUE
-  idx <- 1
+  
+  #idx <- 1
   result <- parallel::mclapply(range[1]:range[2], function(k, dis) {
     
     solution <- NULL
     clustering <- NULL
     centers <- NULL
+    silinfo <- NULL
     if (method == "pam") {
       solution <- cluster::pam(dis, k, diss = TRUE, cluster.only = FALSE)
       clustering <- solution$clustering
       centers <- solution$medoids
+      silinfo <- solution$silinfo
     } else if (method == "kmeans") {
       data[which(is.na(data))] <- 0
-      solution <- kmeans(data, k)
+      solution <- stats::kmeans(data, k)
       clustering <- solution$cluster
       centers <- solution$centers
     } else {
@@ -41,11 +42,20 @@ clusterRange <- function(dis, range = c(2, 100), step = 1, cores = 1, method = c
 
     
     ret <- NULL
-    list(centers = centers, clustering = clustering, k = k, 
+    list(centers = centers, clustering = clustering, k = k, silinfo = silinfo,
          reliability = as.numeric(cr), element.reliability = element.cr, 
          cluster.reliability = cluster.cr)
     
   }, dis = dis, mc.cores = cores)
+  
+  result <- setNames(result, paste0(seq(range[1], range[2]), "clusters"))
+  
+  # create fields that have all the cluster reliability scores and all the avg silhouette scores
+  rel.scores <- vapply(result, function(x){ x[["reliability"]] }, FUN.VALUE = double(1))
+  sil.scores <- vapply(result, function(x){ x[["silinfo"]][["avg.width"]] }, FUN.VALUE = double(1))
+  
+  result[["all.cluster.reliability"]] <- rel.scores
+  result[["all.sil.avgs"]] <- sil.scores
   
   result
 }
@@ -116,9 +126,9 @@ sREA <- function(signatures, groups) {
     signatures <- matrix(signatures, length(signatures), 1, dimnames = list(names(signatures), "sample1"))
   # ranked signatures matrix: samples are rows. Rank
   sig <- qnorm(apply(signatures, 2, rank)/(nrow(signatures) + 1))
-  gr <- sapply(groups, function(x, samp) {
+  gr <- vapply(groups, function(x, samp) {
     samp %in% x
-  }, samp = rownames(sig))
+  }, samp = rownames(sig), FUN.VALUE = logical(length(unlist(groups))))
   gr <- t(gr)
   # non negative counts
   nn <- rowSums(gr)
