@@ -38,7 +38,7 @@
 #' @field sample.clustering field to save sample clustering vector. Numbers are 
 #' cluster assignments, names are sample ids
 #' @export
-momaRunner <- setRefClass("momaRunner", fields = 
+Moma <- setRefClass("Moma", fields = 
                             list(viper = "matrix", 
                                  mut = "matrix", 
                                  cnv = "matrix", 
@@ -349,7 +349,7 @@ utils::globalVariables(c("gene.map"))
 #' @examples
 #' library(moma.gbmexample) 
 #' data("gbm.example")
-#' momaObj <- momaConstructor(gbm.example$vipermat, 
+#' momaObj <- MomaConstructor(gbm.example$vipermat, 
 #' gbm.example$rawsnp, 
 #' gbm.example$rawcnv, 
 #' gbm.example$fusions, 
@@ -358,7 +358,7 @@ utils::globalVariables(c("gene.map"))
 #' 
 #' @return an instance of class momaRunner
 #' @export
-momaConstructor <- function(viper, mut, cnv, fusions, pathways, 
+MomaConstructor <- function(viper, mut, cnv, fusions, pathways, 
                             gene.blacklist = NA_character_, 
                             output.folder = NA_character_, 
                             gene.loc.mapping = gene.map) {
@@ -433,7 +433,7 @@ momaConstructor <- function(viper, mut, cnv, fusions, pathways,
     message("Found labels for ", length(I), " TFs in VIPER matrix")
   }
   
-  obj <- momaRunner$new(viper = viper, mut = mut, cnv = cnv, 
+  obj <- Moma$new(viper = viper, mut = mut, cnv = cnv, 
                         fusions = fusions, pathways = pathways, 
                         gene.blacklist = as.character(gene.blacklist), 
                         output.folder = output.folder, 
