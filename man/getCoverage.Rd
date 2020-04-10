@@ -5,7 +5,7 @@
 \title{Get coverage of interactions}
 \usage{
 getCoverage(
-  momaObj,
+  MomaObject,
   cMR.ranking,
   viper.samples,
   topN = 100,
@@ -14,7 +14,7 @@ getCoverage(
 )
 }
 \arguments{
-\item{momaObj}{A numeric vector with cluster membership, names are samples}
+\item{MomaObject}{A numeric vector with cluster membership, names are samples}
 
 \item{cMR.ranking}{A vector entrez IDs, in order}
 

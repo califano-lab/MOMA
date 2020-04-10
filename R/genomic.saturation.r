@@ -1,6 +1,6 @@
 #' Get coverage of interactions
 #' 
-#' @param momaObj A numeric vector with cluster membership, names are samples
+#' @param MomaObject A numeric vector with cluster membership, names are samples
 #' @param viper.samples Calculate the genomic coverage only for these sample
 #' @param cMR.ranking A vector entrez IDs, in order
 #' @param topN Compute coverage for only the top -N- Master Regulators
@@ -8,11 +8,11 @@
 #' @return A list of lists, indexed by sample name, with coverage statistics
 #' for each sample
 #' @keywords internal
-getCoverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100, 
+getCoverage <- function(MomaObject, cMR.ranking, viper.samples, topN = 100, 
                         mutation.filter = NULL, verbose = FALSE) {
     
-    if (!is(momaObj, "momaRunner")) {
-        stop("Error: must have instantiated momaRunner class object passed!")
+    if (!is(MomaObject, "Moma")) {
+        stop("Error: must have instantiated Moma class object passed!")
     }
     
     # select considered cMRs
@@ -24,26 +24,26 @@ getCoverage <- function(momaObj, cMR.ranking, viper.samples, topN = 100,
     # confirm they are in Entrez ID format
     
     is.entrezIDs <- function(vec) {
-        all(sapply(seq_along(vec), function(i) as.numeric(vec)[i]==vec[i]))
+        all(vapply(seq_along(vec), function(i) as.numeric(vec)[i]==vec[i], FUN.VALUE = logical(1)))
     }
     if (isFALSE(is.entrezIDs(selected.tfs))) {
         stop("Error: tfs not in entrez ID format!")
     }
     
     # For each event type, gets names of cMRs that have those events
-    interaction.map <- validDiggitInteractions(momaObj$interactions, 
-                                               momaObj$gene.loc.mapping, 
+    interaction.map <- validDiggitInteractions(MomaObject$interactions, 
+                                               MomaObject$gene.loc.mapping, 
                                                selected.tfs)
     
     # another assert statment: make sure we have non-zero interactions for each
-    sapply(names(interaction.map), function(key) {
-        if (sum(sapply(interaction.map[[key]], function(x) length(x))) < 1) {
+    for (key in names(interaction.map)) {
+        if (sum(vapply(interaction.map[[key]], length, FUN.VALUE = numeric(1))) < 1) {
             warning("Didn't find any positive DIGGIT associations for data type ",
                     key, " in subtype")
         }
-    })
+    }
     
-    oc <- sampleOverlap(momaObj, viper.samples, selected.tfs, interaction.map, 
+    oc <- sampleOverlap(MomaObject, viper.samples, selected.tfs, interaction.map, 
                         mutation.filter = mutation.filter, verbose = verbose)
     # count mutations/amps/dels covered at this point. Aggregate stats
     
@@ -118,7 +118,7 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping,
     names(covered.amps.LOC) <- names(covered.amps)
     covered.amps.LOC <- covered.amps.LOC[!is.na(covered.amps.LOC)]
     
-    if (sum(sapply(covered.amps.LOC, function(x) length(x))) == 0) {
+    if (sum(vapply(covered.amps.LOC, length, FUN.VALUE = numeric(1))) == 0) {
         stop("Error: something went wrong when mapping amplification Entrez.IDs
               to Cytoband IDs. Quitting...")
     }
@@ -140,7 +140,7 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping,
     names(covered.dels.LOC) <- names(covered.dels)
     covered.dels.LOC <- covered.dels.LOC[!is.na(covered.dels.LOC)]
     
-    if (sum(sapply(covered.dels.LOC, function(x) length(x))) == 0) {
+    if (sum(vapply(covered.dels.LOC, length, FUN.VALUE = numeric(1))) == 0) {
         stop("Error: something went wrong when mapping deletion Entrez.IDs
               to Cytoband IDs. Quitting...")
     }
@@ -160,7 +160,7 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping,
 #' genomic events that are explained 
 #' via DIGGIT. 
 #' @importFrom utils head
-#' @param momaObj Object reference of momaRunner class
+#' @param MomaObject Object reference of momaRunner class
 #' @param viper.samples Sample vector to restrict sample-specific analysis to
 #' @param selected.tfs Transcription factors being analyzed
 #' @param interaction.map List object of events 'covered' by the supplied 
@@ -174,18 +174,18 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping,
 #' @return A list of lists, indexed by sample name, with coverage 
 #' statistics/data for each sample
 #' @keywords internal
-sampleOverlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
+sampleOverlap <- function(MomaObject, viper.samples, selected.tfs, interaction.map,
                            cnv.threshold = 0.5, mutation.filter = NULL, 
                            idx.range = NULL, verbose = FALSE) {
     
-    if (is.null(momaObj$hypotheses)) {
+    if (is.null(MomaObject$hypotheses)) {
         stop("Error: no hypothesis set for momaRunner class object!!")
     }
     
-    map <- momaObj$gene.loc.mapping
+    map <- MomaObject$gene.loc.mapping
     
-    mut.HYP.filter <- momaObj$hypotheses[["mut"]]
-    amp.HYP.filter <- na.omit(unique(sapply(as.character(momaObj$hypotheses[["amp"]]), function(x) {
+    mut.HYP.filter <- MomaObject$hypotheses[["mut"]]
+    amp.HYP.filter <- na.omit(unique(vapply(as.character(MomaObject$hypotheses[["amp"]]), function(x) {
         res <- NA
         x <- as.character(x)
         if (x %in% map$Entrez.IDs) {
@@ -193,8 +193,8 @@ sampleOverlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
             res <- unique(map[which(map$Entrez.IDs == x), "Cytoband"])
         }
         as.character(res)
-    })))
-    del.HYP.filter <- na.omit(unique(sapply(as.character(momaObj$hypotheses[["del"]]), function(x) {
+    }, FUN.VALUE = character(1))))
+    del.HYP.filter <- na.omit(unique(vapply(as.character(MomaObject$hypotheses[["del"]]), function(x) {
         res <- NA
         x <- as.character(x)
         if (x %in% map$Entrez.IDs) {
@@ -202,8 +202,8 @@ sampleOverlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
             res <- unique(map[which(map$Entrez.IDs == x), "Cytoband"])
         }
         as.character(res)
-    })))
-    fus.HYP.filter <- momaObj$hypotheses[["fus"]]
+    }, FUN.VALUE = character(1))))
+    fus.HYP.filter <- MomaObject$hypotheses[["fus"]]
     
     if (length(mut.HYP.filter) == 0) {
         stop("No hypotheses for mut!")
@@ -215,7 +215,7 @@ sampleOverlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
         warning("Zero fusion hypotheses")
     }
     # consider only samples triple intersection of samples with CNV, mutation and RNA (i.e. VIPER inferences) data
-    all.samples.genomics <- intersect(colnames(momaObj$mut), colnames(momaObj$cnv))
+    all.samples.genomics <- intersect(colnames(MomaObject$mut), colnames(MomaObject$cnv))
     all.sample.names <- intersect(all.samples.genomics, viper.samples)
     coverage <- lapply(all.sample.names, function(sample) {
         
@@ -225,39 +225,39 @@ sampleOverlap <- function(momaObj, viper.samples, selected.tfs, interaction.map,
         
         
         # find active and inactive proteins in this sample
-        viper.pvals <- (1 - pnorm(abs(momaObj$viper[, sample])))
-        active.proteins <- rownames(momaObj$viper)[intersect(which(viper.pvals < 0.05), which(momaObj$viper[, sample] > 0))]
+        viper.pvals <- (1 - pnorm(abs(MomaObject$viper[, sample])))
+        active.proteins <- rownames(MomaObject$viper)[intersect(which(viper.pvals < 0.05), which(MomaObject$viper[, sample] > 0))]
         if (length(active.proteins) == 0) {
             warning("No active proteins found for sample: ", sample)
         }
         
         # Collect mutation events in this sample's row:
-        mut.events <- as.character(names(which(momaObj$mut[, sample] > 0)))
-        mut.events <- intersect(mut.events, momaObj$hypotheses[["mut"]])
+        mut.events <- as.character(names(which(MomaObject$mut[, sample] > 0)))
+        mut.events <- intersect(mut.events, MomaObject$hypotheses[["mut"]])
         
         # entrez ids to cytoband get genes
-        del.events <- as.character(names(which(momaObj$cnv[, sample] < -cnv.threshold)))
-        del.events.entrez <- intersect(del.events, momaObj$hypotheses[["del"]])
+        del.events <- as.character(names(which(MomaObject$cnv[, sample] < -cnv.threshold)))
+        del.events.entrez <- intersect(del.events, MomaObject$hypotheses[["del"]])
         # map to genomic locations
         del.events.cytoband <- unique(map[which(map$Entrez.IDs %in% del.events.entrez), "Cytoband"])
         
         # get genes
-        amp.events <- as.character(names(which(momaObj$cnv[, sample] > cnv.threshold)))
-        amp.events.entrez <- intersect(amp.events, momaObj$hypotheses[["amp"]])
+        amp.events <- as.character(names(which(MomaObject$cnv[, sample] > cnv.threshold)))
+        amp.events.entrez <- intersect(amp.events, MomaObject$hypotheses[["amp"]])
         # map to genomic locations
         amp.events.cytoband <- unique(map[which(map$Entrez.IDs %in% amp.events.entrez), "Cytoband"])
         
         # not all samples will have fusions: include if possible
         fus.events <- NULL
         if (!is.null(fus.HYP.filter)) {
-            if (sample %in% colnames(momaObj$fusions)) {
-                fus.events <- names(which(momaObj$fusions[, sample] > 0))
+            if (sample %in% colnames(MomaObject$fusions)) {
+                fus.events <- names(which(MomaObject$fusions[, sample] > 0))
                 if(length(fus.events) == 0) {
                     fus.events <- NULL
                 } 
             } 
         }
-        fus.events <- fus.events[which(fus.events %in% momaObj$hypotheses[["fus"]])]
+        fus.events <- fus.events[which(fus.events %in% MomaObject$hypotheses[["fus"]])]
         
         validated.del.locations <- del.events.cytoband
         validated.amp.locations <- amp.events.cytoband

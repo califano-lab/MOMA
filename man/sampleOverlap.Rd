@@ -7,7 +7,7 @@ genomic events that are explained
 via DIGGIT.}
 \usage{
 sampleOverlap(
-  momaObj,
+  MomaObject,
   viper.samples,
   selected.tfs,
   interaction.map,
@@ -18,7 +18,7 @@ sampleOverlap(
 )
 }
 \arguments{
-\item{momaObj}{Object reference of momaRunner class}
+\item{MomaObject}{Object reference of momaRunner class}
 
 \item{viper.samples}{Sample vector to restrict sample-specific analysis to}
 

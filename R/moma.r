@@ -1,5 +1,4 @@
-
-#' @title MOMA Runner
+#' @title MOMA Object 
 #' @description Main class encapsulating the input data and logic of the MOMA algorithm
 #' @import stats
 #' @import qvalue
@@ -285,60 +284,60 @@ Moma <- setRefClass("Moma", fields =
       
 }, 
 
-  saturationCalculation = function(clustering.solution = NULL, cov.fraction = 0.85, 
-                                   topN = 100, verbose = FALSE) {
-    "Calculate the number of MRs it takes to represent the desired coverage fraction of events"
-      
-      # get clustering solution to use for calculations
-      if (is.null(clustering.solution)) {
-        if(is.null(sample.clustering)) {
-          stop("No clustering solution provided. Provide one as an argument or 
-                save one to the momaObj. Quitting...")
-        } else {
-          clustering.solution <- sample.clustering
-        }
-      }
-      # get coverage for each subtype
-      coverage.subtypes <- list()
-      tmp.summaryStats <- list()
-      tmp.checkpoints <- list()
-      for (clus.id in unique(clustering.solution)) {
-          
-          message("Analyzing cluster ", clus.id, " coverage using the top ", 
-                  topN, " regulators")
-          viper.samples <- colnames(viper[, names(clustering.solution[clustering.solution == clus.id])])
-          
-          # Get subtype-specific rankings: use the main rank and include only those with high mean score
-          stouffer.zscores <- apply(viper[, viper.samples], 1, function(x) {
-              sum(na.omit(x))/sqrt(length(na.omit(x)))
-          })
-          pvals <- pnorm(sort(stouffer.zscores, decreasing = TRUE), lower.tail = FALSE)
-          sig.active.mrs <- names(pvals[p.adjust(pvals, method = "bonferroni") < 0.01])
-          
-          # ranked list of cMRs for this subtype
-          subtype.specific.MR_ranks <- sort(ranks[["integrated"]][sig.active.mrs])
-          
-          # calculate per sample event coverage
-          coverage.range <- getCoverage(.self, names(subtype.specific.MR_ranks), 
-                                        viper.samples, topN = topN, verbose = verbose)
-          coverage.subtypes[[clus.id]] <- coverage.range
-          
-          # 'solve' the checkpoint for each subtype
-          
-          # 1) generate summary stats for mean fractional coverage
-          tmp.summaryStats[[clus.id]] <- mergeGenomicSaturation(coverage.range, 
-                                                                topN = topN)
-          # compute best K based on fractional coverage
-          sweep <- tmp.summaryStats[[clus.id]]$fraction
-          names(sweep) <- tmp.summaryStats[[clus.id]]$k
-          best.k <- fitCurvePercent(sweep, frac = cov.fraction)
-          # pick the top cMRs based on this
-          tmp.checkpoints[[clus.id]] <- names(subtype.specific.MR_ranks[seq_len(best.k)])
-      }
-      genomic.saturation <<- coverage.subtypes
-      coverage.summaryStats <<- tmp.summaryStats
-      checkpoints <<- tmp.checkpoints
+saturationCalculation = function(clustering.solution = NULL, cov.fraction = 0.85, 
+                                 topN = 100, verbose = FALSE) {
+  "Calculate the number of MRs it takes to represent the desired coverage fraction of events"
+  
+  # get clustering solution to use for calculations
+  if (is.null(clustering.solution)) {
+    if(is.null(sample.clustering)) {
+      stop("No clustering solution provided. Provide one as an argument or 
+                save one to the Moma Object. Quitting...")
+    } else {
+      clustering.solution <- sample.clustering
+    }
   }
+  # get coverage for each subtype
+  coverage.subtypes <- list()
+  tmp.summaryStats <- list()
+  tmp.checkpoints <- list()
+  for (clus.id in unique(clustering.solution)) {
+    
+    message("Analyzing cluster ", clus.id, " coverage using the top ", 
+            topN, " regulators")
+    viper.samples <- colnames(viper[, names(clustering.solution[clustering.solution == clus.id])])
+    
+    # Get subtype-specific rankings: use the main rank and include only those with high mean score
+    stouffer.zscores <- apply(viper[, viper.samples], 1, function(x) {
+      sum(na.omit(x))/sqrt(length(na.omit(x)))
+    })
+    pvals <- pnorm(sort(stouffer.zscores, decreasing = TRUE), lower.tail = FALSE)
+    sig.active.mrs <- names(pvals[p.adjust(pvals, method = "bonferroni") < 0.01])
+    
+    # ranked list of cMRs for this subtype
+    subtype.specific.MR_ranks <- sort(ranks[["integrated"]][sig.active.mrs])
+    
+    # calculate per sample event coverage
+    coverage.range <- getCoverage(.self, names(subtype.specific.MR_ranks), 
+                                  viper.samples, topN = topN, verbose = verbose)
+    coverage.subtypes[[clus.id]] <- coverage.range
+    
+    # 'solve' the checkpoint for each subtype
+    
+    # 1) generate summary stats for mean fractional coverage
+    tmp.summaryStats[[clus.id]] <- mergeGenomicSaturation(coverage.range, 
+                                                          topN = topN)
+    # compute best K based on fractional coverage
+    sweep <- tmp.summaryStats[[clus.id]]$fraction
+    names(sweep) <- tmp.summaryStats[[clus.id]]$k
+    best.k <- fitCurvePercent(sweep, frac = cov.fraction)
+    # pick the top cMRs based on this
+    tmp.checkpoints[[clus.id]] <- names(subtype.specific.MR_ranks[seq_len(best.k)])
+  }
+  genomic.saturation <<- coverage.subtypes
+  coverage.summaryStats <<- tmp.summaryStats
+  checkpoints <<- tmp.checkpoints
+}
 
   )
 
@@ -372,7 +371,7 @@ utils::globalVariables(c("gene.map"))
 #' pathways = list(cindy=gbm.example$cindy, preppi=gbm.example$preppi), 
 #' gene.blacklist=gbm.example$mutSig)
 #' 
-#' @return an instance of class momaRunner
+#' @return an instance of class Moma
 #' @export
 MomaConstructor <- function(viper, mut, cnv, fusions, pathways, 
                             gene.blacklist = NA_character_, 

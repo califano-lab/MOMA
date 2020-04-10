@@ -39,7 +39,7 @@ interactions between proteins (keys) and their associated partners}
 \item{gene.loc.mapping}{A data.frame of band locations and Entrez IDs}
 }
 \value{
-an instance of class momaRunner
+an instance of class Moma
 }
 \description{
 MOMA Constructor

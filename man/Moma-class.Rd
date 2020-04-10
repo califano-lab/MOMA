@@ -4,7 +4,7 @@
 \name{Moma-class}
 \alias{Moma-class}
 \alias{Moma}
-\title{MOMA Runner}
+\title{MOMA Object}
 \description{
 Main class encapsulating the input data and logic of the MOMA algorithm
 }
