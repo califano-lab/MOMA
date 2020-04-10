@@ -34,7 +34,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
       stop("No clustering solution provided. Provide one as an argument or save one
                 to the momaObj. Quitting...")
     } else {
-       clustering.solution <- momaObj$sample.clustering
+      clustering.solution <- momaObj$sample.clustering
     }
   }
   
@@ -65,7 +65,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
   
   # CNVs. Input should be GISITC scores so separate into high/low events
   # Filter to only keep fCNVs if provided
- cnv <- momaObj$cnv
+  cnv <- momaObj$cnv
   if(!is.null(fCNV)){
     cnv <- cnv[na.omit(match(fCNV, rownames(cnv))),]
     if(nrow(cnv) == 0) {
@@ -75,8 +75,8 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
     }
   }
   
- amps <- dels <- cnv
- 
+  amps <- dels <- cnv
+  
   amps[amps < 0.5] <- NA
   amps[amps >= 0.5] <- "amp"
   
@@ -90,7 +90,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
   # Restructure saturation data 
   # to prep for plotting
   ##########################
-
+  
   
   # get subtype event tables
   subtype.tables <- getSubtypeEventTables(genomic.saturation, clustering.solution, checkpoints)
@@ -100,7 +100,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
   ## also potential improvement: look for inflection points of huge jumps of new unique events and highlight those regulators in particular?
   tissue.coverage.df <- mergeDataBySubtype(genomic.saturation, clustering.solution, 100)
   
-
+  
   # initalize object to save plots in
   tmp.oncoplots <- list()
   tmp.curveplots <- list()
@@ -132,7 +132,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
     }
     
     p.oncoprint <- oncoprintPlot(summary.vec = subtype.tables[[k]], snpmat.thisClus, amps.thisClus, dels.thisClus, fusions.thisClus, 
-                                  important.genes, band2gene, max.events, k)
+                                 important.genes, band2gene, max.events, k)
     tmp.oncoplots[[k]] <- p.oncoprint
     
     #########
@@ -185,9 +185,9 @@ getSubtypeEventTables <- function(saturation.data, sample.clustering,
     mr.cutoff <- length(checkpoints[[cluster.id]])
     
     #if (isTRUE(checkpoint.spec)) {
-      #mr.cutoff <- length(momaObj$checkpoints.clusterSpecific[[cluster.id]])
+    #mr.cutoff <- length(momaObj$checkpoints.clusterSpecific[[cluster.id]])
     #} else {
-     # mr.cutoff <- length(momaObj$checkpoints[[cluster.id]])
+    # mr.cutoff <- length(momaObj$checkpoints[[cluster.id]])
     #}
     
     subtype.coverage[[cluster.id]] <- makeCoverageDf(coverage, cutoff=mr.cutoff)
@@ -211,30 +211,32 @@ getSubtypeEventTables <- function(saturation.data, sample.clustering,
 #' captured by the checkpoint mrs
 #' @keywords internal
 makeCoverageDf <- function(coverage.list, cutoff) {
-
-df <- c()
-for (name in names(coverage.list)) {
-  # skip empty/missing sample data
-  if (is.null(coverage.list[[name]])) { next }
   
-  for (type in c("mut", "amp", "del", "fus")) {
+  df <- c()
+  for (name in names(coverage.list)) {
+    # skip empty/missing sample data
+    if (is.null(coverage.list[[name]])) { next }
     
-    events.thisSample <- coverage.list[[name]][[cutoff]][[type]]
-    if (is.null(events.thisSample)) {
-      non.null.idx <- which(sapply(coverage.list[[name]], function(x) !is.null(x))) ### not sure that this is for
-      real.cutoff <- max(non.null.idx[non.null.idx < cutoff])
-      events.thisSample <- coverage.list[[name]][[real.cutoff]][[type]]
+    for (type in c("mut", "amp", "del", "fus")) {
+      
+      events.thisSample <- coverage.list[[name]][[cutoff]][[type]]
+      if (is.null(events.thisSample)) {
+        non.null.idx <- which(vapply(coverage.list[[name]], 
+                                     function(x) !is.null(x), 
+                                     FUN.VALUE = logical(1))) ## ??
+        real.cutoff <- max(non.null.idx[non.null.idx < cutoff])
+        events.thisSample <- coverage.list[[name]][[real.cutoff]][[type]]
+      }
+      
+      CT <- length(events.thisSample)
+      if (CT==0) { next }
+      submat <- cbind(rep(name, CT), rep(type, CT), events.thisSample)
+      df <- rbind(df, submat)
     }
-    
-    CT <- length(events.thisSample)
-    if (CT==0) { next }
-    submat <- cbind(rep(name, CT), rep(type, CT), events.thisSample)
-    df <- rbind(df, submat)
   }
-}
-
-df <- data.frame(event=df[,3], type=df[,2], sample=df[,1])
-df	
+  
+  df <- data.frame(event=df[,3], type=df[,2], sample=df[,1])
+  df	
 }
 
 
@@ -248,7 +250,7 @@ df
 #' @keywords internal
 mergeDataBySubtype <- function(genomic.saturation, sample.clustering, 
                                topN = 100)  {
-
+  
   # generate summary stats for each subtype	
   full.df <- c()
   for (subtype in unique(sample.clustering)) {	
@@ -572,16 +574,16 @@ oncoprintPlot <- function(summary.vec, snpmat.thisClus, amps.thisClus,
   final.mat[is.na(final.mat)] <- ""
   
   ht <- ComplexHeatmap::oncoPrint(final.mat,
-                  alter_fun = alter_fun, col = col,
-                  heatmap_legend_param = heatmap_legend_param,
-                  pct_side = "right", pct_gp = gpar(fontsize = label.size),
-                  column_title = title, column_title_gp = gpar(fontsize = 8),
-                  row_names_side = "left", row_names_gp = gpar(fontsize = label.size),
-                  show_heatmap_legend = TRUE,
-                  top_annotation = HeatmapAnnotation(
-                    column_barplot = anno_oncoprint_barplot(height = unit(.4, "cm"), axis_param = list(gp = gpar(fontsize = 4)))),
-                  right_annotation = rowAnnotation(
-                    row_barplot = anno_oncoprint_barplot(width = unit(1, "cm"), axis_param = list(gp = gpar(fontsize = 5)))))
+                                  alter_fun = alter_fun, col = col,
+                                  heatmap_legend_param = heatmap_legend_param,
+                                  pct_side = "right", pct_gp = gpar(fontsize = label.size),
+                                  column_title = title, column_title_gp = gpar(fontsize = 8),
+                                  row_names_side = "left", row_names_gp = gpar(fontsize = label.size),
+                                  show_heatmap_legend = TRUE,
+                                  top_annotation = HeatmapAnnotation(
+                                    column_barplot = anno_oncoprint_barplot(height = unit(.4, "cm"), axis_param = list(gp = gpar(fontsize = 4)))),
+                                  right_annotation = rowAnnotation(
+                                    row_barplot = anno_oncoprint_barplot(width = unit(1, "cm"), axis_param = list(gp = gpar(fontsize = 5)))))
   
   
   
@@ -782,7 +784,9 @@ getDataFrame <- function(data, highlight.genes, genomeBand_2_gene,
   mapped <- rbind(mapped, subset)
   
   # order by total frequency of events by gene/id
-  mapped$event_sums <- sapply(mapped$id, function(id) { sum(as.numeric(mapped[which(mapped$id==as.character(id)),]$Freq)) })
+  mapped$event_sums <- vapply(mapped$id, function(id) { 
+    sum(as.numeric(mapped[which(mapped$id==as.character(id)),]$Freq)) }, 
+    FUN.VALUE = numeric(1))
   mapped <- mapped[order(-mapped$event_sums),]
   mapped$id <- factor(mapped$id, levels=unique(rev(mapped$id)))
   

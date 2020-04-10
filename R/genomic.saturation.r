@@ -175,8 +175,8 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping,
 #' statistics/data for each sample
 #' @keywords internal
 sampleOverlap <- function(MomaObject, viper.samples, selected.tfs, interaction.map,
-                           cnv.threshold = 0.5, mutation.filter = NULL, 
-                           idx.range = NULL, verbose = FALSE) {
+                          cnv.threshold = 0.5, mutation.filter = NULL, 
+                          idx.range = NULL, verbose = FALSE) {
     
     if (is.null(MomaObject$hypotheses)) {
         stop("Error: no hypothesis set for momaRunner class object!!")
@@ -344,7 +344,7 @@ sampleOverlap <- function(MomaObject, viper.samples, selected.tfs, interaction.m
             
             total.frac <- ifelse(length(total.num.events) == 0, NA, (length(covered.amp) + length(covered.del) + length(covered.mut) + length(covered.fus))/total.num.events)
             sample.cover[[i]] <- list(amp = covered.amp, del = covered.del, mut = covered.mut, fus = covered.fus, amp.frac = amp.frac, del.frac = del.frac, 
-                mut.frac = mut.frac, fus.frac = fus.frac, total.frac = total.frac)
+                                      mut.frac = mut.frac, fus.frac = fus.frac, total.frac = total.frac)
         }
         sample.cover
     })

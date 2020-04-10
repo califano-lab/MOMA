@@ -39,7 +39,7 @@ clusterRange <- function(dis, range = c(2, 100), step = 1, cores = 1, method = c
     cr <- clusterReliability(clustering, 1/as.matrix(dis), method = "global")
     element.cr <- clusterReliability(clustering, 1/as.matrix(dis), method = "element")
     cluster.cr <- clusterReliability(clustering, 1/as.matrix(dis), method = "cluster")
-
+    
     
     ret <- NULL
     list(centers = centers, clustering = clustering, k = k, silinfo = silinfo,

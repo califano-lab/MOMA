@@ -18,9 +18,4 @@ A vector of normalized z-scores, named by TF id
 \description{
 Function to normalize TF scores
 }
-\examples{
-library(moma.gbmexample)
-data("gbm.example")
-viperGetTFScores(gbm.example$vipermat)
-}
 \keyword{internal}

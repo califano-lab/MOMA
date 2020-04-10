@@ -40,12 +40,16 @@ the master regulator analysis.
 
 ## Getting Started
 
-First load the library into the R session. Make sure all the other dependent 
-packages have already been installed to ensure full functionality, including 
+First install and load the library into the R session. Make sure all the other 
+dependent packages have already been installed to ensure full functionality, 
+including 
 graphics and plotting functions.  
 
 
 ```{r setup}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("MOMA")
 library(MOMA)
 ```
 
@@ -212,6 +216,14 @@ plots$curve.plots[[3]] +
   
 ```
 
+## Session Info 
+
+Here is the output of sessionInfo() on the system on which this package and
+documentation was compiled.
+
+```{r sessionInfo}
+sessionInfo()
+```
 
 
 

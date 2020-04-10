@@ -3,10 +3,6 @@
 #' @param vipermat - matrix of VIPER scores with columns as samples, 
 #' rows as protein names
 #' @param fdr.thresh - BH-FDR threshold (default 0.05 FDR rate)
-#' @examples
-#' library(moma.gbmexample)
-#' data("gbm.example")
-#' viperGetTFScores(gbm.example$vipermat)
 #' @return A vector of normalized z-scores, named by TF id
 #' @keywords internal
 viperGetTFScores <- function(vipermat, fdr.thresh = 0.05) {
@@ -168,7 +164,7 @@ sigInteractorsDIGGIT <- function(corrected.scores, nes.scores, cindy,
     
     if (!all(names(pvals) == names(nes.vec))) { 
       stop('Data not aligned for aREA / aREA corrected p-values') 
-      }
+    }
     
     # subset the NES vector for this TF, threshold again on NES scores as a sanity check on the basic enrichment (i.e. remove those with high
     # over-background scores simply because the background is de-enriched)
