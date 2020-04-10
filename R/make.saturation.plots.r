@@ -157,7 +157,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
 
 
 #' Helper function to get subtype specific events
-#' @param saturation.data : genomic saturation object from moma. List indexed by 
+#' @param saturation.data : genomic saturation object from MOMA. List indexed by 
 #' cluster then sample then regulator with the number of events associated with 
 #' each additional regulator
 #' @param sample.clustering : clustering vector with sample names and 

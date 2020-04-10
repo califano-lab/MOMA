@@ -19,5 +19,5 @@ Convert from hugo gene names to entrez ids
 mapHugo(c("A1CF","PTEN"))
 }
 \seealso{
-\code{\link[moma]{mapEntrez}}
+\code{\link[MOMA]{mapEntrez}}
 }
