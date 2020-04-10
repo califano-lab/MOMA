@@ -5,7 +5,7 @@
 \title{aREA.enrich Compute aREA enrichment between all pairwise combinations of 
 VIPER proteins and gene-level events}
 \usage{
-areaEnrich(events.mat, vipermat, event.type)
+areaEnrich(events.mat, vipermat, event.type, verbose)
 }
 \arguments{
 \item{events.mat}{A Binary 0/1 matrix with columns as samples, and rows as 
@@ -15,6 +15,8 @@ proteins}
 samples, and rows as proteins}
 
 \item{event.type}{Name of the event type for printing purposes}
+
+\item{verbose}{whether to print extra progress statements}
 }
 \value{
 A matrix of enrichment scores with rows as event/gene names and 

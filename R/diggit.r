@@ -12,13 +12,14 @@
 #' @param min.events Only compute enrichment if the number of samples with these
 #'  events is GTE to this
 #' @param event.type Name of the event type being analyzed
+#' @param verbose whether to print extra progress statements
 #' @return A matrix of aREA scores, dimensions are nrow(events.mat) x nrow(vipermat) 
 #' @keywords internal
 associateEvents <- function(vipermat, events.mat, min.events = NA, 
-                            whitelist = NA, event.type = c("Amplifications", 
-                                                           "Deletions", 
-                                                           "Mutations", 
-                                                           "Fusions", NA)) {
+                            whitelist = NA, 
+                            event.type = c("Amplifications","Deletions", 
+                                            "Mutations","Fusions", NA),
+                            verbose) {
     event.type <- match.arg(event.type)
     if (is.null(events.mat)) {
         print(paste("Null", event.type, "matrix, skipping.."))
@@ -51,7 +52,7 @@ associateEvents <- function(vipermat, events.mat, min.events = NA,
         return(NULL)
     }
     
-    nes <- areaEnrich(events.mat, vipermat, event.type)
+    nes <- areaEnrich(events.mat, vipermat, event.type, verbose = verbose)
     nes
 }
 
@@ -64,10 +65,11 @@ associateEvents <- function(vipermat, events.mat, min.events = NA,
 #' @param vipermat A VIPER network of inferred activity scores with columns as 
 #' samples, and rows as proteins
 #' @param event.type Name of the event type for printing purposes
+#' @param verbose whether to print extra progress statements
 #' @return A matrix of enrichment scores with rows as event/gene names and 
 #' columns as VIPER protein names
 #' @keywords internal
-areaEnrich <- function(events.mat, vipermat, event.type) {
+areaEnrich <- function(events.mat, vipermat, event.type, verbose) {
     
     # Convert mutations into a regulon-like object
     events.regulon <- apply(events.mat, 1, function(x) {
@@ -77,7 +79,7 @@ areaEnrich <- function(events.mat, vipermat, event.type) {
     
     # Calculate raw enrichment scores: each mutation against each TF 
     # columns are TFs, rownames are mutations
-    es <- rea(t(vipermat), events.regulon, event.type = event.type)
+    es <- rea(t(vipermat), events.regulon, event.type = event.type, verbose = verbose)
     # Analytical correction
     dnull <- reaNULL(events.regulon)
     
@@ -108,13 +110,14 @@ areaEnrich <- function(events.mat, vipermat, event.type) {
 #' @param minsize The minimum number of events to use when calculating enrichment
 #' @param maxsize The maximum number of events to use when calculating enrichment 
 #' @param event.type Type of event being analyzed
+#' @param verbose whether to print extra progress statements
 #' @return A list containing two elements:
 #' \describe{
 #' \item{groups}{Regulon-specific NULL model containing the enrichment scores}
 #' \item{ss}{Direction of the regulon-specific NULL model}
 #' }
 #' @keywords internal
-rea <- function(eset, regulon, minsize = 1, maxsize = Inf, event.type = NA) {
+rea <- function(eset, regulon, minsize = 1, maxsize = Inf, event.type = NA, verbose) {
     # Filter for minimum sizes
     sizes <- vapply(regulon, length, FUN.VALUE = numeric(1))
     regulon <- regulon[sizes >= minsize]
@@ -141,10 +144,12 @@ rea <- function(eset, regulon, minsize = 1, maxsize = Inf, event.type = NA) {
     }
     
     # Print some progress bar
-    message("\nComputing associations of ", length(regulon)," ", 
-            event.type," with ", ncol(eset), " regulators")
-    message("Process started at ", date())
-    pb <- txtProgressBar(max = length(regulon), style = 3)
+    if(verbose) {
+        message("\nComputing associations of ", length(regulon)," ", 
+                event.type," with ", ncol(eset), " regulators")
+        message("Process started at ", date())
+        pb <- txtProgressBar(max = length(regulon), style = 3) 
+    }
     
     temp <- lapply(seq_len(length(regulon)), function(i,regulon,t1,t2,tw,pb) {
         hitsamples <- regulon[[i]]
@@ -158,13 +163,14 @@ rea <- function(eset, regulon, minsize = 1, maxsize = Inf, event.type = NA) {
         sum1 <- matrix(heretw, 1, length(hitsamples)) %*% t2[pos, ]
         ss <- sign(sum1)
         ss[ss == 0] <- 1
-        setTxtProgressBar(pb, i)
+        if(verbose) { setTxtProgressBar(pb, i) }
         sum2 <- matrix(0 * heretw, 1, length(hitsamples)) %*% t1[pos, ]
         return(list(es = as.vector(abs(sum1) + sum2 * (sum2 > 0))/sum(heretw), 
                     ss = ss))
     }, regulon = regulon, pb = pb, t1 = t1, t2 = t2, tw = tw)
     names(temp) <- names(regulon)
-    message("\nProcess ended at ", date())
+    
+    if(verbose) { message("\nProcess ended at ", date()) }
     es <- t(vapply(temp, function(x) x$es,
                    FUN.VALUE = numeric(length(temp[[1]][[1]]))))
     ss <- t(vapply(temp, function(x) x$ss, 

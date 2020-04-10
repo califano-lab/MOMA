@@ -10,7 +10,8 @@ associateEvents(
   events.mat,
   min.events = NA,
   whitelist = NA,
-  event.type = c("Amplifications", "Deletions", "Mutations", "Fusions", NA)
+  event.type = c("Amplifications", "Deletions", "Mutations", "Fusions", NA),
+  verbose
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ events is GTE to this}
 \item{whitelist}{Only compute associations for events in this list}
 
 \item{event.type}{Name of the event type being analyzed}
+
+\item{verbose}{whether to print extra progress statements}
 }
 \value{
 A matrix of aREA scores, dimensions are nrow(events.mat) x nrow(vipermat)

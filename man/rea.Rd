@@ -5,7 +5,7 @@
 \title{This function calculates an Enrichment Score of Association based on how the
 features rank on the samples sorted by a specific gene}
 \usage{
-rea(eset, regulon, minsize = 1, maxsize = Inf, event.type = NA)
+rea(eset, regulon, minsize = 1, maxsize = Inf, event.type = NA, verbose)
 }
 \arguments{
 \item{eset}{Numerical matrix}
@@ -18,6 +18,8 @@ entries, indicating presence of event}
 \item{maxsize}{The maximum number of events to use when calculating enrichment}
 
 \item{event.type}{Type of event being analyzed}
+
+\item{verbose}{whether to print extra progress statements}
 }
 \value{
 A list containing two elements:

@@ -46,7 +46,7 @@ including
 graphics and plotting functions.  
 
 
-```{r setup}
+```{r setup, message = FALSE, results="hide", warning=FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("MOMA")
@@ -117,7 +117,7 @@ The `Rank()` function will create a final ranking of candidate Master Regulators
 for this cohort of patient samples.
 
 ```{r interactions, results = "hide", message = FALSE}
-momaObj$runDIGGIT(fCNV=gbm.example$fCNV, verbose = TRUE)
+momaObj$runDIGGIT(fCNV=gbm.example$fCNV)
 
 momaObj$makeInteractions()
 

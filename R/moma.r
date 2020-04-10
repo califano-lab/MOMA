@@ -128,11 +128,14 @@ Moma <- setRefClass("Moma", fields =
                         
                         # do aREA association
                         nes.amps <- associateEvents(viper, amps.mat, min.events = min.events, 
-                                                    event.type = "Amplifications")
+                                                    event.type = "Amplifications",
+                                                    verbose = verbose)
                         nes.dels <- associateEvents(viper, dels.mat, min.events = min.events, 
-                                                    event.type = "Deletions")
+                                                    event.type = "Deletions",
+                                                    verbose = verbose)
                         nes.muts <- associateEvents(viper, muts.mat, min.events = min.events, 
-                                                    event.type = "Mutations")
+                                                    event.type = "Mutations",
+                                                    verbose = verbose)
                         
                         nes.fusions <- NULL
                         if (!is.null(fusions)) {
@@ -143,7 +146,10 @@ Moma <- setRefClass("Moma", fields =
                             write.table(fus.hypotheses, file = paste0(output.folder, "/hypotheses.fusions.txt"), 
                                         quote = FALSE, sep = "\t")
                           }
-                          nes.fusions <- associateEvents(viper, fusions, min.events = min.events, event.type = "Fusions")
+                          nes.fusions <- associateEvents(viper, fusions, 
+                                                         min.events = min.events, 
+                                                         event.type = "Fusions",
+                                                         verbose = verbose)
                         }
                         
                         # Save aREA results if desired
