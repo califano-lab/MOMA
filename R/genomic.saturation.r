@@ -75,7 +75,7 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping,
     if (length(mut.tfs) == 0 || length(amp.tfs) == 0 || length(del.tfs) == 0) {
         stop("No valid TFs in the interactions supplied!")
     } else if (length(fus.tfs) == 0) {
-        warning("No valid fusion interactions...")
+        message("No valid fusion interactions...")
     }
     
     mut.I <- subsetListInteractions(interactions[["mut"]], mut.tfs)
@@ -212,7 +212,7 @@ sampleOverlap <- function(MomaObject, viper.samples, selected.tfs, interaction.m
     } else if (length(del.HYP.filter) == 0) {
         stop("No hypotheses for del!")
     } else if (length(fus.HYP.filter) == 0) {
-        warning("Zero fusion hypotheses")
+        #message("Zero fusion hypotheses")
     }
     # consider only samples triple intersection of samples with CNV, mutation and RNA (i.e. VIPER inferences) data
     all.samples.genomics <- intersect(colnames(MomaObject$mut), colnames(MomaObject$cnv))

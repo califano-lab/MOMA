@@ -297,12 +297,19 @@ Moma <- setRefClass("Moma", fields =
                         # get clustering solution to use for calculations
                         if (is.null(clustering.solution)) {
                           if(is.null(sample.clustering)) {
-                            stop("No clustering solution provided. Provide one as an argument or 
-                save one to the Moma Object. Quitting...")
+                            stop("No clustering solution provided. Provide one as an argument or save one to the Moma Object. Quitting...")
                           } else {
                             clustering.solution <- sample.clustering
                           }
                         }
+                        
+                        # make sure submitted clustering solution has sufficiently large clusters (at least 5 samples)
+                        clus.sizes <- table(clustering.solution) < 5
+                        
+                        if(any(clus.sizes)) {
+                          stop("At least one cluster does not have sufficient samples. Select a different clustering solution and resave to object")
+                        }
+                        
                         # get coverage for each subtype
                         coverage.subtypes <- list()
                         tmp.summaryStats <- list()

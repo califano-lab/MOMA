@@ -22,11 +22,11 @@ associateEvents <- function(vipermat, events.mat, min.events = NA,
                             verbose) {
     event.type <- match.arg(event.type)
     if (is.null(events.mat)) {
-        print(paste("Null", event.type, "matrix, skipping.."))
+        message("Null ", event.type, " matrix, skipping..")
         return(NULL)
     }
     if (dim(events.mat)[1] == 0 | dim(events.mat)[2] == 0) {
-        print(paste0("Not enough ", event.type,", skipping"))
+        message("Not enough ", event.type,", skipping")
         return(NULL)
     }
     
@@ -45,10 +45,10 @@ associateEvents <- function(vipermat, events.mat, min.events = NA,
     }
     # test again after removing low freuquency events
     if (is.null(dim(events.mat))) {
-        print(paste0("Not enough ", event.type,", skipping"))
+        message("Not enough ", event.type,", skipping")
         return(NULL)
     } else if (dim(events.mat)[1] == 0 | dim(events.mat)[2] == 0) {
-        print(paste0("Not enough ", event.type,", skipping"))
+        message("Not enough ", event.type,", skipping")
         return(NULL)
     }
     
