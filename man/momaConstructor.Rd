@@ -46,13 +46,11 @@ MOMA Constructor
 see vignette for more information on how to set up and run the MOMA object
 }
 \examples{
-library(moma.gbmexample) 
-data("gbm.example")
-momaObj <- MomaConstructor(gbm.example$vipermat, 
-gbm.example$rawsnp, 
-gbm.example$rawcnv, 
-gbm.example$fusions, 
-pathways = list(cindy=gbm.example$cindy, preppi=gbm.example$preppi), 
-gene.blacklist=gbm.example$mutSig)
+momaObj <- MomaConstructor(example.gbm.data$vipermat, 
+example.gbm.data$rawsnp, 
+example.gbm.data$rawcnv, 
+example.gbm.data$fusions, 
+pathways = list(cindy=example.gbm.data$cindy, preppi=example.gbm.data$preppi), 
+gene.blacklist=mutSig)
 
 }
