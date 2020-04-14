@@ -13,7 +13,6 @@
 #' @import grDevices
 #' @import readr
 #' @import tibble
-#' @import moma.gbmexample
 #' @import BiocManager
 #' @field viper matrix of inferred activity score inferred by viper
 #' @field mut binary mutation matrix 1 for presence of mutation, 0 for not, NA 
@@ -138,7 +137,7 @@ Moma <- setRefClass("Moma", fields =
                                                     verbose = verbose)
                         
                         nes.fusions <- NULL
-                        if (!is.null(fusions)) {
+                        if (!is.na(fusions)) {
                           fus.hypotheses <- rownames(fusions[apply(fusions, 1, sum, na.rm = TRUE) >= min.events, ])
                           hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, 
                                               amp = amps.hypotheses, fus = fus.hypotheses)
@@ -358,76 +357,168 @@ Moma <- setRefClass("Moma", fields =
 
 utils::globalVariables(c("gene.map"))
 
-#' @title MOMA Constructor
-#' see vignette for more information on how to set up and run the MOMA object
-#' @param viper VIPER protein activity matrix with samples as columns 
-#' and rows as protein IDs
-#' @param mut An indicator matrix (0/1) of mutation events with samples as 
-#' columns and genes as rows
-#' @param fusions An indicator matrix (0/1) of fusion events with samples as 
-#' columns and genes as rows
-#' @param cnv A matrix of CNV scores (typically SNP6 array scores from TCGA) 
-#' with samples as columns and genes as rows
+#' MOMA Constructor Function
+#' 
+#' Create MOMA Object from either a MultiAssayExperiment object or a list of
+#' assays.
+#' See vignette for more information on how to set up and run the MOMA object
+#' @param x A MultiAssayExerperiment object or list object with the following assays:
+#' (note: assays must have these exact names)
+#' \describe{
+#' \item{viper}{VIPER protein activity matrix with samples as columns 
+#' and rows as protein IDs}
+#' \item{mut}{An indicator matrix (0/1) of mutation events with samples as 
+#' columns and genes as rows}
+#' \item{cnv}{A matrix of CNV scores (typically SNP6 array scores from TCGA) 
+#' with samples as columns and genes as rows}
+#' \item{fusion}{An indicator matrix (0/1) of fusion events with samples as 
+#' columns and genes as rows} }
 #' @param pathways A named list of lists. Each named list represents 
 #' interactions between proteins (keys) and their associated partners
 #' @param gene.loc.mapping A data.frame of band locations and Entrez IDs
 #' @param output.folder Location to store output and intermediate results 
 #' @param gene.blacklist A vector of genes to exclude from the analysis
 #' @importFrom utils data
-#' @examples
-#' momaObj <- MomaConstructor(example.gbm.data$vipermat, 
-#' example.gbm.data$rawsnp, 
-#' example.gbm.data$rawcnv, 
-#' example.gbm.data$fusions, 
-#' pathways = list(cindy=example.gbm.data$cindy, preppi=example.gbm.data$preppi), 
-#' gene.blacklist=mutSig)
-#' 
-#' @return an instance of class Moma
+#' @importFrom MultiAssayExperiment assays colData intersectColumns
+#' @examples 
+#' momaObj <- MomaConstructor(example.gbm.mae, gbm.pathways)
 #' @export
-MomaConstructor <- function(viper, mut, cnv, fusions, pathways, 
-                            gene.blacklist = NA_character_, 
-                            output.folder = NA_character_, 
-                            gene.loc.mapping = gene.map) {
+MomaConstructor <- function(x, pathways, gene.blacklist = NA_character_, 
+                               output.folder = NA_character_, 
+                               gene.loc.mapping = gene.map){
   
   utils::data("gene.map")
   
-  ### Filter sample names to be all the same length 
-  ### Particularly important for TCGA names
-  viper <- sampleNameFilter(viper)
-  mut <- sampleNameFilter(mut)
-  cnv <- sampleNameFilter(cnv)
+  # check if x is MultiAssayExperiment or list object with the required assays
+  if(is(x, "MultiAssayExperiment")){
+    x <- checkMAE(x)
+    type <- "mae"
+  } else if (is.list(x)){
+    x <- checkList(x)
+    type <- "assaylist"
+  } else {
+    stop("Object supplied is not a MultiAssayExperiment or list object with assays.")
+  }
+  
+  # check that genemap is exists/is valid if a different one is supplied
+  checkGeneMap(gene.loc.mapping)
+  
+  # check pathway formatting and names
+  checkPathways(pathways, x, type)
+  
+  ##### initialize new instance of class Moma ####
+  if(type == "mae") {
+    
+    # first check for fusions
+    if("fusion" %in% names(assays(x))) {
+      fusion <- assays(x)$fusion
+    } else {
+      fusion <- matrix(NA)
+    }
+    
+    obj <- Moma$new(viper = assays(x)$viper, mut = assays(x)$mut, 
+                    cnv = assays(x)$cnv, 
+                    fusions = fusion, pathways = pathways, 
+                    gene.blacklist = as.character(gene.blacklist), 
+                    output.folder = output.folder, 
+                    gene.loc.mapping = gene.loc.mapping)
+  } else if (type == "assaylist") {
+    
+    # first check for fusions
+    if("fusion" %in% names(x)) {
+      fusion <- x$fusion
+    } else {
+      fusion <- matrix(NA)
+    }
+    
+    obj <- Moma$new(viper = x$viper, mut = x$mut, 
+                    cnv = x$cnv, 
+                    fusions = fusion, pathways = pathways, 
+                    gene.blacklist = as.character(gene.blacklist), 
+                    output.folder = output.folder, 
+                    gene.loc.mapping = gene.loc.mapping)
+  }
+  
+  obj
+}
+
+
+
+#' Check MultiAssayExperiment
+#' @param mae MultiAssayExperiment object
+#' @importFrom MultiAssayExperiment assays colData intersectColumns
+#' @keywords internal
+checkMAE <- function(mae){
+  # confirm mae has viper, cnv, and mut assays (and optional fusion)
+  if(length(intersect(names(assays(mae)) , c("viper", "mut", "cnv"))) == 3){
+    message("Found the following assays:", paste(names(assays(mae)), collapse = ", "))
+  } else {
+    stop("Necessary assays not found. Please ensure names are 'viper', 'mut', 'cnv' (and 'fusion' if available) for the respective assays")
+  }
+  
+  # confirm there are a sufficient number of samples
+  if(nrow(colData(mae)) < 2) {
+    stop("Not enough samples")
+  }
+  
+  # print number of samples found in overlap
+  message("Common samples across main assays: ", 
+          suppressMessages(nrow(colData(suppressMessages(intersectColumns(mae[,,c("viper", "cnv", "mut")]))))))
+  
+  # filter mae to only return samples that are in the viper matrix
+  vipersamples <- colnames(assays(mae)$viper)
+  mae <- mae[ , vipersamples]
+  mae
+  
+}
+
+#' Check List of Assays
+#' @param assaylist list of assays (viper, cnv, mut and fusion)
+#' @keywords internal
+checkList <- function(assaylist){
+  if(length(intersect(names(assaylist) , c("viper", "mut", "cnv"))) == 3){
+    message("Found the following assays:", paste(names(assaylist), collapse = ", "))
+  } else {
+    stop("Necessary assays not found. Please ensure names are 'viper', 'mut', 'cnv' (and 'fusion' if available) for the respective assays")
+  }
   
   ### Confirm that a valid viper matrix has been supplied
-  if (!is.matrix(viper) || ncol(viper) < 2 || nrow(viper) < 2) {
+  if (!is.matrix(assaylist$viper) || ncol(assaylist$viper) < 2 || nrow(assaylist$viper) < 2) {
     stop("Too few samples or TFs in viper matrix. Please supply valid matrix")
   }
   
-  ### Check for sample overlap between viper matrix and multiomic data types
-  nVM <- intersect(colnames(viper), colnames(mut))
-  mut <- mut[, nVM, drop = FALSE]
+  ### check for sample overlap 
+  nVM <- intersect(colnames(assaylist$viper), colnames(assaylist$mut))
+  assaylist$mut <- assaylist$mut[, nVM, drop = FALSE]
   message("Number of samples in VIPER + Mutation data: ", length(nVM))
   if (length(nVM) < 2) {
     stop("VIPER and mutation matrix samples don't match!")
   }
-  nVM <- intersect(colnames(viper), colnames(cnv))
-  cnv <- cnv[, nVM, drop = FALSE]
+  nVM <- intersect(colnames(assaylist$viper), colnames(assaylist$cnv))
+  assaylist$cnv <- assaylist$cnv[, nVM, drop = FALSE]
   message("Number of samples in VIPER + CNV data: ", length(nVM))
   if (length(nVM) < 2) {
     stop("VIPER and CNV matrix samples don't match!")
   }
   
-  if (!is.null(fusions)) {
-    nVM <- intersect(colnames(viper), colnames(fusions))
+  if ("fusion" %in% names(assaylist)) {
+    nVM <- intersect(colnames(assaylist$viper), colnames(assaylist$fusion))
     # redo type conversion to matrix: could have a single row with this 
     # datatype so we must re-type it to guard against auto conversion to 'integer'
-    fusions <- as.matrix(fusions[, nVM, drop = FALSE])
+    assaylist$fusion <- as.matrix(assaylist$fusion[, nVM, drop = FALSE])
     message("Number of samples in VIPER + Fusion data: ", length(nVM))
     if (length(nVM) < 2) {
       stop("VIPER and Fusions matrix samples don't match!")
     }
-  }
+  } 
+  assaylist
   
-  ### Check that valid gene location mapping df has been supplied
+}
+
+#' Check Gene Map
+#' @param gene.loc.mapping dataframe with gene names, entrez ids and cytoband locations
+#' @keywords internal
+checkGeneMap <- function(gene.loc.mapping){
   if (!is.null(gene.loc.mapping)) {
     # verify the column names
     if (!is(gene.loc.mapping, "data.frame")) {
@@ -439,33 +530,36 @@ MomaConstructor <- function(viper, mut, cnv, fusions, pathways,
     } else if (!("Gene.Symbol" %in% colnames(gene.loc.mapping))){
       stop("Gene location mapping supplied does not have 'Gene.Symbol' attribute!")
     }
-    
   } else {
     stop("No gene - genomic location mapping provided!")
   }
+}
+
+#' Check Pathways
+#' @param pathways A named list of lists. Each named list represents 
+#' interactions between proteins (keys) and their associated partners
+#' @param x the MAE or Assaylist 
+#' @param type whether x is MAE or Assaylist
+#' @keywords internal
+checkPathways <- function(pathways, x, type){
+  if(type == "mae") {
+    viperTFs <- rownames(assays(x)$viper)
+  } else if (type == "assaylist") {
+    viperTFs <- rownames(x$viper)
+  }
   
-  ### Check for overall sample overlap
-  samples.common <- intersect(intersect(colnames(viper), colnames(mut)), colnames(cnv))
-  message("Common samples with all data analysis: ", length(samples.common))
-  
-  
-  ### check TF rows in the indexes of the pathways
+  ### Check overlap in viper protein names and pathways
   for (pathway in names(pathways)) {
     message("Checking labels on pathway ", pathway)
-    I <- intersect(rownames(viper), names(pathways[[pathway]]))
+    I <- intersect(viperTFs, names(pathways[[pathway]]))
     if (length(I) == 0) {
       stop("No intersection with supplied pathway! Double check formatting")
     }
     message("Found labels for ", length(I), " TFs in VIPER matrix")
   }
-  
-  obj <- Moma$new(viper = viper, mut = mut, cnv = cnv, 
-                  fusions = fusions, pathways = pathways, 
-                  gene.blacklist = as.character(gene.blacklist), 
-                  output.folder = output.folder, 
-                  gene.loc.mapping = gene.loc.mapping)
-  obj
 }
+
+
 
 
 #' Retain TCGA sample ids without the final letter designation ('A/B/C') 

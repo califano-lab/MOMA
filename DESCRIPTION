@@ -30,7 +30,7 @@ Imports:
 	magrittr,
 	methods,
 	MKmisc,
-	moma.gbmexample,
+	MultiAssayExperiment,
 	parallel,
 	qvalue,
 	RColorBrewer,
@@ -43,9 +43,8 @@ Imports:
 	tidyr,
 	utils
 Suggests: 
-    BiocStyle, 
-    knitr,
-    rmarkdown,
-    testthat,
-    viper
+  knitr,
+  rmarkdown,
+  testthat,
+  viper
 VignetteBuilder: knitr

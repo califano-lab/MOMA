@@ -2,14 +2,10 @@
 % Please edit documentation in R/moma.r
 \name{MomaConstructor}
 \alias{MomaConstructor}
-\title{MOMA Constructor
-see vignette for more information on how to set up and run the MOMA object}
+\title{MOMA Constructor Function}
 \usage{
 MomaConstructor(
-  viper,
-  mut,
-  cnv,
-  fusions,
+  x,
   pathways,
   gene.blacklist = NA_character_,
   output.folder = NA_character_,
@@ -17,17 +13,17 @@ MomaConstructor(
 )
 }
 \arguments{
+\item{x}{A MultiAssayExerperiment object or list object with the following assays:
+(note: assays must have these exact names)
+\describe{
 \item{viper}{VIPER protein activity matrix with samples as columns 
 and rows as protein IDs}
-
 \item{mut}{An indicator matrix (0/1) of mutation events with samples as 
 columns and genes as rows}
-
 \item{cnv}{A matrix of CNV scores (typically SNP6 array scores from TCGA) 
 with samples as columns and genes as rows}
-
-\item{fusions}{An indicator matrix (0/1) of fusion events with samples as 
-columns and genes as rows}
+\item{fusion}{An indicator matrix (0/1) of fusion events with samples as 
+columns and genes as rows} }}
 
 \item{pathways}{A named list of lists. Each named list represents 
 interactions between proteins (keys) and their associated partners}
@@ -38,19 +34,11 @@ interactions between proteins (keys) and their associated partners}
 
 \item{gene.loc.mapping}{A data.frame of band locations and Entrez IDs}
 }
-\value{
-an instance of class Moma
-}
 \description{
-MOMA Constructor
-see vignette for more information on how to set up and run the MOMA object
+Create MOMA Object from either a MultiAssayExperiment object or a list of
+assays.
+See vignette for more information on how to set up and run the MOMA object
 }
 \examples{
-momaObj <- MomaConstructor(example.gbm.data$vipermat, 
-example.gbm.data$rawsnp, 
-example.gbm.data$rawcnv, 
-example.gbm.data$fusions, 
-pathways = list(cindy=example.gbm.data$cindy, preppi=example.gbm.data$preppi), 
-gene.blacklist=mutSig)
-
+momaObj <- MomaConstructor(example.gbm.mae, gbm.pathways)
 }

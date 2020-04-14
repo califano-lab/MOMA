@@ -57,7 +57,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
   
   # Fusions if they exist
   fusions.mat <- NULL
-  if(length(momaObj$fusions) != 0) {
+  if(!is.na(momaObj$fusions)) {
     fusions.mat <- momaObj$fusions
     fusions.mat[fusions.mat == 1] <- "fus"
     fusions.mat[fusions.mat == 0] <- NA
