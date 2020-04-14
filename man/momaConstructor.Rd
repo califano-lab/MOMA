@@ -34,6 +34,9 @@ interactions between proteins (keys) and their associated partners}
 
 \item{gene.loc.mapping}{A data.frame of band locations and Entrez IDs}
 }
+\value{
+an instance of class Moma
+}
 \description{
 Create MOMA Object from either a MultiAssayExperiment object or a list of
 assays.

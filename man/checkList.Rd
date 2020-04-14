@@ -9,6 +9,9 @@ checkList(assaylist)
 \arguments{
 \item{assaylist}{list of assays (viper, cnv, mut and fusion)}
 }
+\value{
+updated/filter assaylist obj
+}
 \description{
 Check List of Assays
 }

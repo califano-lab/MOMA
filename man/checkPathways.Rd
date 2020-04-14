@@ -14,6 +14,9 @@ interactions between proteins (keys) and their associated partners}
 
 \item{type}{whether x is MAE or Assaylist}
 }
+\value{
+nothing
+}
 \description{
 Check Pathways
 }

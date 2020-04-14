@@ -61,7 +61,7 @@ Moma <- setRefClass("Moma", fields =
                         
                         cnv.local <- NULL
                         if (is.null(fCNV)) {
-                          warning("Warning: no fCNV supplied, using no CNV filter!")
+                          message("No fCNV supplied, using no CNV filter!")
                           cnv.local <- cnv
                         } else {
                           message("fCNV supplied, filtering for only functional CNVs")
@@ -137,7 +137,7 @@ Moma <- setRefClass("Moma", fields =
                                                     verbose = verbose)
                         
                         nes.fusions <- NULL
-                        if (!is.na(fusions)) {
+                        if (!is.na(fusions[1,1])) {
                           fus.hypotheses <- rownames(fusions[apply(fusions, 1, sum, na.rm = TRUE) >= min.events, ])
                           hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, 
                                               amp = amps.hypotheses, fus = fus.hypotheses)
@@ -382,6 +382,7 @@ utils::globalVariables(c("gene.map"))
 #' @importFrom MultiAssayExperiment assays colData intersectColumns
 #' @examples 
 #' momaObj <- MomaConstructor(example.gbm.mae, gbm.pathways)
+#' @return an instance of class Moma
 #' @export
 MomaConstructor <- function(x, pathways, gene.blacklist = NA_character_, 
                                output.folder = NA_character_, 
@@ -445,8 +446,10 @@ MomaConstructor <- function(x, pathways, gene.blacklist = NA_character_,
 
 
 #' Check MultiAssayExperiment
+#' 
 #' @param mae MultiAssayExperiment object
 #' @importFrom MultiAssayExperiment assays colData intersectColumns
+#' @return updated/filtered MAE
 #' @keywords internal
 checkMAE <- function(mae){
   # confirm mae has viper, cnv, and mut assays (and optional fusion)
@@ -473,7 +476,9 @@ checkMAE <- function(mae){
 }
 
 #' Check List of Assays
+#' 
 #' @param assaylist list of assays (viper, cnv, mut and fusion)
+#' @return updated/filter assaylist obj
 #' @keywords internal
 checkList <- function(assaylist){
   if(length(intersect(names(assaylist) , c("viper", "mut", "cnv"))) == 3){
@@ -516,7 +521,9 @@ checkList <- function(assaylist){
 }
 
 #' Check Gene Map
+#' 
 #' @param gene.loc.mapping dataframe with gene names, entrez ids and cytoband locations
+#' @return nothing
 #' @keywords internal
 checkGeneMap <- function(gene.loc.mapping){
   if (!is.null(gene.loc.mapping)) {
@@ -536,10 +543,12 @@ checkGeneMap <- function(gene.loc.mapping){
 }
 
 #' Check Pathways
+#' 
 #' @param pathways A named list of lists. Each named list represents 
 #' interactions between proteins (keys) and their associated partners
 #' @param x the MAE or Assaylist 
 #' @param type whether x is MAE or Assaylist
+#' @return nothing
 #' @keywords internal
 checkPathways <- function(pathways, x, type){
   if(type == "mae") {

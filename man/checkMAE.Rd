@@ -9,6 +9,9 @@ checkMAE(mae)
 \arguments{
 \item{mae}{MultiAssayExperiment object}
 }
+\value{
+updated/filtered MAE
+}
 \description{
 Check MultiAssayExperiment
 }

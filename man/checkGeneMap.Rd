@@ -9,6 +9,9 @@ checkGeneMap(gene.loc.mapping)
 \arguments{
 \item{gene.loc.mapping}{dataframe with gene names, entrez ids and cytoband locations}
 }
+\value{
+nothing
+}
 \description{
 Check Gene Map
 }
