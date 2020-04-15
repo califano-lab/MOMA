@@ -43,6 +43,7 @@ Imports:
 	tidyr,
 	utils
 Suggests: 
+  BiocStyle,
   knitr,
   rmarkdown,
   testthat,

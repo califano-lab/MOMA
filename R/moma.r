@@ -110,19 +110,6 @@ Moma <- setRefClass("Moma", fields =
                                   muts.removed, " removed for being on the gene blacklist.")
                         }
                         
-                        # Save genomic hypotheses 
-                        if(is.na(output.folder)){
-                          message("No output folder selected, saving genomic hypotheses directly to object without printing.")
-                        } else {
-                          message("Writing hypotheses to: ", output.folder)
-                          dir.create(output.folder, showWarnings = FALSE)
-                          write.table(amps.hypotheses, file = paste0(output.folder, "/hypotheses.amps.txt"), 
-                                      quote = FALSE, sep = "\t")
-                          write.table(dels.hypotheses, file = paste0(output.folder, "/hypotheses.dels.txt"), 
-                                      quote = FALSE, sep = "\t")
-                          write.table(muts.hypotheses, file = paste0(output.folder, "/hypotheses.muts.txt"), 
-                                      quote = FALSE, sep = "\t")
-                        }
                         hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, amp = amps.hypotheses)
                         
                         # do aREA association
@@ -379,6 +366,16 @@ Moma <- setRefClass("Moma", fields =
                         options(max.print= 9999999)
                         options(width = 10000)
                         for(name in to.save) {
+                          # if saving nes matrices save them as a table
+                          if(name == "nes"){
+                            for (type in names(.self[["nes"]])) {
+                              write.table(.self[["nes"]][[type]], 
+                                          file = paste0(output.folder, "/", type, ".nes.txt"), 
+                                          quote = FALSE, sep = "\t", col.names = NA)
+                            }
+                          }
+                          
+                          # everything else save via sink
                           sink(file = paste0(output.folder, "/", name, ".txt"))
                           print(.self[[name]])
                           sink(file = NULL)
