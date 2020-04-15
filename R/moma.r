@@ -349,6 +349,41 @@ Moma <- setRefClass("Moma", fields =
                         genomic.saturation <<- coverage.subtypes
                         coverage.summaryStats <<- tmp.summaryStats
                         checkpoints <<- tmp.checkpoints
+                      },
+                      saveData = function(.self, output.folder, ...) {
+                        inputs <- unlist(list(...))
+                        if(length(inputs) == 0){
+                          message("No specific data selected to save. Saving all...")
+                          to.save <- c("nes", "interactions", "clustering.results",
+                                       "ranks", "hypotheses", "genomic.saturation",
+                                       "coverage.summaryStats", "checkpoints")
+                        } else {
+                          to.save <- intersect(inputs, c("nes", "interactions", "clustering.results",
+                                                         "ranks", "hypotheses", "genomic.saturation",
+                                                         "coverage.summaryStats", "checkpoints"))
+                          
+                          if(length(to.save) == 0){
+                            stop("Incorrect names supplied. Make sure names match the names of the fields in the Moma Class.")
+                          } else {
+                            message("Saving the following: ", paste(to.save, collapse = " "))
+                          }
+                          
+                        }
+                        
+                        # check if directory exists if not create it
+                        if(!dir.exists(output.folder)){
+                          dir.create(output.folder)
+                        }
+                        
+                        # create files 
+                        options(max.print= 9999999)
+                        options(width = 10000)
+                        for(name in to.save) {
+                          sink(file = paste0(output.folder, "/", name, ".txt"))
+                          print(.self[[name]])
+                          sink(file = NULL)
+                          
+                        }
                       }
                       
                     )
