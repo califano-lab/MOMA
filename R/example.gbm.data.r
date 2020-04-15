@@ -10,8 +10,6 @@
 #' \item{mut}{matrix of samples and genes with potential mutations.
 #' 0 for no mutation, 1 for presence of some non-silent mutation}
 #' \item{cnv}{matrix of samples and genes with copy number variant scores}
-#' \item{fusion}{matrix of samples and fusion genes.
-#' 0 for no fusion, 1 for presence of fusion}
 #' }
 "example.gbm.mae"
 
