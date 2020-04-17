@@ -395,7 +395,8 @@ utils::globalVariables(c("gene.map"))
 #' assays.
 #' See vignette for more information on how to set up and run the MOMA object
 #' @param x A MultiAssayExerperiment object or list object with the following assays:
-#' (note: assays must have these exact names)
+#' (note: by default assays must have these exact names. Otherwise they can be changed
+#' using the viperAssay, mutMat, cnvMat and fusionMat parameters.)
 #' \describe{
 #' \item{viper}{VIPER protein activity matrix with samples as columns 
 #' and rows as protein IDs}
@@ -410,6 +411,10 @@ utils::globalVariables(c("gene.map"))
 #' @param gene.loc.mapping A data.frame of band locations and Entrez IDs
 #' @param output.folder Location to store output and intermediate results 
 #' @param gene.blacklist A vector of genes to exclude from the analysis
+#' @param viperAssay name associated with the viper assay in the assay object
+#' @param mutMat name associated with the mutation matrix in the assay object
+#' @param cnvMat name associated with the cnv matrix in the assay object
+#' @param fusionMat name associated with the fusion matrix in the assay object
 #' @importFrom utils data
 #' @importFrom MultiAssayExperiment assays colData intersectColumns
 #' @examples 
@@ -417,8 +422,9 @@ utils::globalVariables(c("gene.map"))
 #' @return an instance of class Moma
 #' @export
 MomaConstructor <- function(x, pathways, gene.blacklist = NA_character_, 
-                               output.folder = NA_character_, 
-                               gene.loc.mapping = gene.map){
+                            output.folder = NA_character_, 
+                            gene.loc.mapping = gene.map, viperAssay = "viper",
+                            mutMat = "mut", cnvMat = "cnv", fusionMat = "fusion"){
   
   utils::data("gene.map")
   
@@ -443,29 +449,30 @@ MomaConstructor <- function(x, pathways, gene.blacklist = NA_character_,
   if(type == "mae") {
     
     # first check for fusions
-    if("fusion" %in% names(assays(x))) {
-      fusion <- assays(x)$fusion
+    if(fusionMat %in% names(assays(x))) {
+      fusion <- assays(x)[[fusionMat]]
     } else {
       fusion <- matrix(NA)
     }
     
-    obj <- Moma$new(viper = assays(x)$viper, mut = assays(x)$mut, 
-                    cnv = assays(x)$cnv, 
+    obj <- Moma$new(viper = assays(x)[[viperAssay]], mut = assays(x)[[mutMat]], 
+                    cnv = assays(x)[[cnvMat]], 
                     fusions = fusion, pathways = pathways, 
                     gene.blacklist = as.character(gene.blacklist), 
                     output.folder = output.folder, 
                     gene.loc.mapping = gene.loc.mapping)
-  } else if (type == "assaylist") {
+  
+    } else if (type == "assaylist") {
     
     # first check for fusions
-    if("fusion" %in% names(x)) {
-      fusion <- x$fusion
+    if(fusionMat %in% names(x)) {
+      fusion <- x[[fusionMat]]
     } else {
       fusion <- matrix(NA)
     }
     
-    obj <- Moma$new(viper = x$viper, mut = x$mut, 
-                    cnv = x$cnv, 
+    obj <- Moma$new(viper = x[[viperAssay]], mut = x[[mutMat]], 
+                    cnv = x[[cnvMat]], 
                     fusions = fusion, pathways = pathways, 
                     gene.blacklist = as.character(gene.blacklist), 
                     output.folder = output.folder, 

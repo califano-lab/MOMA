@@ -18,8 +18,7 @@ biocViews: Software, NetworkEnrichment, NetworkInference, Network,
   FeatureExtraction, Clustering, FunctionalGenomics, Transcriptomics, 
   SystemsBiology
 Imports:
-  BiocManager,
-	circlize,
+  circlize,
 	cluster,
 	ComplexHeatmap,
 	dplyr,
