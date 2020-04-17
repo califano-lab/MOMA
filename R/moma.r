@@ -1,5 +1,6 @@
 #' @title MOMA Object 
 #' @description Main class encapsulating the input data and logic of the MOMA algorithm
+#' @import BiocManager
 #' @import stats
 #' @import qvalue
 #' @import parallel
