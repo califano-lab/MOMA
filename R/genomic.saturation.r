@@ -12,13 +12,13 @@ getCoverage <- function(MomaObject, cMR.ranking, viper.samples, topN = 100,
                         mutation.filter = NULL, verbose = FALSE) {
     
     if (!is(MomaObject, "Moma")) {
-        stop("Error: must have instantiated Moma class object passed!")
+        stop("Must have instantiated Moma class object passed!")
     }
     
     # select considered cMRs
     selected.tfs <- cMR.ranking[seq_len(topN)]
     if (length(selected.tfs) == 0) {
-        stop("Error: no TFs selected!")
+        stop("No TFs selected!")
     }
     
     # confirm they are in Entrez ID format
@@ -27,7 +27,7 @@ getCoverage <- function(MomaObject, cMR.ranking, viper.samples, topN = 100,
         all(vapply(seq_along(vec), function(i) as.numeric(vec)[i]==vec[i], FUN.VALUE = logical(1)))
     }
     if (isFALSE(is.entrezIDs(selected.tfs))) {
-        stop("Error: tfs not in entrez ID format!")
+        stop("TFs not in entrez ID format!")
     }
     
     # For each event type, gets names of cMRs that have those events
@@ -109,7 +109,7 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping,
             #print(paste("No amplification events associated with", as.character(x)))
             band.names <- NA 
         } else if (length(band.names) == 0) {
-            warning(paste("Warning: could not map entrez IDs to Cytoband for IDS,
+            warning(paste("Could not map entrez IDs to Cytoband for IDS,
                           skipping...", geneNames))
             band.names <- NA
         }
@@ -119,7 +119,7 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping,
     covered.amps.LOC <- covered.amps.LOC[!is.na(covered.amps.LOC)]
     
     if (sum(vapply(covered.amps.LOC, length, FUN.VALUE = numeric(1))) == 0) {
-        stop("Error: something went wrong when mapping amplification Entrez.IDs
+        stop("Something went wrong when mapping amplification Entrez.IDs
               to Cytoband IDs. Quitting...")
     }
     
@@ -131,7 +131,7 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping,
             #print(paste("No deletion events associated with", as.character(x)))
             band.names <- NA 
         } else if (length(band.names) == 0) {
-            warning("Warning: could not map entrez IDs to Cytoband for IDS,
+            warning("Could not map entrez IDs to Cytoband for IDS,
                           skipping... ", geneNames)
             band.names <- NA
         }
@@ -141,7 +141,7 @@ validDiggitInteractions <- function(interactions, gene.loc.mapping,
     covered.dels.LOC <- covered.dels.LOC[!is.na(covered.dels.LOC)]
     
     if (sum(vapply(covered.dels.LOC, length, FUN.VALUE = numeric(1))) == 0) {
-        stop("Error: something went wrong when mapping deletion Entrez.IDs
+        stop("Something went wrong when mapping deletion Entrez.IDs
               to Cytoband IDs. Quitting...")
     }
     
@@ -179,7 +179,7 @@ sampleOverlap <- function(MomaObject, viper.samples, selected.tfs, interaction.m
                           idx.range = NULL, verbose = FALSE) {
     
     if (is.null(MomaObject$hypotheses)) {
-        stop("Error: no hypothesis set for momaRunner class object!!")
+        stop("No hypothesis set for momaRunner class object!!")
     }
     
     map <- MomaObject$gene.loc.mapping

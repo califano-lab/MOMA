@@ -464,7 +464,7 @@ oncoprintPlot <- function(summary.vec, snpmat.thisClus, amps.thisClus,
         
         merged <- dplyr::bind_rows(amp.merged, del.merged)
       } else {
-        warning("ERROR MERGING DUPLICATES....")
+        stop("Problem merging duplicates, double check gene names.")
       }
       
       mat.to.plot <- dplyr::bind_rows(mat.to.plot, merged)

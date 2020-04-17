@@ -139,7 +139,7 @@ mapScoresCnvBand <- function(mapping, diggit.interactions, from.p = FALSE, pos.n
       locations <- na.omit(mapping[as.character(names(x))])
       
       if (length(locations) == 0) {
-        message("Warning: didn't find any genomic locations for ", names(x))
+        message("Didn't find any genomic locations for ", names(x))
         return(0)
       }
       
@@ -276,7 +276,7 @@ conditionalModel <- function(viper.scores, diggit.scores, pathway.scores) {
         if (length(pathway.scores[[pathway]]) == 0) {
           next
         } else if (!(type %in% names(pathway.scores[[pathway]]))) {
-          stop(paste("Error: can't find entry for ", type, " in pathway ranks ", pathway))
+          stop(paste("Can't find entry for ", type, " in pathway ranks ", pathway))
         }
         pathway.p <- conditionalP(VIP, diggit.scores[[type]], pathway.scores[[pathway]][[type]])
         pathway.pvals <- c(pathway.p, pathway.pvals)
