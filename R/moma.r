@@ -13,7 +13,6 @@
 #' @import grDevices
 #' @import readr
 #' @import tibble
-#' @import BiocManager
 #' @field viper matrix of inferred activity score inferred by viper
 #' @field mut binary mutation matrix 1 for presence of mutation, 0 for not, NA 
 #' if not determined
