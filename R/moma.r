@@ -47,13 +47,13 @@ Moma <- setRefClass("Moma", fields =
                            gene.loc.mapping = "data.frame", 
                            nes = "list", # result field
                            interactions = "list", # result field
-                           clustering.results = "list", 
-                           ranks = "list", 
-                           hypotheses = "list",
-                           genomic.saturation = "list", 
-                           coverage.summaryStats = "list", 
-                           checkpoints = "list", 
-                           sample.clustering = "numeric" 
+                           clustering.results = "list", # result field
+                           ranks = "list", # result field
+                           hypotheses = "list", # result field
+                           genomic.saturation = "list", # result field
+                           coverage.summaryStats = "list", # result field
+                           checkpoints = "list", # result field
+                           sample.clustering = "numeric" # result field 
                       ), 
                     methods = list(
                       runDIGGIT = function(fCNV = NULL, cnvthr = 0.5, min.events = 4, verbose = FALSE) {
