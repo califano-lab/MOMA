@@ -45,10 +45,14 @@ dependent packages have already been installed to ensure full functionality,
 including graphics and plotting functions.  
 
 
-```{r setup, message = FALSE, results="hide", warning=FALSE}
+```{r setup, message = FALSE, results="hide", warning=FALSE, eval=FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("MOMA")
+```
+
+
+```{r load}
 library(MOMA)
 ```
 

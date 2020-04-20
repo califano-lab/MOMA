@@ -1,6 +1,5 @@
 #' @title MOMA Object 
 #' @description Main class encapsulating the input data and logic of the MOMA algorithm
-#' @import BiocManager
 #' @import stats
 #' @import qvalue
 #' @import parallel
@@ -14,6 +13,8 @@
 #' @import grDevices
 #' @import readr
 #' @import tibble
+#' @importFrom stringr str_sub
+#' @importFrom dplyr mutate select everything bind_rows
 #' @field viper matrix of inferred activity score inferred by viper
 #' @field mut binary mutation matrix 1 for presence of mutation, 0 for not, NA 
 #' if not determined
@@ -335,26 +336,31 @@ Moma <- setRefClass("Moma", fields =
                         }
                         genomic.saturation <<- coverage.subtypes
                         coverage.summaryStats <<- tmp.summaryStats
-                        checkpoints <<- tmp.checkpoints
+                        checkpoints <<- setNames(tmp.checkpoints, seq_along(tmp.checkpoints))
                       },
                       saveData = function(.self, output.folder, ...) {
                         inputs <- unlist(list(...))
                         if(length(inputs) == 0){
                           message("No specific data selected to save. Saving all...")
                           to.save <- c("nes", "interactions", "clustering.results",
-                                       "ranks", "hypotheses", "genomic.saturation",
-                                       "coverage.summaryStats", "checkpoints")
+                                       "sample.clustering","ranks", "hypotheses", 
+                                       "genomic.saturation","coverage.summaryStats", "checkpoints")
                         } else {
-                          to.save <- intersect(inputs, c("nes", "interactions", "clustering.results",
+                          to.save <- intersect(inputs, c("nes", "interactions", "clustering.results", "sample.clustering",
                                                          "ranks", "hypotheses", "genomic.saturation",
                                                          "coverage.summaryStats", "checkpoints"))
                           
                           if(length(to.save) == 0){
-                            stop("Incorrect names supplied. Make sure names match the names of the fields in the Moma Class.")
+                            stop("Incorrect names supplied. Make sure names match the names of the results fields in the Moma Class.")
                           } else {
                             message("Saving the following: ", paste(to.save, collapse = " "))
                           }
                           
+                        }
+                        
+                        # check if output.folder name ends in / or \\ or not
+                        if(!stringr::str_sub(output.folder, start = -1) %in% c("/", "\\")){
+                          stop("Output folder does not end with a slash")
                         }
                         
                         # check if directory exists if not create it
@@ -362,23 +368,100 @@ Moma <- setRefClass("Moma", fields =
                           dir.create(output.folder)
                         }
                         
-                        # create files 
-                        options(max.print= 9999999)
-                        options(width = 10000)
+                        ### create files
                         for(name in to.save) {
-                          # if saving nes matrices save them as a table
+                          
+                          # confirm that result exists before trying to save
+                          if(length(.self[[name]]) == 0) {
+                            message("No results found for ", name, ". Skipping...")
+                            next
+                          }
+                          
+                          # save nes matrices as tables
                           if(name == "nes"){
-                            for (type in names(.self[["nes"]])) {
-                              write.table(.self[["nes"]][[type]], 
-                                          file = paste0(output.folder, "/", type, ".nes.txt"), 
+                            for (type in names(.self[[name]])) {
+                              write.table(.self[[name]][[type]], 
+                                          file = paste0(output.folder, type, ".", name, ".txt"), 
                                           quote = FALSE, sep = "\t", col.names = NA)
                             }
                           }
                           
-                          # everything else save via sink
-                          sink(file = paste0(output.folder, "/", name, ".txt"))
-                          print(.self[[name]])
-                          sink(file = NULL)
+                          # save interactions as 3 separate dfs 
+                          if(name == "interactions"){
+                            for (type in names(.self[["interactions"]])){
+                              full.df <- tibble::tibble(regulator = NA, event = NA, nes = NA, .rows = 0)
+                              for(mr in names(.self[["interactions"]][[type]])) {
+                                df <- tibble::enframe(.self[["interactions"]][[type]][[mr]], 
+                                              name = "event", value = "nes") %>%
+                                  dplyr::mutate(regulator = mr)
+                                full.df <- dplyr::bind_rows(full.df, df)
+                              }
+                              
+                              write.table(full.df, file = paste0(output.folder, type,".", name, ".txt"),
+                                          quote = FALSE, sep = "\t", row.names = FALSE)
+                            }
+                          }
+                          
+                          # save ranks as df
+                          if(name == "ranks"){
+                            df <- lapply(.self[["ranks"]], tibble::enframe) %>%
+                              dplyr::bind_rows() %>% 
+                              dplyr::mutate(type = rep(c("viper", "integrated"), each = length(.self[["ranks"]][[1]])))
+                            
+                            write.table(df, file = paste0(output.folder, name, ".txt"),
+                                        quote = FALSE, sep = "\t", row.names = FALSE)
+                          }
+                          
+                          # save hypotheses as df
+                          if(name == "hypotheses"){
+                            df <- lapply(.self[[name]], function(x){
+                              tibble::tibble(type = NA, gene = x)
+                            }) %>% dplyr::bind_rows()
+                            event.nums <- vapply(.self[[name]], length, numeric(1))
+                            df$type <- rep(names(event.nums), event.nums)
+                            
+                            write.table(df, file = paste0(output.folder, name, ".txt"),
+                                        quote = FALSE, sep = "\t", row.names = FALSE)
+                            
+                          }
+                          
+                          # save checkpoints as df
+                          if(name == "checkpoints"){
+                            df <- lapply(.self[[name]], function(x){
+                              tibble::tibble(cluster = NA, regulator = x)
+                            }) %>% dplyr::bind_rows()
+                            event.nums <- vapply(.self[[name]], length, numeric(1))
+                            df$cluster <- rep(names(event.nums), event.nums)
+                            
+                            write.table(df, file = paste0(output.folder, name, ".txt"),
+                                        quote = FALSE, sep = "\t", row.names = FALSE)
+                            
+                          }
+                          
+                          # save sample clustering as df
+                          if(name == "sample.clustering"){
+                            df <- tibble::enframe(.self[["sample.clustering"]], 
+                                                  name = "sample", value = "cluster") 
+                            
+                            write.table(df, file = paste0(output.folder, name, ".txt"),
+                                        quote = FALSE, sep = "\t", row.names = FALSE)
+                          }
+                          
+                          # save coverage.summary stats as df
+                          if(name == "coverage.summaryStats") {
+                            df <- dplyr::bind_rows(.self[[name]]) %>%
+                              dplyr::mutate(cluster = rep(seq_along(.self[[name]]), each = 100))
+                            
+                            write.table(df, file = paste0(output.folder, name, ".txt"),
+                                        quote = FALSE, sep = "\t", row.names = FALSE)
+                          }
+                          
+                          # save clustering results and genomic saturation as lists
+                          if(name %in% c("clustering.results", "genomic.saturation")){
+                            results <- .self[[name]]
+                            save(results, 
+                                 file = paste0(output.folder, name, ".rda"))
+                          }
                           
                         }
                       }

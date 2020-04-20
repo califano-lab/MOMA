@@ -1,4 +1,4 @@
 # *News*
 
-# MOMA 0.99.0 (2019-12-05)
+# MOMA 0.99 (2020-04-20)
 * Bioconductor Initial Submission
