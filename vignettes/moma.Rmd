@@ -88,8 +88,9 @@ structurally binds to a regulator.
 To make the MOMA object they need to be a named list of lists, with the indexes
 of each being a regulator and their associated partners.
 
-*note: CINDy values are context specific and need to be obtained for a particular 
-tissue/expression set.*
+*note: CINDy values are context specific and need to be obtained for a particular tissue/expression set. Values calculated from the tumor types in TCGA can be found
+[[here](https://figshare.com/articles/CINDy_Networks_from_TCGA/12198510)] for use in applying this analysis to other datasets. The PREPPi values are not context specific
+and the values from this example analysis can be used with other datasets.* 
 
 ```{r pathways}
 names(gbm.pathways)
