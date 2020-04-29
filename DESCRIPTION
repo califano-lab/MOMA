@@ -1,6 +1,6 @@
 Package: MOMA
 Title: Multi Omic Master Regulator Analysis
-Version: 1.1.0
+Version: 1.1.1
 Authors@R: c(person("Evan","Paull",email="evanpaull@gmail.com", role=c("aut")), 
               person("Sunny", "Jones", email = "sunnyjjones@gmail.com", 
               role = c("aut", "cre")), person("Mariano", "Alvarez", 
