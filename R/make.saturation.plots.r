@@ -476,8 +476,9 @@ oncoprintPlot <- function(summary.vec, snpmat.thisClus, amps.thisClus,
   mat.to.plot[mat.to.plot == "NA;NA;NA"] <- NA
   
   # get row sums, in terms of events and take top ones. filter for events that happen at least twice here
-  mat.to.plot <- tibble::column_to_rownames(mat.to.plot, var = "genomic.event") %>% 
-    dplyr::select(-.data$type) %>% as.matrix()
+  mat.to.plot <- mat.to.plot %>% dplyr::select(-.data$type) %>%
+    tibble::column_to_rownames(var = "genomic.event") %>% 
+    as.matrix()
   num.events <- apply(mat.to.plot, 1, function(x) sum(!is.na(x))) %>% sort(decreasing = TRUE) 
   num.events <- num.events[num.events > 1] 
   
