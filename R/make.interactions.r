@@ -150,7 +150,8 @@ sigInteractorsDIGGIT <- function(corrected.scores, nes.scores, cindy,
     stop("Invalid value supplied for p-value threshold!")
   }
   
-  ## Apply joint NES + p-value over background (null TF) threshold over each Viper Protein return the raw NES scores only for those significant over the
+  ## Apply joint NES + p-value over background (null TF) threshold over each 
+  ## Viper Protein return the raw NES scores only for those significant over the
   ## background and including CINDy (if applicable)
   viper.interactors <- lapply(colnames(pvals.matrix), function(viperProt) {
     
@@ -166,7 +167,8 @@ sigInteractorsDIGGIT <- function(corrected.scores, nes.scores, cindy,
       stop('Data not aligned for aREA / aREA corrected p-values') 
     }
     
-    # subset the NES vector for this TF, threshold again on NES scores as a sanity check on the basic enrichment (i.e. remove those with high
+    # subset the NES vector for this TF, threshold again on NES scores as a 
+    # sanity check on the basic enrichment (i.e. remove those with high
     # over-background scores simply because the background is de-enriched)
     nes.vec <- nes.scores[, which(colnames(nes.scores) == as.character(viperProt))]
     nes.vec <- nes.vec[which(2 * (1 - pnorm(abs(nes.vec))) < p.thresh)]

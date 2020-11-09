@@ -14,7 +14,7 @@
 #' @import readr
 #' @import tibble
 #' @importFrom stringr str_sub
-#' @importFrom dplyr mutate select everything bind_rows
+#' @importFrom dplyr mutate select everything bind_rows left_join across
 #' @field viper matrix of inferred activity score inferred by viper
 #' @field mut binary mutation matrix 1 for presence of mutation, 0 for not, NA 
 #' if not determined
@@ -48,6 +48,7 @@ Moma <- setRefClass("Moma", fields =
                            gene.loc.mapping = "data.frame", 
                            nes = "list", # result field
                            interactions = "list", # result field
+                           interactions.new = "data.frame", # new result field
                            clustering.results = "list", # result field
                            ranks = "list", # result field
                            hypotheses = "list", # result field
@@ -129,22 +130,19 @@ Moma <- setRefClass("Moma", fields =
                           fus.hypotheses <- rownames(fusions[apply(fusions, 1, sum, na.rm = TRUE) >= min.events, ])
                           hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, 
                                               amp = amps.hypotheses, fus = fus.hypotheses)
-                          if(!is.na(output.folder)) {
-                            write.table(fus.hypotheses, file = paste0(output.folder, "/hypotheses.fusions.txt"), 
-                                        quote = FALSE, sep = "\t")
-                          }
                           nes.fusions <- associateEvents(viper, fusions, 
                                                          min.events = min.events, 
                                                          event.type = "Fusions",
                                                          verbose = verbose)
                         }
                         
-                        # Save aREA results if desired
-                        if(!is.na(output.folder)){
-                          save(nes.amps, nes.dels, nes.muts, nes.fusions, file = paste0(output.folder, "/aREA.rda"))
-                        }
-                        # store in the object list
+                        # store results in the object list
                         nes <<- list(amp = nes.amps, del = nes.dels, mut = nes.muts, fus = nes.fusions)
+                        
+                        
+                        ### TODO: Add in new DIGGIT null model here...
+                        
+                        
                       }, 
                       
                       makeInteractions = function(genomic.event.types = c("amp", "del", "mut", "fus"),
@@ -180,6 +178,60 @@ Moma <- setRefClass("Moma", fields =
                         
                         interactions <<- local.interactions
                       }, 
+                      
+                      generateInteractions = function(genomic.event.types = c("amp", "del", "mut", "fus")){
+                        "Make merged file of each MR-Event pairing with all associated pathway test values"
+                        
+                        # initiate tibble for results
+                        full.interaction.table <- tibble::tibble(.rows = 0)
+                        
+                        # for each event type gather nes/aqtl scores, and whatever other pathway scores are available
+                        for(type in genomic.event.types){
+                          
+                          message("Getting interactions for ", type, " events...")
+                          
+                          # matrix of nes/aqtl scores. columns are TFs and rows are events
+                          nes.thisType <- nes[[type]]
+                          
+                          if(is.null(nes.thisType)) next
+                          
+                          interactions.df <- reshape2::melt(nes.thisType, varnames = c("event", "regulator"), value.name = "aQTL") %>%
+                            dplyr::select(regulator, dplyr::everything()) %>% 
+                            dplyr::mutate(dplyr::across(.cols = c(regulator, event), as.character))
+                          
+                          # go through pathway lists to find matching data (if it exists)
+                          for(p in seq_along(pathways)) {
+                            
+                            p.name <- names(pathways)[[p]]
+                            pathway <- pathways[[p]]
+                            
+                            # convert named list of MR-Events to a dataframe
+                            full.df <- tibble::tibble(.rows = 0)
+                            for(mr in names(pathway)) {
+                              df <- tibble::enframe(pathway[[mr]], 
+                                                    name = "event", value = "pval") %>%
+                                dplyr::mutate(regulator = mr)
+                              full.df <- dplyr::bind_rows(full.df, df)
+                              
+                            }
+                            
+                            # merge the pathway dataframe to interaction.df
+                            # change pval to pathway name so it doesn't get written over
+                            interactions.df <- dplyr::left_join(interactions.df, full.df) %>%
+                              dplyr::rename(!!p.name := pval)
+                            
+                          }
+                          
+                          # add event type to table then merge with full.interaction.table
+                          interactions.df$type <- type
+                          full.interaction.table <- dplyr::bind_rows(full.interaction.table, interactions.df)
+                          
+                        }
+                        
+                        interactions.new <<- full.interaction.table
+                        
+                      },
+                      
                       
                       Rank = function(use.cindy = TRUE, genomic.event.types = c("amp", "del", "mut", "fus"), 
                                       use.parallel = FALSE, cores = 1) {
