@@ -1,25 +1,27 @@
 #' @title MOMA Object 
 #' @description Main class encapsulating the input data and logic of the MOMA algorithm
-#' @import stats
-#' @import qvalue
-#' @import parallel
-#' @import reshape2
-#' @import MKmisc
-#' @import RColorBrewer
-#' @import methods
 #' @import ggplot2
-#' @import magrittr
 #' @import graphics
 #' @import grDevices
+#' @import magrittr
+#' @import methods
+#' @import MKmisc
+#' @import parallel
+#' @import poolr
+#' @import qvalue
+#' @import RColorBrewer
 #' @import readr
+#' @import reshape2
+#' @import stats
 #' @import tibble
 #' @importFrom stringr str_sub
-#' @importFrom dplyr mutate select everything bind_rows left_join across
+#' @importFrom dplyr mutate select everything bind_rows left_join across group_by summarize
+#' @importFrom tidyr replace_na
 #' @field viper matrix of inferred activity score inferred by viper
 #' @field mut binary mutation matrix 1 for presence of mutation, 0 for not, NA 
 #' if not determined
 #' @field cnv matrix of cnv values. Can be binary or a range. 
-#' @field fusions binary matrix of fusion events if appliable
+#' @field fusions binary matrix of fusion events if applicable
 #' @field pathways list of pathways/connections to consider as extra evidence 
 #' in the analysis
 #' @field gene.blacklist character vector of genes to not include because of 
@@ -48,9 +50,10 @@ Moma <- setRefClass("Moma", fields =
                            gene.loc.mapping = "data.frame", 
                            nes = "list", # result field
                            interactions = "list", # result field
-                           interactions.new = "data.frame", # new result field
+                           interactions.new = "data.frame", # NEW result field
                            clustering.results = "list", # result field
                            ranks = "list", # result field
+                           ranks.new = "data.frame", # NEW result field
                            hypotheses = "list", # result field
                            genomic.saturation = "list", # result field
                            coverage.summaryStats = "list", # result field
@@ -232,8 +235,65 @@ Moma <- setRefClass("Moma", fields =
                         
                       },
                       
+                      Rank = function(na_value = NA) {
+                        "Combine all genomic information to create event-MR ranking and full MR ranking"
+                        
+                        ## convert all scores to newly normalized p-values
+                        ## TODO: ****Determine best way to treat NAs**** 
+                        
+                        # first save aQTL direction information as a new column then convert to p-values
+                        interactions.new <- interactions.new %>% 
+                          dplyr::mutate(sign = sign(aQTL),
+                                        aQTL = 1 - pnorm(abs(aQTL)))
+                        
+                        # split into two tables, one with event/mr type information, 
+                        # other with p-values to be ranked/merged. transform these
+                        vars <- c("regulator", "event", "type", "sign")
+                        info.df <- interactions.new[,vars]
+                        values.df <- interactions.new[,!colnames(interactions.new) %in% vars]
+                        values.df <- as.matrix(apply(values.df, 2, cdf.pval, na_value = na_value))
+                        
+                        # two part integration of pvalue 
+                        # first across MR-Event pairs, then all events associated with an MR
+                        # TODO: consider use of other integration methods 
+                        
+                        # Modify first step if NAs are present because otherwise rows 
+                        # with only 1 value don't need to be integrated and will error 
+                        
+                        if(!is.na(na_value)) {
+                          event.int.p <- apply(values.df, 1, function(x){
+                            poolr::fisher(x)$p
+                          })
+                        } else {
+                          event.int.p <- apply(values.df, 1, function(x) {
+                            if(sum(!is.na(x)) > 1) {
+                              poolr::fisher(x[!is.na(x)])$p
+                            } else {
+                              x[!is.na(x)]
+                            }
+                          })
+                        }
+                        
+                        # ADD: FDR correction step here?
+                        
+                        
+                        interactions.new$int.p <- event.int.p
+                        
+                        # second ranking step
+                        ranks <- interactions.new %>% dplyr::group_by(regulator) %>%
+                          dplyr::summarize(int.mr.p = poolr::fisher(int.p)$p)
+                        
+                        ranks$int.mr.p <- stats::p.adjust(ranks$int.mr.p, method = "fdr")
+                        
+                        # save to main object
+                        interactions.new <<- interactions.new
+                        ranks.new <<- ranks
+                        
+                        
+                        
+                      },
                       
-                      Rank = function(use.cindy = TRUE, genomic.event.types = c("amp", "del", "mut", "fus"), 
+                      RankOld = function(use.cindy = TRUE, genomic.event.types = c("amp", "del", "mut", "fus"), 
                                       use.parallel = FALSE, cores = 1) {
                         "Rank MRs based on DIGGIT scores and number of associated events"  
                         
