@@ -18,7 +18,7 @@ if not determined}
 
 \item{\code{cnv}}{matrix of cnv values. Can be binary or a range.}
 
-\item{\code{fusions}}{binary matrix of fusion events if appliable}
+\item{\code{fusions}}{binary matrix of fusion events if applicable}
 
 \item{\code{pathways}}{list of pathways/connections to consider as extra evidence 
 in the analysis}
@@ -59,7 +59,9 @@ cluster assignments, names are sample ids}
   cores = 1
 )}}{Cluster the samples after applying the MOMA weights to the VIPER scores}
 
-\item{\code{Rank(
+\item{\code{Rank(na_value = NA)}}{Combine all genomic information to create event-MR ranking and full MR ranking}
+
+\item{\code{RankOld(
   use.cindy = TRUE,
   genomic.event.types = c("amp", "del", "mut", "fus"),
   use.parallel = FALSE,

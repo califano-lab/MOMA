@@ -242,15 +242,15 @@ Moma <- setRefClass("Moma", fields =
                         ## TODO: ****Determine best way to treat NAs**** 
                         
                         # first save aQTL direction information as a new column then convert to p-values
-                        interactions.new <- interactions.new %>% 
+                        interactions.temp <- interactions.new %>% 
                           dplyr::mutate(sign = sign(aQTL),
                                         aQTL = 1 - pnorm(abs(aQTL)))
                         
                         # split into two tables, one with event/mr type information, 
                         # other with p-values to be ranked/merged. transform these
                         vars <- c("regulator", "event", "type", "sign")
-                        info.df <- interactions.new[,vars]
-                        values.df <- interactions.new[,!colnames(interactions.new) %in% vars]
+                        info.df <- interactions.temp[,vars]
+                        values.df <- interactions.temp[,!colnames(interactions.temp) %in% vars]
                         values.df <- as.matrix(apply(values.df, 2, cdf.pval, na_value = na_value))
                         
                         # two part integration of pvalue 
@@ -277,17 +277,17 @@ Moma <- setRefClass("Moma", fields =
                         # ADD: FDR correction step here?
                         
                         
-                        interactions.new$int.p <- event.int.p
+                        interactions.temp$int.p <- event.int.p
                         
                         # second ranking step
-                        ranks <- interactions.new %>% dplyr::group_by(regulator) %>%
+                        ranks.temp <- interactions.temp %>% dplyr::group_by(regulator) %>%
                           dplyr::summarize(int.mr.p = poolr::fisher(int.p)$p)
                         
-                        ranks$int.mr.p <- stats::p.adjust(ranks$int.mr.p, method = "fdr")
+                        ranks.temp$int.mr.p <- stats::p.adjust(ranks.temp$int.mr.p, method = "fdr")
                         
                         # save to main object
-                        interactions.new <<- interactions.new
-                        ranks.new <<- ranks
+                        interactions.new <<- interactions.temp
+                        ranks.new <<- ranks.temp
                         
                         
                         
