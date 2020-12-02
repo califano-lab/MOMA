@@ -59,7 +59,7 @@ cluster assignments, names are sample ids}
   cores = 1
 )}}{Cluster the samples after applying the MOMA weights to the VIPER scores}
 
-\item{\code{Rank(na_value = NA)}}{Combine all genomic information to create event-MR ranking and full MR ranking}
+\item{\code{Rank(na.value = NA, aQTL.threshold = 1)}}{Combine all genomic information to create event-MR ranking and full MR ranking}
 
 \item{\code{RankOld(
   use.cindy = TRUE,
@@ -68,9 +68,9 @@ cluster assignments, names are sample ids}
   cores = 1
 )}}{Rank MRs based on DIGGIT scores and number of associated events}
 
-\item{\code{generateInteractions(genomic.event.types = c("amp", "del", "mut", "fus"))}}{Make merged file of each MR-Event pairing with all associated pathway test values}
+\item{\code{makeInteractions(genomic.event.types = c("amp", "del", "mut", "fus"))}}{Make merged file of each MR-Event pairing with all associated pathway test values}
 
-\item{\code{makeInteractions(
+\item{\code{makeInteractionsOld(
   genomic.event.types = c("amp", "del", "mut", "fus"),
   cindy.only = FALSE
 )}}{Make interaction web for significant MRs based on their associated events}

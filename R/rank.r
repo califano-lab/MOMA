@@ -1,3 +1,21 @@
+#' Rank Normalize P Values
+#' 
+#' This function uses an empirical cumulative distribution function to rank 
+#' normalize all the p-values from a particular test
+#' @param interacterations.df dataframe off all the interactions
+#' @return dataframe will adjusted p values
+#' @keywords internal
+rankNormalize <- function(interactions.df) {
+  # split into two tables, one with event/regulatur/type information, 
+  # other with p-values to be ranked/merged. transform these then remerge
+  vars <- c("regulator", "event", "type", "sign")
+  info.df <- interactions.df[,vars]
+  values.df <- interactions.df[,!colnames(interactions.df) %in% vars]
+  values.df <- as.matrix(apply(values.df, 2, cdfPval))
+  merged.df <- cbind(info.df, values.df)
+  merged.df
+}
+
 #' Empirical Cumulative Distribution Helper function
 #' 
 #' This is a wrapper function for the ecdf function in order to get a vector of 
@@ -5,13 +23,58 @@
 #' @importFrom stats ecdf
 #' @importFrom tidyr replace_na
 #' @param vals original list of p-values to convert
-#' @param na_value value to substitute for NAs if present. Default is NA
+#' @param na.value value to substitute for NAs if present. Default is NA
 #' @return vector of adjusted p-values
 #' @keywords internal
-cdf.pval <- function(vals, na_value = NA) {
+cdfPval <- function(vals, na.value = NA) {
   # could tweak this...
-  vals.adj <- tidyr::replace_na(vals, na_value)
+  vals.adj <- tidyr::replace_na(vals, na.value)
   fn <- stats::ecdf(tidyr::replace_na(vals, 1))
   res <- fn(vals.adj)
   res
+}
+
+#' Two step rank integration
+#' 
+#' This function does the two step integration of the available genomic information
+#' First Regulator-Event information is integrated across different tests
+#' Then all information for a particular Regulator is integrated to result in a single value
+#' that represents the accumulated information for that Regulator
+#' @param interactions.df dataframe of all interactions
+#' @param na.value value to substitute for NAs if present. Default is NA
+#' @return list object with two components: Updated interactions dataframe and a consolidated regulator ranks dataframe
+#' @keywords internal
+twoStepRankIntegration <- function(interactions.df, na.value) {
+  vars <- c("regulator", "event", "type", "sign")
+  values.df <- interactions.df[,!colnames(interactions.df) %in% vars]
+  
+  # Modify first step if NAs are present because otherwise rows 
+  # with only 1 value don't need to be integrated and will error 
+  
+  if(!is.na(na.value)) {
+    values.df[is.na(values.df)] <- na.value
+    event.int.p <- apply(values.df, 1, function(x){
+      poolr::fisher(x)$p
+    })
+  } else {
+    event.int.p <- apply(values.df, 1, function(x) {
+      if(sum(!is.na(x)) > 1) {
+        poolr::fisher(x[!is.na(x)])$p
+      } else {
+        x[!is.na(x)]
+      }
+    })
+  }
+  
+  interactions.df$int.p <- event.int.p
+  
+  # second ranking step
+  ranks.df <- interactions.df %>% dplyr::group_by(regulator) %>%
+    dplyr::summarize(int.mr.p = poolr::fisher(int.p)$p)
+  
+  ranks.df$int.mr.p <- stats::p.adjust(ranks.df$int.mr.p, method = "fdr")
+  
+  return(list(interactions.df = interactions.df, 
+              ranks.df = ranks.df))
+  
 }

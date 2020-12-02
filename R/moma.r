@@ -66,7 +66,7 @@ Moma <- setRefClass("Moma", fields =
                         
                         cnv.local <- NULL
                         if (is.null(fCNV)) {
-                          message("No fCNV supplied, using no CNV filter!")
+                          # message("No fCNV supplied, using no CNV filter!")
                           cnv.local <- cnv
                         } else {
                           message("fCNV supplied, filtering for only functional CNVs")
@@ -148,7 +148,7 @@ Moma <- setRefClass("Moma", fields =
                         
                       }, 
                       
-                      makeInteractions = function(genomic.event.types = c("amp", "del", "mut", "fus"),
+                      makeInteractionsOld = function(genomic.event.types = c("amp", "del", "mut", "fus"),
                                                   cindy.only = FALSE) {
                         "Make interaction web for significant MRs based on their associated events"
                         
@@ -182,7 +182,7 @@ Moma <- setRefClass("Moma", fields =
                         interactions <<- local.interactions
                       }, 
                       
-                      generateInteractions = function(genomic.event.types = c("amp", "del", "mut", "fus")){
+                      makeInteractions = function(genomic.event.types = c("amp", "del", "mut", "fus")){
                         "Make merged file of each MR-Event pairing with all associated pathway test values"
                         
                         # initiate tibble for results
@@ -203,6 +203,8 @@ Moma <- setRefClass("Moma", fields =
                             dplyr::mutate(dplyr::across(.cols = c(regulator, event), as.character))
                           
                           # go through pathway lists to find matching data (if it exists)
+                          # TODO: add in option where this section checks if the data is list or dataframe
+                          # in order to skip the unlisting steps
                           for(p in seq_along(pathways)) {
                             
                             p.name <- names(pathways)[[p]]
@@ -227,69 +229,41 @@ Moma <- setRefClass("Moma", fields =
                           
                           # add event type to table then merge with full.interaction.table
                           interactions.df$type <- type
-                          full.interaction.table <- dplyr::bind_rows(full.interaction.table, interactions.df)
+                          full.interaction.table <- dplyr::bind_rows(full.interaction.table, interactions.df) 
                           
                         }
                         
+                        # only keep the rows that are distinct 
+                        # (preppi interaction data can incur duplicates)
+                        # save aQTL direction information as a new column then convert to p-values
+                        full.interaction.table <- full.interaction.table %>% 
+                          dplyr::distinct() %>%
+                          dplyr::mutate(sign = sign(aQTL),
+                                        aQTL = 2*pnorm(-abs(aQTL)))
+                        
+                       
                         interactions.new <<- full.interaction.table
                         
                       },
                       
-                      Rank = function(na_value = NA) {
+                      Rank = function(na.value = NA, aQTL.threshold = 1) {
                         "Combine all genomic information to create event-MR ranking and full MR ranking"
                         
                         ## convert all scores to newly normalized p-values
-                        ## TODO: ****Determine best way to treat NAs**** 
-                        
-                        # first save aQTL direction information as a new column then convert to p-values
-                        interactions.temp <- interactions.new %>% 
-                          dplyr::mutate(sign = sign(aQTL),
-                                        aQTL = 1 - pnorm(abs(aQTL)))
-                        
-                        # split into two tables, one with event/mr type information, 
-                        # other with p-values to be ranked/merged. transform these
-                        vars <- c("regulator", "event", "type", "sign")
-                        info.df <- interactions.temp[,vars]
-                        values.df <- interactions.temp[,!colnames(interactions.temp) %in% vars]
-                        values.df <- as.matrix(apply(values.df, 2, cdf.pval, na_value = na_value))
-                        
-                        # two part integration of pvalue 
-                        # first across MR-Event pairs, then all events associated with an MR
-                        # TODO: consider use of other integration methods 
-                        
-                        # Modify first step if NAs are present because otherwise rows 
-                        # with only 1 value don't need to be integrated and will error 
-                        
-                        if(!is.na(na_value)) {
-                          event.int.p <- apply(values.df, 1, function(x){
-                            poolr::fisher(x)$p
-                          })
-                        } else {
-                          event.int.p <- apply(values.df, 1, function(x) {
-                            if(sum(!is.na(x)) > 1) {
-                              poolr::fisher(x[!is.na(x)])$p
-                            } else {
-                              x[!is.na(x)]
-                            }
-                          })
-                        }
-                        
-                        # ADD: FDR correction step here?
+                        # filter to events that are below aQTL threshold
+                        interactions.temp <- rankNormalize(interactions.new) %>%
+                          dplyr::filter(aQTL <= aQTL.threshold)
                         
                         
-                        interactions.temp$int.p <- event.int.p
-                        
-                        # second ranking step
-                        ranks.temp <- interactions.temp %>% dplyr::group_by(regulator) %>%
-                          dplyr::summarize(int.mr.p = poolr::fisher(int.p)$p)
-                        
-                        ranks.temp$int.mr.p <- stats::p.adjust(ranks.temp$int.mr.p, method = "fdr")
+                        ## Two part integration of pvalues 
+                        # first across MR-Event pairs
+                        # then all events associated with an MR
+                        message("Rank integrating regulator events...")
+                        res <- twoStepRankIntegration(interactions.temp, na.value)
                         
                         # save to main object
-                        interactions.new <<- interactions.temp
-                        ranks.new <<- ranks.temp
-                        
-                        
+                        interactions.new <<- res$interactions.df
+                        ranks.new <<- res$ranks.df
                         
                       },
                       
@@ -352,6 +326,10 @@ Moma <- setRefClass("Moma", fields =
                       Cluster = function(clus.eval = c("reliability", "silhouette"), use.parallel = FALSE, cores = 1) {
                         "Cluster the samples after applying the MOMA weights to the VIPER scores"
                         
+                        ## TODO: Integrate iterative clustering? see about updating iterClust directly then including it
+                        ## TODO: Try different ways of handling weighting 
+                        ##       - log(pvals)? adjusted pvals? just ranks?
+                        
                         if(use.parallel) {
                           if(cores <= 1) {
                             stop("Parallel processing selected but multiple number of cores have not
@@ -362,8 +340,16 @@ Moma <- setRefClass("Moma", fields =
                         }
                         
                         # do weighted pearson correlation, using the ranks as weights
-                        weights <- log(ranks[["integrated"]])^2
+                        # weights <- log(ranks[["integrated"]])^2
+                        weights <- tibble::deframe(ranks.new)
                         weights <- weights[as.character(rownames(viper))]
+                        
+                        # adjustment of weights
+                        # currently just taking log. subject to change
+                        
+                        weights <- -log(weights)
+                        
+                        
                         w.vipermat <- weights * viper
                         message("using pearson correlation with weighted vipermat")
                         dist.obj <- MKmisc::corDist(t(w.vipermat), method = "pearson")
@@ -705,6 +691,14 @@ checkMAE <- function(mae){
   # filter mae to only return samples that are in the viper matrix
   vipersamples <- colnames(assays(mae)$viper)
   mae <- mae[ , vipersamples]
+  
+  # remove any rows from viper matrix that are all NA 
+  # (happens in vipermats from full TCGA viper analysis)
+  if(sum(is.na(assays(mae)$viper)) > 0) {
+    na.mrs <- which(is.na(assays(mae)$viper[,1]))
+    mae@ExperimentList@listData$viper <- assays(mae)$viper[-na.mrs,]
+    }
+  
   mae
   
 }
@@ -722,9 +716,16 @@ checkList <- function(assaylist){
   }
   
   ### Confirm that a valid viper matrix has been supplied
+  # also remove any rows that are all NAs
   if (!is.matrix(assaylist$viper) || ncol(assaylist$viper) < 2 || nrow(assaylist$viper) < 2) {
     stop("Too few samples or TFs in viper matrix. Please supply valid matrix")
   }
+  
+  if(sum(is.na(assaylist$viper)) > 0) {
+    na.mrs <- which(is.na(assaylist$viper[,1]))
+    assaylist$viper <- assaylist$viper[-na.mrs,]
+  }
+  
   
   ### check for sample overlap 
   nVM <- intersect(colnames(assaylist$viper), colnames(assaylist$mut))
