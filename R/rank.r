@@ -78,3 +78,48 @@ twoStepRankIntegration <- function(interactions.df, na.value) {
               ranks.df = ranks.df))
   
 }
+
+
+#' Over-representation Test for genomic events
+#' 
+#' Do a proportion test for representation of a particular genomic event in a cluster
+#' 
+#' @param mat binary events matrix
+#' @param inCluster.samples names of samples in the cluster to be tested
+#' @param min.events.per.cluster minimum number of times that event must occur in that cluster to be countable
+#' @return names of genes that had marginal over-representation 
+#' @keywords internal
+overrep.analysis <- function(mat, inCluster.samples, min.events.per.cluster) {
+  
+  # proportion test for over/under representation
+  prop.pvals <- apply(mat, 1, function(row, inCluster.samples) {
+    row <- na.omit(row)
+    if (all(row==0)) { return (1) }
+    
+    iC.vals <- na.omit(row[inCluster.samples])
+    oC.vals <- na.omit(row[setdiff(names(row), inCluster.samples)])
+    
+    pval <- NULL
+    # consider only 0,1 values	
+    # look for over-representation
+    tab <- rbind( 
+      c(length(which(iC.vals>0)), length(which(iC.vals==0)) ),
+      c(length(which(oC.vals>0)), length(which(oC.vals==0)) ) 
+    )
+    rownames(tab) <- c("in-cluster", "out-cluster")
+    
+    # set threshold for minimum number of times the event 
+    # must occur in that cluster
+    if (tab[1,1] < min.events.per.cluster) { 
+      pval <- 1 
+    } else {
+      pval <- fisher.test(tab, alternative = "greater")$p.value    
+    }
+    #pval <- prop.test(tab, alternative='greater')$p.value
+    
+    pval
+    
+  }, inCluster.samples=inCluster.samples)
+  # anything marginally over represented
+  names(prop.pvals[which(prop.pvals < 0.5)])
+}

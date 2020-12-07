@@ -61,6 +61,13 @@ cluster assignments, names are sample ids}
 
 \item{\code{Rank(na.value = NA, aQTL.threshold = 1)}}{Combine all genomic information to create event-MR ranking and full MR ranking}
 
+\item{\code{RankByCluster(
+  clustering.solution = NULL,
+  min.events.per.cluster = 2,
+  na.value = NA,
+  aQTL.threshold = 1
+)}}{Recalculate regulator rankings for each cluster based on presence of genomic events in that cluster}
+
 \item{\code{RankOld(
   use.cindy = TRUE,
   genomic.event.types = c("amp", "del", "mut", "fus"),

@@ -15,7 +15,7 @@
 #' @import stats
 #' @import tibble
 #' @importFrom stringr str_sub
-#' @importFrom dplyr mutate select everything bind_rows left_join across group_by summarize
+#' @importFrom dplyr arrange mutate select everything bind_rows left_join across group_by summarize
 #' @importFrom tidyr replace_na
 #' @field viper matrix of inferred activity score inferred by viper
 #' @field mut binary mutation matrix 1 for presence of mutation, 0 for not, NA 
@@ -51,9 +51,11 @@ Moma <- setRefClass("Moma", fields =
                            nes = "list", # result field
                            interactions = "list", # result field
                            interactions.new = "data.frame", # NEW result field
+                           interactions.byCluster = "data.frame", # NEW result field
                            clustering.results = "list", # result field
                            ranks = "list", # result field
                            ranks.new = "data.frame", # NEW result field
+                           ranks.byCluster = "data.frame", # NEW result field
                            hypotheses = "list", # result field
                            genomic.saturation = "list", # result field
                            coverage.summaryStats = "list", # result field
@@ -115,7 +117,8 @@ Moma <- setRefClass("Moma", fields =
                                   muts.removed, " removed for being on the gene blacklist.")
                         }
                         
-                        hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, amp = amps.hypotheses)
+                        hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, amp = amps.hypotheses,
+                                            mut.mat = muts.mat, del.mat = dels.mat, amp.mat = amps.mat)
                         
                         # do aREA association
                         nes.amps <- associateEvents(viper, amps.mat, min.events = min.events, 
@@ -374,6 +377,69 @@ Moma <- setRefClass("Moma", fields =
                         message("Best solution is: ", names(top.sol))
                         
                       }, 
+                      
+                      RankByCluster = function(clustering.solution = NULL, min.events.per.cluster = 2, 
+                                               na.value = NA, aQTL.threshold = 1) {
+                        "Recalculate regulator rankings for each cluster based on presence of genomic events in that cluster"
+                        
+                        # get clustering solution to use for calculations
+                        if (is.null(clustering.solution)) {
+                          if (is.null(sample.clustering)) {
+                            stop("No clustering solution provided. Provide one as an argument or save one
+                                 to the momaObj. Quitting...")
+                          } else {
+                            clustering.solution <- sample.clustering
+                          }
+                        }
+                        
+                        # get previously filtered gene hypotheses from runDIGGIT
+                        if(is.null(hypotheses)) {
+                          stop("No hypotheses found. Do runDIGGIT() before continuing.")
+                        }
+                        
+                        event.types <- unique(interactions.new$type)
+                        
+                        ranks.byCluster.tmp <- list()
+                        interactions.byCluster.tmp <- list()
+                        for (cluster in unique(clustering.solution)) {
+                          message(paste0("Integrating ranks for cluster ", cluster))
+                          
+                          inCluster.samples <- names(clustering.solution[clustering.solution==cluster])
+                          
+                          # genomic events specific to this cluster: do over representation analysis
+                          # filter interactions list to only these events
+                          overrep.events <- list()
+                          filtered.interactions <- tibble::tibble(.rows = 0)
+                          for(etype in event.types) {
+                            res <- overrep.analysis(hypotheses[[paste0(etype, ".mat")]], inCluster.samples, min.events.per.cluster)
+                            overrep.events[[etype]] <- res
+                            
+                            res.interactions <- interactions.new %>% 
+                              dplyr::filter(type == etype) %>%
+                              dplyr::filter(event %in% res)
+                            
+                            filtered.interactions <- dplyr::bind_rows(filtered.interactions, res.interactions)
+                          }
+                          
+                          filtered.interactions$cluster <- cluster
+                          
+                          # integrate events to get a rank for each regulator
+                          ranks.df <- filtered.interactions %>% dplyr::group_by(regulator) %>%
+                            dplyr::summarize(int.mr.p = poolr::fisher(int.p)$p) %>% dplyr::arrange(int.mr.p)
+                          
+                          ranks.df$int.mr.p <- stats::p.adjust(ranks.df$int.mr.p, method = "fdr")
+                          ranks.df$cluster <- cluster
+                          
+                          ranks.byCluster.tmp[[cluster]] <- ranks.df
+                          interactions.byCluster.tmp[[cluster]] <- filtered.interactions
+                          
+                        }
+                        
+                        # save to main object
+                        ranks.byCluster <<- ranks.byCluster.tmp
+                        interactions.byCluster <<- interactions.byCluster.tmp
+                        
+                      },
                       
                       saturationCalculation = function(clustering.solution = NULL, cov.fraction = 0.85, 
                                                        topN = 100, verbose = FALSE) {
