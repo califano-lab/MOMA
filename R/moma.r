@@ -15,8 +15,10 @@
 #' @import stats
 #' @import tibble
 #' @importFrom stringr str_sub
-#' @importFrom dplyr arrange mutate select everything bind_rows left_join across group_by summarize
+#' @importFrom dplyr arrange mutate select everything bind_rows left_join across group_by summarize ungroup rename distinct
 #' @importFrom tidyr replace_na
+#' @importFrom purrr map
+#' @importFrom pracma gradient
 #' @field viper matrix of inferred activity score inferred by viper
 #' @field mut binary mutation matrix 1 for presence of mutation, 0 for not, NA 
 #' if not determined
@@ -49,17 +51,20 @@ Moma <- setRefClass("Moma", fields =
                            output.folder = "character", 
                            gene.loc.mapping = "data.frame", 
                            nes = "list", # result field
+                           hypotheses = "list", # result field
                            interactions = "list", # result field
                            interactions.new = "data.frame", # NEW result field
-                           interactions.byCluster = "data.frame", # NEW result field
+                           interactions.byCluster = "list", # NEW result field
                            clustering.results = "list", # result field
                            ranks = "list", # result field
                            ranks.new = "data.frame", # NEW result field
-                           ranks.byCluster = "data.frame", # NEW result field
-                           hypotheses = "list", # result field
+                           ranks.byCluster = "list", # NEW result field
                            genomic.saturation = "list", # result field
+                           genomic.saturation.byCluster = "list", # NEW result field
                            coverage.summaryStats = "list", # result field
+                           coverage.summaryStats.byCluster = "list", # NEW result field
                            checkpoints = "list", # result field
+                           checkpoints.byCluster = "list", # result field
                            sample.clustering = "numeric" # result field 
                       ), 
                     methods = list(
@@ -117,8 +122,12 @@ Moma <- setRefClass("Moma", fields =
                                   muts.removed, " removed for being on the gene blacklist.")
                         }
                         
-                        hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, amp = amps.hypotheses,
-                                            mut.mat = muts.mat, del.mat = dels.mat, amp.mat = amps.mat)
+                        events <- list(mut = muts.hypotheses, del = dels.hypotheses, amp = amps.hypotheses)
+                        matrices <- list(mut = muts.mat, del = dels.mat, amp = amps.mat)
+                        hypotheses <<- list(events = events, matrices = matrices)
+                        
+                        # hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, amp = amps.hypotheses,
+                        #                     mut.mat = muts.mat, del.mat = dels.mat, amp.mat = amps.mat)
                         
                         # do aREA association
                         nes.amps <- associateEvents(viper, amps.mat, min.events = min.events, 
@@ -134,8 +143,14 @@ Moma <- setRefClass("Moma", fields =
                         nes.fusions <- NULL
                         if (!is.na(fusions[1,1])) {
                           fus.hypotheses <- rownames(fusions[apply(fusions, 1, sum, na.rm = TRUE) >= min.events, ])
-                          hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, 
-                                              amp = amps.hypotheses, fus = fus.hypotheses)
+                          fus.mat <- fusions[fus.hypotheses,]
+                          
+                          events <- list(mut = muts.hypotheses, del = dels.hypotheses, amp = amps.hypotheses, fus = fus.hypotheses)
+                          matrices <- list(mut = muts.mat, del = dels.mat, amp = amps.mat, fus = fus.mat)
+                          hypotheses <<- list(events = events, matrices = matrices)
+                          
+                          # hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, 
+                          #                     amp = amps.hypotheses, fus = fus.hypotheses)
                           nes.fusions <- associateEvents(viper, fusions, 
                                                          min.events = min.events, 
                                                          event.type = "Fusions",
@@ -348,6 +363,7 @@ Moma <- setRefClass("Moma", fields =
                         weights <- weights[as.character(rownames(viper))]
                         
                         # adjustment of weights
+                        # TODO 
                         # currently just taking log. subject to change
                         
                         weights <- -log(weights)
@@ -411,7 +427,7 @@ Moma <- setRefClass("Moma", fields =
                           overrep.events <- list()
                           filtered.interactions <- tibble::tibble(.rows = 0)
                           for(etype in event.types) {
-                            res <- overrep.analysis(hypotheses[[paste0(etype, ".mat")]], inCluster.samples, min.events.per.cluster)
+                            res <- overrep.analysis(hypotheses[["matrices"]][[etype]], inCluster.samples, min.events.per.cluster)
                             overrep.events[[etype]] <- res
                             
                             res.interactions <- interactions.new %>% 
@@ -441,7 +457,7 @@ Moma <- setRefClass("Moma", fields =
                         
                       },
                       
-                      saturationCalculation = function(clustering.solution = NULL, cov.fraction = 0.85, 
+                      saturationCalculationOld = function(clustering.solution = NULL, cov.fraction = 0.85, 
                                                        topN = 100, verbose = FALSE) {
                         "Calculate the number of MRs it takes to represent the desired coverage fraction of events"
                         
@@ -501,6 +517,100 @@ Moma <- setRefClass("Moma", fields =
                         genomic.saturation <<- coverage.subtypes
                         coverage.summaryStats <<- tmp.summaryStats
                         checkpoints <<- setNames(tmp.checkpoints, seq_along(tmp.checkpoints))
+                      },
+                      saturationCalculation = function(clustering.solution = NULL, cytoband.collapse = T, topN = 100) {
+                        "Calculate the number of MRs it takes to represent the desired coverage fraction of events"
+                        
+                        # main update from old version: 
+                        # calculation of saturation point as when the derivative of the curve is 0
+                        # ie the addition of more regulators does not add events
+                        
+                        # get clustering solution to use for calculations
+                        if (is.null(clustering.solution)) {
+                          if(is.null(sample.clustering)) {
+                            stop("No clustering solution provided. Provide one as an argument or save one to the Moma Object. Quitting...")
+                          } else {
+                            clustering.solution <- sample.clustering
+                          }
+                        }
+                        
+                        # make sure submitted clustering solution has sufficiently large clusters (at least 5 samples)
+                        clus.sizes <- table(clustering.solution) < 5
+                        
+                        if(any(clus.sizes)) {
+                          stop("At least one cluster does not have sufficient samples. Select a different clustering solution and resave to object")
+                        }
+                        
+                        # get coverage for each subtype
+                        coverage.subtypes <- list()
+                        tmp.summaryStats <- list()
+                        tmp.checkpoints <- list()
+                        
+                        for (clus.id in unique(clustering.solution)) {
+                          message("Analyzing cluster ", clus.id, " coverage...")
+                          
+                          viper.samples <- colnames(viper[, names(clustering.solution[clustering.solution == clus.id])])
+                          
+                          # Get subtype-specific rankings: use the main rank and include only those with significantly high/low mean score
+                          stouffer.zscores <- apply(viper[, viper.samples], 1, function(x) {
+                            sum(na.omit(x))/sqrt(length(na.omit(x)))
+                          })
+                          
+                          pvals <- sort(2*pnorm(-abs(stouffer.zscores)), decreasing = F)
+                          sig.active.mrs <- names(pvals[p.adjust(pvals, method='bonferroni') < 0.25])
+                          
+                          # rank using the subtype-specific rankings generated in this function, above. 
+                          # otherwise this is the same analysis done on the overall rankings
+                          subtype.specific.MR_ranks <- ranks.byCluster[[clus.id]] %>% 
+                            dplyr::filter(regulator %in% sig.active.mrs) %>%
+                            dplyr::select(regulator) %>% unlist(use.names = F)
+                          
+                          
+                          # filter cluster interactions list to only the significant MRs and significant events
+                          clus.interactions.topmrs <- interactions.byCluster[[clus.id]] %>%
+                            dplyr::filter(regulator %in% subtype.specific.MR_ranks & int.p < 0.05) 
+                          
+                          clus.interactions.topmrs <- dplyr::left_join(clus.interactions.topmrs, gene.loc.mapping, 
+                                                                       by = c("event" = "Entrez.IDs"))
+                          
+                          # if(isTRUE(cytoband.collapse)) {
+                          #   # merge in gene map so that close amps/dels can be consolidated to one event
+                          #   
+                          #   
+                          #   cnvs.cytoband.collapse <- clus.interactions.topmrs %>% 
+                          #     dplyr::filter(type %in% c("amp", "del")) %>%
+                          #     dplyr::group_by(regulator, type, sign, Cytoband) %>% 
+                          #     dplyr::summarize(int.p = min(int.p)) %>% 
+                          #     dplyr::ungroup() %>% 
+                          #     dplyr::left_join(clus.interactions.topmrs)
+                          #   
+                          #   other.interactions <- clus.interactions.topmrs %>%
+                          #     dplyr::filter(!type %in% c("amp", "del"))
+                          #   
+                          #   clus.interactions.topmrs <- dplyr::bind_rows(cnvs.cytoband.collapse, other.interactions)
+                          #   
+                          # }
+                          
+                          coverage.range <- sampleEventOverlap(.self, viper.samples, subtype.specific.MR_ranks, clus.interactions.topmrs,
+                                                               cytoband.collapse, topN)
+                          coverage.subtypes[[clus.id]] <- coverage.range
+                          
+                          # Solve the checkpoint for each subtype
+                          # Merge information about each sample together
+                          # Then use discrete numerical gradient function to calculate the derivative at each point
+                          # of the fraction function. Choose first instance of 0 / inflection
+                          # Pick top cMRs based on this
+                          tmp.summaryStats[[clus.id]] <- genomicSaturationSummary(coverage.range, topN)
+                          
+                          best.k <- getInflection(tmp.summaryStats[[clus.id]]$fraction, clus.id)
+                          
+                          tmp.checkpoints[[clus.id]] <- subtype.specific.MR_ranks[seq_len(best.k)]
+                          }
+                        
+                        checkpoints.byCluster <<- tmp.checkpoints
+                        genomic.saturation.byCluster <<- coverage.subtypes
+                        coverage.summaryStats.byCluster <<- tmp.summaryStats
+                        
                       },
                       saveData = function(.self, output.folder, ...) {
                         inputs <- unlist(list(...))
@@ -578,10 +688,10 @@ Moma <- setRefClass("Moma", fields =
                           
                           # save hypotheses as df
                           if(name == "hypotheses"){
-                            df <- lapply(.self[[name]], function(x){
+                            df <- lapply(.self[[name]][["events"]], function(x){
                               tibble::tibble(type = NA, gene = x)
                             }) %>% dplyr::bind_rows()
-                            event.nums <- vapply(.self[[name]], length, numeric(1))
+                            event.nums <- vapply(.self[[name]][["events"]], length, numeric(1))
                             df$type <- rep(names(event.nums), event.nums)
                             
                             write.table(df, file = paste0(output.folder, name, ".txt"),
