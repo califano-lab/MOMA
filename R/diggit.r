@@ -1,3 +1,52 @@
+#' Perform fCNV analysis as provided in the diggit bioconductor package
+#' 
+#' @param momaObj main object
+#' @param fCNV.sig significance threshold to use for determining functionality
+#' @param fCNV.method method to use, either spearman or mutual information ('mi')
+#' @param expression expression matrix supplied for the analysis if not directly in momaObj
+#' @importFrom parallel mc.reset.stream
+#' @return Vector of CNV names that are determined to be functionally significant
+#' @keywords internal
+fcnvAnalysis <- function(momaObj, fCNV.sig = 0.05, fCNV.method = "mi", expression = NULL){
+    
+    # first determine if an expression matrix has been supplied, else quit
+    if(is.na(momaObj$expression[1,1] & is.null(expression))) {
+        stop("No expression matrix provided. Either store in momaObj$expression or provide as the expression parameter")
+    } else if (!is.na(momaObj$expression[1,1])) {
+        x <- momaObj$expression
+    } else {
+        x <- expression
+    }
+    
+    cnv <- momaObj$cnv
+    
+    # run fCNV analysis
+    genes <- intersect(rownames(x), rownames(cnv))
+    samples <- intersect(colnames(x), colnames(cnv))
+    x <- x[match(genes, rownames(x)), ][, match(samples, 
+                                                colnames(x))]
+    cnv <- cnv[match(genes, rownames(cnv)), ][, match(samples, 
+                                                      colnames(cnv))]
+    if (fCNV.method == "mi") {
+        set.seed(1) 
+        if(tools:::.OStype() == "unix") {
+            parallel::mc.reset.stream()
+        } 
+        mi <- diggit::mutualInfo(t(x), t(cnv), per = 100, pairwise = TRUE, verbose = FALSE)
+    } else {
+        mi <- diggit::correlation(t(x), t(cnv), method = fCNV.method, pairwise = TRUE) 
+    }
+    
+    # filter for fCNVs below the designated threshold
+    p.vals <- stats::p.adjust(mi$p.value, method = "fdr")
+    fcnv <- names(p.vals)[p.vals < fCNV.sig]
+    
+    fcnv
+    
+}
+
+
+
 #' Use 'aREA' to calculate the enrichment between each genomic event - 
 #' VIPER inferred protein pair. 
 #' 

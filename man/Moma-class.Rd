@@ -20,6 +20,8 @@ if not determined}
 
 \item{\code{fusions}}{binary matrix of fusion events if applicable}
 
+\item{\code{expression}}{gene expression matrix, used if fCNV or viper analyses need to be done}
+
 \item{\code{pathways}}{list of pathways/connections to consider as extra evidence 
 in the analysis}
 
@@ -32,19 +34,33 @@ high mutation frequency}
 
 \item{\code{nes}}{field for saving Normalized Enrichment Matrices from the associate events step}
 
+\item{\code{hypotheses}}{results field for saving events that have enough occurences to be considered}
+
 \item{\code{interactions}}{field for saving the MR-interactions list}
+
+\item{\code{interactions.new}}{field for saving updated interactions result}
+
+\item{\code{interactions.byCluster}}{field for saving interactions results on a cluster specific basis}
 
 \item{\code{clustering.results}}{results from clustering are saved here}
 
 \item{\code{ranks}}{results field for ranking of MRs based on event association analysis}
 
-\item{\code{hypotheses}}{results field for saving events that have enough occurences to be considered}
+\item{\code{ranks.new}}{field for new ranking results}
+
+\item{\code{ranks.byCluster}}{field for saving cluster specific rank results}
 
 \item{\code{genomic.saturation}}{results field for genomic saturation analysis}
 
+\item{\code{genomic.saturation.byCluster}}{result field for new genomic saturation results}
+
 \item{\code{coverage.summaryStats}}{results field for genomic saturation analysis}
 
+\item{\code{coverage.summaryStats.byCluster}}{results field for new coverage analysis}
+
 \item{\code{checkpoints}}{results field with the MRs determined to be the checkpoint for each cluster}
+
+\item{\code{checkpoints.byCluster}}{resulst field for new checkpoints analysis}
 
 \item{\code{sample.clustering}}{field to save sample clustering vector. Numbers are 
 cluster assignments, names are sample ids}
@@ -56,10 +72,16 @@ cluster assignments, names are sample ids}
 \item{\code{Cluster(
   clus.eval = c("reliability", "silhouette"),
   use.parallel = FALSE,
-  cores = 1
+  cores = 1,
+  new = FALSE
 )}}{Cluster the samples after applying the MOMA weights to the VIPER scores}
 
-\item{\code{Rank(na.value = NA, aQTL.threshold = 1)}}{Combine all genomic information to create event-MR ranking and full MR ranking}
+\item{\code{Rank(
+  use.cindy = TRUE,
+  genomic.event.types = c("amp", "del", "mut", "fus"),
+  use.parallel = FALSE,
+  cores = 1
+)}}{Rank MRs based on DIGGIT scores and number of associated events}
 
 \item{\code{RankByCluster(
   clustering.solution = NULL,
@@ -68,33 +90,36 @@ cluster assignments, names are sample ids}
   aQTL.threshold = 1
 )}}{Recalculate regulator rankings for each cluster based on presence of genomic events in that cluster}
 
-\item{\code{RankOld(
-  use.cindy = TRUE,
-  genomic.event.types = c("amp", "del", "mut", "fus"),
-  use.parallel = FALSE,
-  cores = 1
-)}}{Rank MRs based on DIGGIT scores and number of associated events}
+\item{\code{RankNew(na.value = NA, aQTL.threshold = 1)}}{Combine all genomic information to create event-MR ranking and full MR ranking}
 
-\item{\code{makeInteractions(genomic.event.types = c("amp", "del", "mut", "fus"))}}{Make merged file of each MR-Event pairing with all associated pathway test values}
-
-\item{\code{makeInteractionsOld(
+\item{\code{makeInteractions(
   genomic.event.types = c("amp", "del", "mut", "fus"),
   cindy.only = FALSE
 )}}{Make interaction web for significant MRs based on their associated events}
 
-\item{\code{runDIGGIT(fCNV = NULL, cnvthr = 0.5, min.events = 4, verbose = FALSE)}}{Run DIGGIT association function to get associations for driver genomic events}
+\item{\code{makeInteractionsNew(genomic.event.types = c("amp", "del", "mut", "fus"))}}{Make merged file of each MR-Event pairing with all associated pathway test values}
+
+\item{\code{runDIGGIT(
+  fCNV = NULL,
+  fCNV.sig = 0.05,
+  fCNV.method = "mi",
+  expression = NULL,
+  cnvthr = 0.5,
+  min.events = 4,
+  verbose = FALSE
+)}}{Run DIGGIT association function to get associations for driver genomic events}
 
 \item{\code{saturationCalculation(
-  clustering.solution = NULL,
-  cytoband.collapse = T,
-  topN = 100
-)}}{Calculate the number of MRs it takes to represent the desired coverage fraction of events}
-
-\item{\code{saturationCalculationOld(
   clustering.solution = NULL,
   cov.fraction = 0.85,
   topN = 100,
   verbose = FALSE
+)}}{Calculate the number of MRs it takes to represent the desired coverage fraction of events}
+
+\item{\code{saturationCalculationNew(
+  clustering.solution = NULL,
+  cytoband.collapse = T,
+  topN = 100
 )}}{Calculate the number of MRs it takes to represent the desired coverage fraction of events}
 }}
 

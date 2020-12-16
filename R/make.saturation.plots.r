@@ -64,9 +64,10 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
   }
   
   # CNVs. Input should be GISITC scores so separate into high/low events
-  # Filter to only keep fCNVs if provided
+  # Filter to only keep fCNVs if provided/in momaObj
+  # TODO potentially change this to only use hypotheses results from momaobj?
   cnv <- momaObj$cnv
-  if(!is.null(fCNV)){
+  if(!is.null(fCNV) | length(momaObj$fCNVs) > 0){
     cnv <- cnv[na.omit(match(fCNV, rownames(cnv))),]
     if(nrow(cnv) == 0) {
       stop("CNV matrix after functional CNV filtering is empty. 

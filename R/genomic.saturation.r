@@ -57,10 +57,10 @@ sampleEventOverlap <- function(momaObj, viper.samples, selected.tfs,
     ## total number of events +/- cytoband collapse
     if(isTRUE(cytoband.collapse)) {
       cnv.events <- all.sample.genomics %>% 
-        dplyr::filter(type %in% c("amp", "del")) %>% 
-        dplyr::select(Cytoband) %>% unique() %>% nrow()
+        dplyr::filter(.data$type %in% c("amp", "del")) %>% 
+        dplyr::select(.data$Cytoband) %>% unique() %>% nrow()
       non.cnv.events <- all.sample.genomics %>% 
-        dplyr::filter(!type %in% c("amp", "del")) %>% 
+        dplyr::filter(!.data$type %in% c("amp", "del")) %>% 
         nrow()
       total.events <- cnv.events + non.cnv.events
     } else {
@@ -97,11 +97,11 @@ sampleEventOverlap <- function(momaObj, viper.samples, selected.tfs,
       covered.sample.genomics <- tibble::tibble(.rows = 0)
       for(etype in event.types) {
         sample.events <- all.sample.genomics %>% 
-          dplyr::filter(type == etype) %>%
-          dplyr::select(event) %>% 
+          dplyr::filter(.data$type == etype) %>%
+          dplyr::select(.data$event) %>% 
           unlist(use.names = F) %>% unique()
         df <- active.mrs.interactions %>% 
-          dplyr::filter(type == etype & event %in% sample.events) 
+          dplyr::filter(.data$type == etype & .data$event %in% sample.events) 
         
         covered.sample.genomics <- dplyr::bind_rows(covered.sample.genomics, df) %>% 
           dplyr::distinct()
@@ -111,18 +111,18 @@ sampleEventOverlap <- function(momaObj, viper.samples, selected.tfs,
       # consolidate cnvs HERE if necessary to match up with how original count was taken
       
       events.explained <- covered.sample.genomics %>% 
-        dplyr::select(event, type, Cytoband) %>% 
+        dplyr::select(.data$event, .data$type, .data$Cytoband) %>% 
         dplyr::distinct()
       
       if(isTRUE(cytoband.collapse)) {
         cnv.events <- events.explained %>% 
-          dplyr::filter(type %in% c("amp", "del")) %>% 
-          dplyr::select(Cytoband, type) %>% 
+          dplyr::filter(.data$type %in% c("amp", "del")) %>% 
+          dplyr::select(.data$Cytoband, .data$type) %>% 
           dplyr::rename(event = Cytoband) %>%
           unique() 
         non.cnv.events <- events.explained %>% 
-          dplyr::filter(!type %in% c("amp", "del")) %>% 
-          dplyr::select(event, type) %>%
+          dplyr::filter(!.data$type %in% c("amp", "del")) %>% 
+          dplyr::select(.data$event, .data$type) %>%
           unique()
         
         events.explained <- dplyr::bind_rows(cnv.events, non.cnv.events)

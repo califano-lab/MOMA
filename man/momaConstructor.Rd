@@ -13,13 +13,14 @@ MomaConstructor(
   viperAssay = "viper",
   mutMat = "mut",
   cnvMat = "cnv",
-  fusionMat = "fusion"
+  fusionMat = "fusion",
+  expressionMat = "expression"
 )
 }
 \arguments{
 \item{x}{A MultiAssayExerperiment object or list object with the following assays:
 (note: by default assays must have these exact names. Otherwise they can be changed
-using the viperAssay, mutMat, cnvMat and fusionMat parameters.)
+using the viperAssay, mutMat, cnvMat, fusionMat, and expressionMat parameters.)
 \describe{
 \item{viper}{VIPER protein activity matrix with samples as columns 
 and rows as protein IDs}
@@ -28,7 +29,8 @@ columns and genes as rows}
 \item{cnv}{A matrix of CNV scores (typically SNP6 array scores from TCGA) 
 with samples as columns and genes as rows}
 \item{fusion}{An indicator matrix (0/1) of fusion events with samples as 
-columns and genes as rows} }}
+columns and genes as rows} 
+\item{expression}{A matrix of gene expression values} }}
 
 \item{pathways}{A named list of lists. Each named list represents 
 interactions between proteins (keys) and their associated partners}
@@ -46,6 +48,8 @@ interactions between proteins (keys) and their associated partners}
 \item{cnvMat}{name associated with the cnv matrix in the assay object}
 
 \item{fusionMat}{name associated with the fusion matrix in the assay object}
+
+\item{expressionMat}{name associated with the expression matrix in the assay object}
 }
 \value{
 an instance of class Moma

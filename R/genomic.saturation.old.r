@@ -184,8 +184,8 @@ sampleOverlap <- function(MomaObject, viper.samples, selected.tfs, interaction.m
     
     map <- MomaObject$gene.loc.mapping
     
-    mut.HYP.filter <- MomaObject$hypotheses[["mut"]]
-    amp.HYP.filter <- na.omit(unique(vapply(as.character(MomaObject$hypotheses[["amp"]]), function(x) {
+    mut.HYP.filter <- MomaObject$hypotheses$events[["mut"]]
+    amp.HYP.filter <- na.omit(unique(vapply(as.character(MomaObject$hypotheses$events[["amp"]]), function(x) {
         res <- NA
         x <- as.character(x)
         if (x %in% map$Entrez.IDs) {
@@ -194,7 +194,7 @@ sampleOverlap <- function(MomaObject, viper.samples, selected.tfs, interaction.m
         }
         as.character(res)
     }, FUN.VALUE = character(1))))
-    del.HYP.filter <- na.omit(unique(vapply(as.character(MomaObject$hypotheses[["del"]]), function(x) {
+    del.HYP.filter <- na.omit(unique(vapply(as.character(MomaObject$hypotheses$events[["del"]]), function(x) {
         res <- NA
         x <- as.character(x)
         if (x %in% map$Entrez.IDs) {
@@ -203,7 +203,7 @@ sampleOverlap <- function(MomaObject, viper.samples, selected.tfs, interaction.m
         }
         as.character(res)
     }, FUN.VALUE = character(1))))
-    fus.HYP.filter <- MomaObject$hypotheses[["fus"]]
+    fus.HYP.filter <- MomaObject$hypotheses$events[["fus"]]
     
     if (length(mut.HYP.filter) == 0) {
         stop("No hypotheses for mut!")
@@ -233,17 +233,17 @@ sampleOverlap <- function(MomaObject, viper.samples, selected.tfs, interaction.m
         
         # Collect mutation events in this sample's row:
         mut.events <- as.character(names(which(MomaObject$mut[, sample] > 0)))
-        mut.events <- intersect(mut.events, MomaObject$hypotheses[["mut"]])
+        mut.events <- intersect(mut.events, MomaObject$hypotheses$events[["mut"]])
         
         # entrez ids to cytoband get genes
         del.events <- as.character(names(which(MomaObject$cnv[, sample] < -cnv.threshold)))
-        del.events.entrez <- intersect(del.events, MomaObject$hypotheses[["del"]])
+        del.events.entrez <- intersect(del.events, MomaObject$hypotheses$events[["del"]])
         # map to genomic locations
         del.events.cytoband <- unique(map[which(map$Entrez.IDs %in% del.events.entrez), "Cytoband"])
         
         # get genes
         amp.events <- as.character(names(which(MomaObject$cnv[, sample] > cnv.threshold)))
-        amp.events.entrez <- intersect(amp.events, MomaObject$hypotheses[["amp"]])
+        amp.events.entrez <- intersect(amp.events, MomaObject$hypotheses$events[["amp"]])
         # map to genomic locations
         amp.events.cytoband <- unique(map[which(map$Entrez.IDs %in% amp.events.entrez), "Cytoband"])
         
@@ -257,7 +257,7 @@ sampleOverlap <- function(MomaObject, viper.samples, selected.tfs, interaction.m
                 } 
             } 
         }
-        fus.events <- fus.events[which(fus.events %in% MomaObject$hypotheses[["fus"]])]
+        fus.events <- fus.events[which(fus.events %in% MomaObject$hypotheses$events[["fus"]])]
         
         validated.del.locations <- del.events.cytoband
         validated.amp.locations <- amp.events.cytoband

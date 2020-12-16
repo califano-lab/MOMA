@@ -14,16 +14,20 @@
 #' @import reshape2
 #' @import stats
 #' @import tibble
-#' @importFrom stringr str_sub
+#' @importFrom diggit mutualInfo correlation
 #' @importFrom dplyr arrange mutate select everything bind_rows left_join across group_by summarize ungroup rename distinct
-#' @importFrom tidyr replace_na
-#' @importFrom purrr map
+#' @importFrom parallel mc.reset.stream
 #' @importFrom pracma gradient
+#' @importFrom purrr map
+#' @importFrom rlang .data
+#' @importFrom stringr str_sub
+#' @importFrom tidyr replace_na
 #' @field viper matrix of inferred activity score inferred by viper
 #' @field mut binary mutation matrix 1 for presence of mutation, 0 for not, NA 
 #' if not determined
 #' @field cnv matrix of cnv values. Can be binary or a range. 
 #' @field fusions binary matrix of fusion events if applicable
+#' @field expression gene expression matrix, used if fCNV or viper analyses need to be done
 #' @field pathways list of pathways/connections to consider as extra evidence 
 #' in the analysis
 #' @field gene.blacklist character vector of genes to not include because of 
@@ -31,13 +35,20 @@
 #' @field output.folder character vector of location to save files if desired
 #' @field gene.loc.mapping data frame of gene names, entrez ids and cytoband locations
 #' @field nes field for saving Normalized Enrichment Matrices from the associate events step
+#' @field hypotheses results field for saving events that have enough occurences to be considered 
 #' @field interactions field for saving the MR-interactions list
+#' @field interactions.new field for saving updated interactions result
+#' @field interactions.byCluster field for saving interactions results on a cluster specific basis
 #' @field clustering.results results from clustering are saved here
 #' @field ranks results field for ranking of MRs based on event association analysis
-#' @field hypotheses results field for saving events that have enough occurences to be considered 
+#' @field ranks.new field for new ranking results
+#' @field ranks.byCluster field for saving cluster specific rank results
 #' @field genomic.saturation results field for genomic saturation analysis
+#' @field genomic.saturation.byCluster result field for new genomic saturation results
 #' @field coverage.summaryStats results field for genomic saturation analysis
+#' @field coverage.summaryStats.byCluster results field for new coverage analysis
 #' @field checkpoints results field with the MRs determined to be the checkpoint for each cluster
+#' @field checkpoints.byCluster resulst field for new checkpoints analysis
 #' @field sample.clustering field to save sample clustering vector. Numbers are 
 #' cluster assignments, names are sample ids
 #' @export
@@ -45,11 +56,13 @@ Moma <- setRefClass("Moma", fields =
                       list(viper = "matrix", 
                            mut = "matrix", 
                            cnv = "matrix", 
-                           fusions = "matrix", 
+                           fusions = "matrix",
+                           expression = "matrix",
                            pathways = "list", 
                            gene.blacklist = "character",
                            output.folder = "character", 
-                           gene.loc.mapping = "data.frame", 
+                           gene.loc.mapping = "data.frame",
+                           fCNVs = "character", 
                            nes = "list", # result field
                            hypotheses = "list", # result field
                            interactions = "list", # result field
@@ -64,20 +77,32 @@ Moma <- setRefClass("Moma", fields =
                            coverage.summaryStats = "list", # result field
                            coverage.summaryStats.byCluster = "list", # NEW result field
                            checkpoints = "list", # result field
-                           checkpoints.byCluster = "list", # result field
+                           checkpoints.byCluster = "list", # NEW result field
                            sample.clustering = "numeric" # result field 
                       ), 
                     methods = list(
-                      runDIGGIT = function(fCNV = NULL, cnvthr = 0.5, min.events = 4, verbose = FALSE) {
+                      runDIGGIT = function(fCNV = NULL, fCNV.sig = 0.05, fCNV.method = "mi", expression = NULL, cnvthr = 0.5, min.events = 4, verbose = FALSE) {
                         "Run DIGGIT association function to get associations for driver genomic events"
                         
+                        # perform functional CNV analysis to filter out CNVs 
+                        # that do not affect expression of that gene
+                        
                         cnv.local <- NULL
-                        if (is.null(fCNV)) {
-                          # message("No fCNV supplied, using no CNV filter!")
+                        if (is.null(fCNV) | isFALSE(fCNV)) {
+                          message("No fCNV information supplied, using no filter to select for functional CNVs!")
                           cnv.local <- cnv
+                        } else if (isTRUE(fCNV)) {
+                          message("Running fCNV on supplied cnv matrix. Functional CNVs will be determined significant at a threshold of p < ", fCNV.sig)
+                          
+                          fCNV.tmp <- fcnvAnalysis(.self, fCNV.sig, fCNV.method, expression)
+                          cnv.local <- cnv[intersect(fCNV.tmp, rownames(cnv)), ]
+                          message("fCNV analysis successfully run.")
+                          fCNVs <<- fCNV.tmp
+                          
                         } else {
                           message("fCNV supplied, filtering for only functional CNVs")
                           cnv.local <- cnv[intersect(fCNV, rownames(cnv)), ]
+                          fCNVs <<- fCNV
                         }
                         
                         somut <- mut
@@ -161,12 +186,12 @@ Moma <- setRefClass("Moma", fields =
                         nes <<- list(amp = nes.amps, del = nes.dels, mut = nes.muts, fus = nes.fusions)
                         
                         
-                        ### TODO: Add in new DIGGIT null model here...
+                        ### TODO: Add in new DIGGIT null model here potentially?
                         
                         
                       }, 
                       
-                      makeInteractionsOld = function(genomic.event.types = c("amp", "del", "mut", "fus"),
+                      makeInteractions = function(genomic.event.types = c("amp", "del", "mut", "fus"),
                                                   cindy.only = FALSE) {
                         "Make interaction web for significant MRs based on their associated events"
                         
@@ -200,7 +225,7 @@ Moma <- setRefClass("Moma", fields =
                         interactions <<- local.interactions
                       }, 
                       
-                      makeInteractions = function(genomic.event.types = c("amp", "del", "mut", "fus")){
+                      makeInteractionsNew = function(genomic.event.types = c("amp", "del", "mut", "fus")){
                         "Make merged file of each MR-Event pairing with all associated pathway test values"
                         
                         # initiate tibble for results
@@ -209,12 +234,12 @@ Moma <- setRefClass("Moma", fields =
                         # for each event type gather nes/aqtl scores, and whatever other pathway scores are available
                         for(type in genomic.event.types){
                           
-                          message("Getting interactions for ", type, " events...")
-                          
                           # matrix of nes/aqtl scores. columns are TFs and rows are events
                           nes.thisType <- nes[[type]]
                           
                           if(is.null(nes.thisType)) next
+                          
+                          message("Getting interactions for ", type, " events...")
                           
                           interactions.df <- reshape2::melt(nes.thisType, varnames = c("event", "regulator"), value.name = "aQTL") %>%
                             dplyr::select(regulator, dplyr::everything()) %>% 
@@ -240,7 +265,7 @@ Moma <- setRefClass("Moma", fields =
                             
                             # merge the pathway dataframe to interaction.df
                             # change pval to pathway name so it doesn't get written over
-                            interactions.df <- dplyr::left_join(interactions.df, full.df) %>%
+                            interactions.df <- dplyr::left_join(interactions.df, full.df, by = c("regulator", "event")) %>%
                               dplyr::rename(!!p.name := pval)
                             
                           }
@@ -264,28 +289,7 @@ Moma <- setRefClass("Moma", fields =
                         
                       },
                       
-                      Rank = function(na.value = NA, aQTL.threshold = 1) {
-                        "Combine all genomic information to create event-MR ranking and full MR ranking"
-                        
-                        ## convert all scores to newly normalized p-values
-                        # filter to events that are below aQTL threshold
-                        interactions.temp <- rankNormalize(interactions.new) %>%
-                          dplyr::filter(aQTL <= aQTL.threshold)
-                        
-                        
-                        ## Two part integration of pvalues 
-                        # first across MR-Event pairs
-                        # then all events associated with an MR
-                        message("Rank integrating regulator events...")
-                        res <- twoStepRankIntegration(interactions.temp, na.value)
-                        
-                        # save to main object
-                        interactions.new <<- res$interactions.df
-                        ranks.new <<- res$ranks.df
-                        
-                      },
-                      
-                      RankOld = function(use.cindy = TRUE, genomic.event.types = c("amp", "del", "mut", "fus"), 
+                      Rank = function(use.cindy = TRUE, genomic.event.types = c("amp", "del", "mut", "fus"), 
                                       use.parallel = FALSE, cores = 1) {
                         "Rank MRs based on DIGGIT scores and number of associated events"  
                         
@@ -341,7 +345,28 @@ Moma <- setRefClass("Moma", fields =
                                                                    pathway.z)
                       }, 
                       
-                      Cluster = function(clus.eval = c("reliability", "silhouette"), use.parallel = FALSE, cores = 1) {
+                      RankNew = function(na.value = NA, aQTL.threshold = 1) {
+                        "Combine all genomic information to create event-MR ranking and full MR ranking"
+                        
+                        ## convert all scores to newly normalized p-values
+                        # filter to events that are below aQTL threshold
+                        interactions.temp <- rankNormalize(interactions.new) %>%
+                          dplyr::filter(aQTL <= aQTL.threshold)
+                        
+                        
+                        ## Two part integration of pvalues 
+                        # first across MR-Event pairs
+                        # then all events associated with an MR
+                        message("Rank integrating regulator events...")
+                        res <- twoStepRankIntegration(interactions.temp, na.value)
+                        
+                        # save to main object
+                        interactions.new <<- res$interactions.df
+                        ranks.new <<- res$ranks.df
+                        
+                      },
+                      
+                      Cluster = function(clus.eval = c("reliability", "silhouette"), use.parallel = FALSE, cores = 1, new = FALSE) {
                         "Cluster the samples after applying the MOMA weights to the VIPER scores"
                         
                         ## TODO: Integrate iterative clustering? see about updating iterClust directly then including it
@@ -358,15 +383,20 @@ Moma <- setRefClass("Moma", fields =
                         }
                         
                         # do weighted pearson correlation, using the ranks as weights
-                        # weights <- log(ranks[["integrated"]])^2
-                        weights <- tibble::deframe(ranks.new)
-                        weights <- weights[as.character(rownames(viper))]
                         
-                        # adjustment of weights
-                        # TODO 
-                        # currently just taking log. subject to change
-                        
-                        weights <- -log(weights)
+                        # make option for new/old run (for vignette issue)
+                        if(isFALSE(new)) {
+                          weights <- log(ranks[["integrated"]])^2
+                        } else {
+                          weights <- tibble::deframe(ranks.new)
+                          weights <- weights[as.character(rownames(viper))]
+                          
+                          # adjustment of weights
+                          # TODO 
+                          # currently just taking log. subject to change
+                          
+                          weights <- -log(weights)
+                        }
                         
                         
                         w.vipermat <- weights * viper
@@ -457,7 +487,7 @@ Moma <- setRefClass("Moma", fields =
                         
                       },
                       
-                      saturationCalculationOld = function(clustering.solution = NULL, cov.fraction = 0.85, 
+                      saturationCalculation = function(clustering.solution = NULL, cov.fraction = 0.85, 
                                                        topN = 100, verbose = FALSE) {
                         "Calculate the number of MRs it takes to represent the desired coverage fraction of events"
                         
@@ -518,7 +548,7 @@ Moma <- setRefClass("Moma", fields =
                         coverage.summaryStats <<- tmp.summaryStats
                         checkpoints <<- setNames(tmp.checkpoints, seq_along(tmp.checkpoints))
                       },
-                      saturationCalculation = function(clustering.solution = NULL, cytoband.collapse = T, topN = 100) {
+                      saturationCalculationNew = function(clustering.solution = NULL, cytoband.collapse = T, topN = 100) {
                         "Calculate the number of MRs it takes to represent the desired coverage fraction of events"
                         
                         # main update from old version: 
@@ -753,7 +783,7 @@ utils::globalVariables(c("gene.map"))
 #' See vignette for more information on how to set up and run the MOMA object
 #' @param x A MultiAssayExerperiment object or list object with the following assays:
 #' (note: by default assays must have these exact names. Otherwise they can be changed
-#' using the viperAssay, mutMat, cnvMat and fusionMat parameters.)
+#' using the viperAssay, mutMat, cnvMat, fusionMat, and expressionMat parameters.)
 #' \describe{
 #' \item{viper}{VIPER protein activity matrix with samples as columns 
 #' and rows as protein IDs}
@@ -762,7 +792,8 @@ utils::globalVariables(c("gene.map"))
 #' \item{cnv}{A matrix of CNV scores (typically SNP6 array scores from TCGA) 
 #' with samples as columns and genes as rows}
 #' \item{fusion}{An indicator matrix (0/1) of fusion events with samples as 
-#' columns and genes as rows} }
+#' columns and genes as rows} 
+#' \item{expression}{A matrix of gene expression values} }
 #' @param pathways A named list of lists. Each named list represents 
 #' interactions between proteins (keys) and their associated partners
 #' @param gene.loc.mapping A data.frame of band locations and Entrez IDs
@@ -772,6 +803,7 @@ utils::globalVariables(c("gene.map"))
 #' @param mutMat name associated with the mutation matrix in the assay object
 #' @param cnvMat name associated with the cnv matrix in the assay object
 #' @param fusionMat name associated with the fusion matrix in the assay object
+#' @param expressionMat name associated with the expression matrix in the assay object
 #' @importFrom utils data
 #' @importFrom MultiAssayExperiment assays colData intersectColumns
 #' @examples 
@@ -781,7 +813,8 @@ utils::globalVariables(c("gene.map"))
 MomaConstructor <- function(x, pathways, gene.blacklist = NA_character_, 
                             output.folder = NA_character_, 
                             gene.loc.mapping = gene.map, viperAssay = "viper",
-                            mutMat = "mut", cnvMat = "cnv", fusionMat = "fusion"){
+                            mutMat = "mut", cnvMat = "cnv", fusionMat = "fusion",
+                            expressionMat = "expression"){
   
   utils::data("gene.map")
   
@@ -805,21 +838,28 @@ MomaConstructor <- function(x, pathways, gene.blacklist = NA_character_,
   ##### initialize new instance of class Moma ####
   if(type == "mae") {
     
-    # first check for fusions
+    # first check for fusions and expression
     if(fusionMat %in% names(assays(x))) {
       fusion <- assays(x)[[fusionMat]]
     } else {
       fusion <- matrix(NA)
     }
     
+    if(expressionMat %in% names(assays(x))) {
+      exp <- assays(x)[[expressionMat]]
+    } else {
+      exp <- matrix(NA)
+    }
+    
     obj <- Moma$new(viper = assays(x)[[viperAssay]], mut = assays(x)[[mutMat]], 
                     cnv = assays(x)[[cnvMat]], 
-                    fusions = fusion, pathways = pathways, 
+                    fusions = fusion, expression = exp,
+                    pathways = pathways, 
                     gene.blacklist = as.character(gene.blacklist), 
                     output.folder = output.folder, 
                     gene.loc.mapping = gene.loc.mapping)
-  
-    } else if (type == "assaylist") {
+    
+  } else if (type == "assaylist") {
     
     # first check for fusions
     if(fusionMat %in% names(x)) {
@@ -828,9 +868,18 @@ MomaConstructor <- function(x, pathways, gene.blacklist = NA_character_,
       fusion <- matrix(NA)
     }
     
+    if(expressionMat %in% names(x)) {
+      exp <- x[[expressionMat]]
+    } else {
+      exp <- matrix(NA)
+    }
+    
+    
+    
     obj <- Moma$new(viper = x[[viperAssay]], mut = x[[mutMat]], 
                     cnv = x[[cnvMat]], 
-                    fusions = fusion, pathways = pathways, 
+                    fusions = fusion, expression = exp,
+                    pathways = pathways, 
                     gene.blacklist = as.character(gene.blacklist), 
                     output.folder = output.folder, 
                     gene.loc.mapping = gene.loc.mapping)

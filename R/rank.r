@@ -69,8 +69,9 @@ twoStepRankIntegration <- function(interactions.df, na.value) {
   interactions.df$int.p <- event.int.p
   
   # second ranking step
-  ranks.df <- interactions.df %>% dplyr::group_by(regulator) %>%
-    dplyr::summarize(int.mr.p = poolr::fisher(int.p)$p)
+  ranks.df <- interactions.df %>% 
+    dplyr::group_by(.data$regulator) %>%
+    dplyr::summarize(int.mr.p = poolr::fisher(.data$int.p)$p)
   
   ranks.df$int.mr.p <- stats::p.adjust(ranks.df$int.mr.p, method = "fdr")
   
