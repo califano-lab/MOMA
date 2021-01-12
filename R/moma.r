@@ -587,18 +587,20 @@ Moma <- setRefClass("Moma", fields =
                           })
                           
                           pvals <- sort(2*pnorm(-abs(stouffer.zscores)), decreasing = F)
-                          sig.active.mrs <- names(pvals[p.adjust(pvals, method='bonferroni') < 0.25])
+                          sig.active.mrs <- names(pvals[p.adjust(pvals, method='bonferroni') < 0.05])
                           
                           # rank using the subtype-specific rankings generated in this function, above. 
                           # otherwise this is the same analysis done on the overall rankings
                           subtype.specific.MR_ranks <- ranks.byCluster[[clus.id]] %>% 
                             dplyr::filter(regulator %in% sig.active.mrs) %>%
-                            dplyr::select(regulator) %>% unlist(use.names = F)
+                            dplyr::select(regulator) %>% 
+                            unlist(use.names = F)
                           
                           
                           # filter cluster interactions list to only the significant MRs and significant events
+                          # TODO: Might need to tweak this threshold step
                           clus.interactions.topmrs <- interactions.byCluster[[clus.id]] %>%
-                            dplyr::filter(regulator %in% subtype.specific.MR_ranks & int.p < 0.05) 
+                            dplyr::filter(regulator %in% subtype.specific.MR_ranks & int.p < 0.25) 
                           
                           clus.interactions.topmrs <- dplyr::left_join(clus.interactions.topmrs, gene.loc.mapping, 
                                                                        by = c("event" = "Entrez.IDs"))
