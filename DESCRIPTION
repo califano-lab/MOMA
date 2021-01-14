@@ -42,6 +42,7 @@ Imports:
 	rlang,
 	stats,
 	stringr,
+	survival,
 	tibble,
 	tidyr,
 	utils

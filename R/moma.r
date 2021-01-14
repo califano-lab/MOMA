@@ -34,6 +34,8 @@
 #' high mutation frequency
 #' @field output.folder character vector of location to save files if desired
 #' @field gene.loc.mapping data frame of gene names, entrez ids and cytoband locations
+#' @field fCNVs vector of gene names for CNVs determined to be functional
+#' @field survival data frame of survival information that can be used to break ties in the clustering step
 #' @field nes field for saving Normalized Enrichment Matrices from the associate events step
 #' @field hypotheses results field for saving events that have enough occurences to be considered 
 #' @field interactions field for saving the MR-interactions list
@@ -63,6 +65,7 @@ Moma <- setRefClass("Moma", fields =
                            output.folder = "character", 
                            gene.loc.mapping = "data.frame",
                            fCNVs = "character", 
+                           survival.data = "data.frame", 
                            nes = "list", # result field
                            hypotheses = "list", # result field
                            interactions = "list", # result field
@@ -366,7 +369,9 @@ Moma <- setRefClass("Moma", fields =
                         
                       },
                       
-                      Cluster = function(clus.eval = c("reliability", "silhouette"), use.parallel = FALSE, cores = 1, new = FALSE) {
+                      Cluster = function(clus.eval = c("reliability", "silhouette"), 
+                                         use.parallel = FALSE, cores = 1, new = FALSE, iterclust = FALSE,
+                                         use.survival = FALSE, progression.free = FALSE) {
                         "Cluster the samples after applying the MOMA weights to the VIPER scores"
                         
                         ## TODO: Integrate iterative clustering? see about updating iterClust directly then including it
@@ -376,7 +381,7 @@ Moma <- setRefClass("Moma", fields =
                         if(use.parallel) {
                           if(cores <= 1) {
                             stop("Parallel processing selected but multiple number of cores have not
-                  been chosen. Please enter a number > 1")
+                                  been chosen. Please enter a number > 1")
                           } else {
                             message("Parallel processing selected, using ", cores, " cores")
                           }
@@ -402,22 +407,44 @@ Moma <- setRefClass("Moma", fields =
                         w.vipermat <- weights * viper
                         message("using pearson correlation with weighted vipermat")
                         dist.obj <- MKmisc::corDist(t(w.vipermat), method = "pearson")
-                        message("testing clustering options, k = 2..15")
-                        search.results <- clusterRange(dist.obj, range = as.numeric(c(2, 15)), 
+                        message("testing clustering options, k = 2..10")
+                        search.results <- clusterRange(dist.obj, range = as.numeric(c(2, 10)), 
                                                        step = 1, cores = cores, method = "pam")
                         clustering.results <<- search.results
                         
-                        # save the solution with the highest reliability/silhouette to the object
+                        # get the solution with the highest reliability/silhouette
                         clus.eval <- match.arg(clus.eval)
                         if(clus.eval == "reliability"){
                           top.sol <- which.max(search.results$all.cluster.reliability)
-                          sample.clustering <<- search.results[[top.sol]]$clustering
                         } else if (clus.eval == "silhouette") {
                           top.sol <- which.max(search.results$all.sil.avgs)
-                          sample.clustering <<- search.results[[top.sol]]$clustering
                         } else {
-                          stop('Invalid clustering evaluation method provide. Choose either "reliability" or "silhouette"')
+                          stop('Invalid clustering evaluation method provided. Choose either "reliability" or "silhouette"')
                         }
+                        
+                        
+                        # if desired use survival data to break analytical ties and optimize for
+                        # best survival separation (was done in original MOMA paper)
+                        # requires survival data to be present
+                        
+                        if(isTRUE(use.survival)){
+                          
+                          # check that survival data has been supplied either as argument or in the object
+                          if(is.na(survival.data)) {
+                            stop("No survival data supplied. Either add to object or change use.survival to FALSE.")
+                          }
+                          
+                          # check across scores to see if there is an equivalent solution
+                          # code adapted directly from MOMA v1 to allow for direct comparison
+                          top.sol <- getBestClusteringSupervised(search.results, top.sol, survival.data, progression.free)
+                          
+                          # make the new result match the same original structure
+                          top.sol <- setNames(as.numeric(top.sol)-1, paste0(top.sol, "clusters"))
+                          
+                        }
+                        
+                        
+                        sample.clustering <<- search.results[[top.sol]]$clustering
                         
                         message("Using ", clus.eval, " scores to select best solution.")
                         message("Best solution is: ", names(top.sol))

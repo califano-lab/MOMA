@@ -32,6 +32,10 @@ high mutation frequency}
 
 \item{\code{gene.loc.mapping}}{data frame of gene names, entrez ids and cytoband locations}
 
+\item{\code{fCNVs}}{vector of gene names for CNVs determined to be functional}
+
+\item{\code{survival}}{data frame of survival information that can be used to break ties in the clustering step}
+
 \item{\code{nes}}{field for saving Normalized Enrichment Matrices from the associate events step}
 
 \item{\code{hypotheses}}{results field for saving events that have enough occurences to be considered}
@@ -73,8 +77,18 @@ cluster assignments, names are sample ids}
   clus.eval = c("reliability", "silhouette"),
   use.parallel = FALSE,
   cores = 1,
-  new = FALSE
+  new = FALSE,
+  iterclust = FALSE,
+  use.survival = FALSE,
+  progression.free = FALSE
 )}}{Cluster the samples after applying the MOMA weights to the VIPER scores}
+
+\item{\code{makeInteractions(
+  genomic.event.types = c("amp", "del", "mut", "fus"),
+  cindy.only = FALSE
+)}}{Make interaction web for significant MRs based on their associated events}
+
+\item{\code{makeInteractionsNew(genomic.event.types = c("amp", "del", "mut", "fus"))}}{Make merged file of each MR-Event pairing with all associated pathway test values}
 
 \item{\code{Rank(
   use.cindy = TRUE,
@@ -91,13 +105,6 @@ cluster assignments, names are sample ids}
 )}}{Recalculate regulator rankings for each cluster based on presence of genomic events in that cluster}
 
 \item{\code{RankNew(na.value = NA, aQTL.threshold = 1)}}{Combine all genomic information to create event-MR ranking and full MR ranking}
-
-\item{\code{makeInteractions(
-  genomic.event.types = c("amp", "del", "mut", "fus"),
-  cindy.only = FALSE
-)}}{Make interaction web for significant MRs based on their associated events}
-
-\item{\code{makeInteractionsNew(genomic.event.types = c("amp", "del", "mut", "fus"))}}{Make merged file of each MR-Event pairing with all associated pathway test values}
 
 \item{\code{runDIGGIT(
   fCNV = NULL,

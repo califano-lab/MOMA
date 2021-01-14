@@ -92,7 +92,7 @@ sampleEventOverlap <- function(momaObj, viper.samples, selected.tfs,
       }
       
       # get events associated with this regulator from the interactions.df see which are in this sample
-      active.mrs.interactions <- interaction.df %>% dplyr::filter(regulator %in% active.mrs)
+      active.mrs.interactions <- interaction.df %>% dplyr::filter(.data$regulator %in% active.mrs)
       
       covered.sample.genomics <- tibble::tibble(.rows = 0)
       for(etype in event.types) {
@@ -118,7 +118,7 @@ sampleEventOverlap <- function(momaObj, viper.samples, selected.tfs,
         cnv.events <- events.explained %>% 
           dplyr::filter(.data$type %in% c("amp", "del")) %>% 
           dplyr::select(.data$Cytoband, .data$type) %>% 
-          dplyr::rename(event = Cytoband) %>%
+          dplyr::rename(event = .data$Cytoband) %>%
           unique() 
         non.cnv.events <- events.explained %>% 
           dplyr::filter(!.data$type %in% c("amp", "del")) %>% 
