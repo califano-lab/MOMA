@@ -31,4 +31,4 @@ Take clustering solutions with equivalent reliability distributions to the best
 one and calculate which result has the highest p value between the best and 
 worst surviving clusters
 }
-\keyword{interal}
+\keyword{internal}

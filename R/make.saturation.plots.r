@@ -68,7 +68,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
   # TODO potentially change this to only use hypotheses results from momaobj?
   cnv <- momaObj$cnv
   if(!is.null(fCNV) | length(momaObj$fCNVs) > 0){
-    cnv <- cnv[na.omit(match(fCNV, rownames(cnv))),]
+    cnv <- cnv[na.omit(match(fCNVs, rownames(cnv))),]
     if(nrow(cnv) == 0) {
       stop("CNV matrix after functional CNV filtering is empty. 
            Check that names are in same format or if too many fCNVs are provided.

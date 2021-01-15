@@ -422,6 +422,7 @@ Moma <- setRefClass("Moma", fields =
                           stop('Invalid clustering evaluation method provided. Choose either "reliability" or "silhouette"')
                         }
                         
+                        message("Best solution is: ", names(top.sol))
                         
                         # if desired use survival data to break analytical ties and optimize for
                         # best survival separation (was done in original MOMA paper)
@@ -430,7 +431,7 @@ Moma <- setRefClass("Moma", fields =
                         if(isTRUE(use.survival)){
                           
                           # check that survival data has been supplied either as argument or in the object
-                          if(is.na(survival.data)) {
+                          if(length(survival.data) == 0) {
                             stop("No survival data supplied. Either add to object or change use.survival to FALSE.")
                           }
                           
@@ -446,8 +447,6 @@ Moma <- setRefClass("Moma", fields =
                         
                         sample.clustering <<- search.results[[top.sol]]$clustering
                         
-                        message("Using ", clus.eval, " scores to select best solution.")
-                        message("Best solution is: ", names(top.sol))
                         
                       }, 
                       

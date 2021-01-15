@@ -201,9 +201,10 @@ getBestClusteringSupervised <- function(search.results, top.sol, survival.data, 
 
   # TODO: presumably if there is only one equivalent cluster, it's the original one
   # can skip if so
-  # if(length(equiv.clusters) == 1) {
-  #   return(top.sol)
-  # }
+  if(length(equivalent.clusters) == 1) {
+    message("No statistically equivalent clustering solutions. Keeping this k:", equivalent.clusters)
+    return(equivalent.clusters)
+  }
   
   to.print <- paste0(equivalent.clusters, collapse = " , ")
   message("Clustering solution(s) [" , to.print, "] are statistically equivalent to the top solution. Now checking for best survival")
@@ -276,7 +277,7 @@ checkSurvivalNames <- function(search.results, survival.data) {
 #' @param name.res list with length of sample names and column name for samples
 #' @param progression.free T/F about whether to use progression free instead of overall survival
 #' @return k for the top solution
-#' @keywords interal
+#' @keywords internal
 #' @import survival
 bestVSworst <- function(equivalent.clusters, search.results, survival.data, name.res, progression.free) {
   
