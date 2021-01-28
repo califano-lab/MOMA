@@ -5,13 +5,15 @@
 \title{Function to save oncoprint parameters to a list
 Also possible to supply new oncoprint parameters via this function}
 \usage{
-oncoprintParams(oncoprint.params, final.mat)
+oncoprintParams(oncoprint.params, final.mat, cnv.threshold)
 }
 \arguments{
 \item{oncoprint.params}{optional list of oncoprint parameters to supply if 
 additional types of events are added/ if different parameters want to be supplied}
 
 \item{final.mat}{matrix to be plotted}
+
+\item{cnv.threshold}{: value cut off for binarizing cnvs, option of one number, two numbers or "gistic"}
 }
 \value{
 list of functions/parameters

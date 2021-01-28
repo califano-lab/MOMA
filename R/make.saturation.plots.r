@@ -110,7 +110,8 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
       
       p.oncoprint <- oncoprintPlotNew(subtype.tables[[k]], clus.event.mats,
                                       genomic.saturation[[k]], length(checkpoints[[k]]),
-                                      important.genes, max.events, k, cytoband.collapse, oncoprint.params)
+                                      important.genes, max.events, k, cytoband.collapse, 
+                                      oncoprint.params, cnv.threshold)
       tmp.oncoplots[[k]] <- p.oncoprint
       
     } else {
@@ -150,13 +151,6 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
   list("oncoprint.plots" = tmp.oncoplots, "curve.plots" = tmp.curveplots)
   
 }
-
-
-
-
-
-
-
 
 
 
@@ -996,11 +990,12 @@ genomicPlotSmall <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
 #' analysis was done with collapsing the CNVs to cytobands
 #' @param oncoprint.params optional list of oncoprint parameters to supply if 
 #' additional types of events are added / if different parameters want to be supplied
+#' @param cnv.threshold : value cut off for binarizing cnvs, option of one number, two numbers or "gistic"
 #' @return oncoprint event plot
 #' @keywords internal
 oncoprintPlotNew <- function(summary.table, clus.event.mats, clus.genomic.saturation,
                              cutoff, important.genes, max.events, k,
-                             cytoband.collapse, oncoprint.params) {
+                             cytoband.collapse, oncoprint.params, cnv.threshold) {
   
   # make merged coverage.df from samples based on cMR number
   # will get all interaction information for these samples
@@ -1037,7 +1032,7 @@ oncoprintPlotNew <- function(summary.table, clus.event.mats, clus.genomic.satura
   }
   
   # Get parameters for the plot
-  ocp.params <- oncoprintParams(oncoprint.params, final.mat)
+  ocp.params <- oncoprintParams(oncoprint.params, final.mat, cnv.threshold)
   
   title <- paste("Genomic Events for Subtype", k)
   
@@ -1247,86 +1242,103 @@ getMaxEvents <- function(mat.to.plot, max.events) {
 #' @param oncoprint.params optional list of oncoprint parameters to supply if 
 #' additional types of events are added/ if different parameters want to be supplied
 #' @param final.mat matrix to be plotted
+#' @param cnv.threshold : value cut off for binarizing cnvs, option of one number, two numbers or "gistic"
 #' @return list of functions/parameters
 #' @keywords internal
-oncoprintParams <- function(oncoprint.params, final.mat){
+oncoprintParams <- function(oncoprint.params, final.mat, cnv.threshold){
   
-  # if not supplied use default
-  if(is.null(oncoprint.params)){
-    
-    params <- list()
-    
+  # Initiate object
+  params <- list()
+  
+  if(length(cnv.threshold) == 2 || cnv.threshold == "gistic") {
     params$heatmap_legend_param = list(title = "Alterations", 
                                        at = c("amp", "highamp", "del", "highdel", "mut", "fus"), 
                                        labels = c("Regional Amp", "Focal Amp", "Regional Del", "Focal Del", "Mut", "Fus"))
     col = c("highdel" = "blue", "del" = "deepskyblue2", "highamp" = "red", "amp" = "pink" , 
             "mut" = "#008000", "fus" = 'gold2', "NA" = "grey22")
-    
-    params$col <- col
-    
-    params$alter_fun = list(
-      background = function(x, y, w, h) {
-        grid.rect(x, y, w*0.6, h*0.75, 
-                  gp = gpar(fill = "#CCCCCC", col = NA))
-      },
-      # big dark blue - high dels
-      highdel = function(x, y, w, h) {
-        grid.rect(x, y, w*0.6, h*0.75, 
-                  gp = gpar(fill = col["highdel"], col = NA))
-      },
-      # big light blue - low dels
-      del = function(x, y, w, h) {
-        grid.rect(x, y, w*0.6, h*0.75, 
-                  gp = gpar(fill = col["del"], col = NA))
-      },
-      # big dark red - high amps
-      highamp = function(x, y, w, h) {
-        grid.rect(x, y, w*0.6, h*0.75, 
-                  gp = gpar(fill = col["highamp"], col = NA))
-      },
-      # big light red - low amps
-      amp = function(x, y, w, h) {
-        grid.rect(x, y, w*0.6, h*0.75, 
-                  gp = gpar(fill = col["amp"], col = NA))
-      },
-      
-      # small green
-      mut = function(x, y, w, h) {
-        grid.rect(x, y, w*0.6, h*0.33, 
-                  gp = gpar(fill = col["mut"], col = NA))
-      },
-      
-      # big yellow
-      fus = function(x, y, w, h) {
-        grid.rect(x, y, w*0.6, h*0.75, 
-                  gp = gpar(fill = col["fus"], col = NA))
-      }
-    )
-    
-    # optimize size of labels
-    if(nrow(final.mat) >= 55) {
-      label.size <- 3
-    } else if (nrow(final.mat) >= 40 ) {
-      label.size <- 4
-    } else if (nrow(final.mat) >= 30) {
-      label.size <- 5
-    } else if (nrow(final.mat) >= 20) {
-      label.size <- 6
-    } else {
-      label.size <- 7
-    }
-    
-    params$label.size <- label.size
-    
   } else {
+    params$heatmap_legend_param = list(title = "Alterations", 
+                                       at = c("amp", "del", "mut", "fus"), 
+                                       labels = c("Amplification", "Deletion", "Mut", "Fus"))
+    col = c("highdel" = "blue", "del" = "blue", "highamp" = "red", "amp" = "red", 
+            "mut" = "#008000", "fus" = 'gold2', "NA" = "grey22")
+  }
+  
+  
+  
+  params$col <- col
+  
+  params$alter_fun = list(
+    background = function(x, y, w, h) {
+      grid.rect(x, y, w*0.6, h*0.75, 
+                gp = gpar(fill = "#CCCCCC", col = NA))
+    },
+    # big dark blue - high dels
+    highdel = function(x, y, w, h) {
+      grid.rect(x, y, w*0.6, h*0.75, 
+                gp = gpar(fill = col["highdel"], col = NA))
+    },
+    # big light blue - low dels
+    del = function(x, y, w, h) {
+      grid.rect(x, y, w*0.6, h*0.75, 
+                gp = gpar(fill = col["del"], col = NA))
+    },
+    # big dark red - high amps
+    highamp = function(x, y, w, h) {
+      grid.rect(x, y, w*0.6, h*0.75, 
+                gp = gpar(fill = col["highamp"], col = NA))
+    },
+    # big light red - low amps
+    amp = function(x, y, w, h) {
+      grid.rect(x, y, w*0.6, h*0.75, 
+                gp = gpar(fill = col["amp"], col = NA))
+    },
+    
+    # small green
+    mut = function(x, y, w, h) {
+      grid.rect(x, y, w*0.6, h*0.33, 
+                gp = gpar(fill = col["mut"], col = NA))
+    },
+    
+    # big yellow
+    fus = function(x, y, w, h) {
+      grid.rect(x, y, w*0.6, h*0.75, 
+                gp = gpar(fill = col["fus"], col = NA))
+    }
+  )
+  
+  # optimize size of labels
+  if(nrow(final.mat) >= 55) {
+    label.size <- 3
+  } else if (nrow(final.mat) >= 40 ) {
+    label.size <- 4
+  } else if (nrow(final.mat) >= 30) {
+    label.size <- 5
+  } else if (nrow(final.mat) >= 20) {
+    label.size <- 6
+  } else {
+    label.size <- 7
+  }
+  
+  params$label.size <- label.size
+  
+  if(!is.null(oncoprint.params)){
     
     message("Using supplied oncoprint parameters: ", paste0(names(oncoprint.params), collapse = " , "))
-    params <- oncoprint.params
+    params.to.add <- names(oncoprint.params)
+    
+    # write over default params with whatever parameters are provided
+    for(p in params.to.add) {
+      
+      params[[p]] <- oncoprint.params[[p]]
+      
+    }
+    
     
     # check to make sure all of them are there, if not give an error
-    if(length(intersect(names(params), c("heatmap_legend_param", "col", "alter_fun","label.size"))) != 4) {
-      stop("Issue with supplied oncoprint parameters... quitting")
-    }
+    # if(length(intersect(names(params), c("heatmap_legend_param", "col", "alter_fun","label.size"))) != 4) {
+    #   stop("Issue with supplied oncoprint parameters... quitting")
+    # }
     
   }
   

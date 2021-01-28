@@ -13,7 +13,8 @@ oncoprintPlotNew(
   max.events,
   k,
   cytoband.collapse,
-  oncoprint.params
+  oncoprint.params,
+  cnv.threshold
 )
 }
 \arguments{
@@ -36,6 +37,8 @@ analysis was done with collapsing the CNVs to cytobands}
 
 \item{oncoprint.params}{optional list of oncoprint parameters to supply if 
 additional types of events are added / if different parameters want to be supplied}
+
+\item{cnv.threshold}{: value cut off for binarizing cnvs, option of one number, two numbers or "gistic"}
 }
 \value{
 oncoprint event plot
