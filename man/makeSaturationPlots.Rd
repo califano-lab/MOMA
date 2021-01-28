@@ -8,8 +8,13 @@ makeSaturationPlots(
   momaObj,
   clustering.solution = NULL,
   important.genes = NULL,
-  fCNV = NULL,
-  max.events = 30
+  fCNVs = NULL,
+  topN = 100,
+  cnv.threshold = 0.5,
+  cytoband.collapse = TRUE,
+  max.events = 30,
+  oncoprint.params = NULL,
+  new = FALSE
 )
 }
 \arguments{
@@ -18,11 +23,24 @@ makeSaturationPlots(
 \item{clustering.solution}{: clustering vector with sample names and cluster designations}
 
 \item{important.genes}{: vector of gene names to prioritize when plotting. 
-Can be general genes of interest, oncogenes, tumor supressors etc}
+Can be general genes of interest, oncogenes, tumor suppressors etc}
 
-\item{fCNV}{: vector of confirmed functional CNVs if calculated. Will filter for only those CNVs}
+\item{fCNVs}{: vector of confirmed functional CNVs if calculated. Will filter for only those CNVs}
+
+\item{topN}{: number of MRs to take into account for plotting along the x axis}
+
+\item{cnv.threshold}{: value cut off for binarizing cnvs, option of one number, two numbers or "gistic"
+If using two numbers the higher one will determine the threshold between focal/regional events. 
+Gistic will automatically make these numbers 1 and 2 (see GISTIC and MOMA documentation for more information)}
+
+\item{cytoband.collapse}{: T/F regarding whether or not the genomic saturation analysis was done with collapsing the CNVs to cytobands}
 
 \item{max.events}{: maximum number of events to plot for the oncoplots}
+
+\item{oncoprint.params}{optional list of oncoprint parameters to supply if 
+additional types of events are added/ if different parameters want to be supplied}
+
+\item{new}{T/F based on whether or not using results from version 1 or 2 of the pipeline}
 }
 \value{
 object with both types of summary plot for each subtype

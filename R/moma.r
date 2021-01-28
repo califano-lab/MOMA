@@ -574,7 +574,7 @@ Moma <- setRefClass("Moma", fields =
                         coverage.summaryStats <<- tmp.summaryStats
                         checkpoints <<- setNames(tmp.checkpoints, seq_along(tmp.checkpoints))
                       },
-                      saturationCalculationNew = function(clustering.solution = NULL, cytoband.collapse = T, topN = 100) {
+                      saturationCalculationNew = function(clustering.solution = NULL, cytoband.collapse = TRUE, topN = 100) {
                         "Calculate the number of MRs it takes to represent the desired coverage fraction of events"
                         
                         # main update from old version: 

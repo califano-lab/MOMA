@@ -5,7 +5,7 @@
 \title{Function to plot genomic events in the style of oncoPrint/cBioPortal}
 \usage{
 oncoprintPlot(
-  summary.vec,
+  summary.table,
   snpmat.thisClus,
   amps.thisClus,
   dels.thisClus,
@@ -17,9 +17,7 @@ oncoprintPlot(
 )
 }
 \arguments{
-\item{summary.vec}{: named vector of the counts, named 'Event name':'Type'
-where type is 'mut', 'amp', 'del', 'fus'. Mutations are in Entrez ID
-Amp/Deletion CNV events are in genomic band location}
+\item{summary.table}{: summary table of all events in a particular subtype}
 
 \item{snpmat.thisClus}{: SNP matrix subset to samples in current cluster}
 

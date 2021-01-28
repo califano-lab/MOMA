@@ -41,7 +41,7 @@ sampleEventOverlap <- function(momaObj, viper.samples, selected.tfs,
     }
     
     # collect all genomic events for this sample
-    # for amp/dels keep cytoband location for consoolidation later
+    # for amp/dels keep cytoband location for consolidation later
     
     all.sample.genomics <- tibble::tibble(.rows = 0)
     for (etype in event.types) {
@@ -192,7 +192,7 @@ genomicSaturationSummary <- function(coverage.range, topN) {
 #' Function to calculate checkpoint based on derivative of coverage fraction values
 #' @param fractions vector of values representing fraction of events covered by that number of top regulators
 #' @param clus.id cluster being evaluated
-#' @return number representive of regulators in the checkpoint
+#' @return number representative of regulators in the checkpoint
 #' @keywords internal
 getInflection <- function(fractions, clus.id) {
   

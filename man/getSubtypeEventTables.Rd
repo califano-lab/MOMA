@@ -4,7 +4,7 @@
 \alias{getSubtypeEventTables}
 \title{Helper function to get subtype specific events}
 \usage{
-getSubtypeEventTables(saturation.data, sample.clustering, checkpoints)
+getSubtypeEventTables(saturation.data, sample.clustering, checkpoints, new)
 }
 \arguments{
 \item{saturation.data}{: genomic saturation object from MOMA. List indexed by 
@@ -15,6 +15,8 @@ each additional regulator}
 cluster designations}
 
 \item{checkpoints}{: from momaObj}
+
+\item{new}{T/F based on whether or not using results from version 1 or 2 of the pipeline}
 }
 \value{
 a table that has counts of how many times a particular event 

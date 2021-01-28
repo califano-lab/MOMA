@@ -12,7 +12,7 @@ getInflection(fractions, clus.id)
 \item{clus.id}{cluster being evaluated}
 }
 \value{
-number representive of regulators in the checkpoint
+number representative of regulators in the checkpoint
 }
 \description{
 Function to calculate checkpoint based on derivative of coverage fraction values

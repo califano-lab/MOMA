@@ -5,7 +5,7 @@
 \title{Create data frame from coverage data, including number of total events 
 'covered' and unique events}
 \usage{
-mergeDataBySubtype(genomic.saturation, sample.clustering, topN = 100)
+mergeDataBySubtype(genomic.saturation, sample.clustering, topN = 100, new)
 }
 \arguments{
 \item{genomic.saturation}{: data from genomic saturation function}
@@ -14,6 +14,8 @@ mergeDataBySubtype(genomic.saturation, sample.clustering, topN = 100)
 cluster designations}
 
 \item{topN}{: number of regulators to look through. default is 100}
+
+\item{new}{T/F based on whether or not using results from version 1 or 2 of the pipeline}
 }
 \value{
 dataframe with coverage data for genomic events
