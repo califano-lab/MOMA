@@ -126,7 +126,8 @@ cluster assignments, names are sample ids}
 \item{\code{saturationCalculationNew(
   clustering.solution = NULL,
   cytoband.collapse = TRUE,
-  topN = 100
+  topN = 100,
+  interaction.p = 0.05
 )}}{Calculate the number of MRs it takes to represent the desired coverage fraction of events}
 }}
 

@@ -197,11 +197,29 @@ genomicSaturationSummary <- function(coverage.range, topN) {
 getInflection <- function(fractions, clus.id) {
   
   res <- pracma::gradient(fractions, h1 = 1)
-  best <- which(res == 0)[1]
   
-  if(is.na(best)) {
-    message("Cluster", clus.id, "did not saturate. Re-run analysis using a larger topN value")
+  # get spot where there are at least 2 consecutive 0s in step gradient change
+  zero.count <- 0
+  index <- 0
+  while(zero.count < 2 & index < length(res)) {
+    index <- index + 1
+    if(res[index] == 0){
+      zero.count <- zero.count + 1
+    } else {
+      zero.count <- 0
+    }
+  } 
+  
+  if(index == length(res)) {
+    index <- NA
+  }
+
+  if(is.na(index)) {
+    message("Cluster ", clus.id, " did not saturate. Re-run analysis using a larger topN value")
     best <- 0
+  } else {
+    # mark inflection point as first in set of 1
+    best <- index - 1
   }
   
   best

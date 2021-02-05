@@ -938,7 +938,8 @@ genomicPlotSmall <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
   
   sweep <- subtype.df$fraction
   names(sweep) <- sort(unique(subtype.df$k))
-  best.k <- fitCurvePercent(sweep, frac=fraction)
+  #best.k <- fitCurvePercent(sweep, frac=fraction)
+  best.k <- getInflection(sweep, tissue.cluster)
   message("Number of MRs in checkpoint: ", best.k)
   
   

@@ -574,7 +574,7 @@ Moma <- setRefClass("Moma", fields =
                         coverage.summaryStats <<- tmp.summaryStats
                         checkpoints <<- setNames(tmp.checkpoints, seq_along(tmp.checkpoints))
                       },
-                      saturationCalculationNew = function(clustering.solution = NULL, cytoband.collapse = TRUE, topN = 100) {
+                      saturationCalculationNew = function(clustering.solution = NULL, cytoband.collapse = TRUE, topN = 100, interaction.p = 0.05) {
                         "Calculate the number of MRs it takes to represent the desired coverage fraction of events"
                         
                         # main update from old version: 
@@ -626,7 +626,7 @@ Moma <- setRefClass("Moma", fields =
                           # filter cluster interactions list to only the significant MRs and significant events
                           # TODO: Might need to tweak this threshold step
                           clus.interactions.topmrs <- interactions.byCluster[[clus.id]] %>%
-                            dplyr::filter(regulator %in% subtype.specific.MR_ranks & int.p < 0.25) 
+                            dplyr::filter(regulator %in% subtype.specific.MR_ranks & int.p < interaction.p) 
                           
                           clus.interactions.topmrs <- dplyr::left_join(clus.interactions.topmrs, gene.loc.mapping, 
                                                                        by = c("event" = "Entrez.IDs"))
