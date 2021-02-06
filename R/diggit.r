@@ -29,7 +29,7 @@ fcnvAnalysis <- function(momaObj, fCNV.sig = 0.05, fCNV.method = "mi", expressio
                                                       colnames(cnv))]
     if (fCNV.method == "mi") {
         set.seed(1) 
-        if(tools:::.OStype() == "unix") {
+        if(.Platform$OS.type == "unix") {
             parallel::mc.reset.stream()
         } 
         mi <- diggit::mutualInfo(t(x), t(cnv), per = 100, pairwise = TRUE, verbose = FALSE)

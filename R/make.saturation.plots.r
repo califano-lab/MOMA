@@ -245,7 +245,7 @@ makeCoverageDfNew <- function(coverage.list, cutoff) {
     dplyr::group_by(.data$event,.data$type) %>% 
     dplyr::summarize(freq = dplyr::n()) %>% 
     dplyr::arrange(dplyr::desc(.data$freq)) %>%
-    dplyr::rename(id = event)
+    dplyr::rename(id = .data$event)
   res
 }
 
@@ -471,6 +471,7 @@ oncoprintPlot <- function(summary.table, snpmat.thisClus, amps.thisClus,
     # if no list of important genes has been provided just plot top events
     
     # subset mutations by name
+    rownames(snpmat.thisClus) <- mapEntrez(rownames(snpmat.thisClus))
     mut.mat <- tibble::as_tibble(snpmat.thisClus[names(mut.data),], rownames = NA) %>% 
       tibble::rownames_to_column(var = "genomic.event") %>% 
       dplyr::mutate(type = "mut") %>% 
@@ -480,7 +481,8 @@ oncoprintPlot <- function(summary.table, snpmat.thisClus, amps.thisClus,
     # for each cytoband region subset the genes in that region and get the gene 
     # with the highest number of events to represent it
     
-    # amplifications 
+    # amplifications
+    rownames(amps.thisClus) <- mapEntrez(rownames(amps.thisClus))
     for(row in seq_len(nrow(amp.data))) {
       cnv.loc <- amp.data$id[row]
       genes.inBand <- as.character(band2gene[which(names(band2gene)==cnv.loc)])
@@ -501,6 +503,7 @@ oncoprintPlot <- function(summary.table, snpmat.thisClus, amps.thisClus,
       as.data.frame(stringsAsFactors = FALSE)
     
     # deletions
+    rownames(dels.thisClus) <- mapEntrez(rownames(dels.thisClus))
     for(row in seq_len(nrow(del.data))) {
       cnv.loc <- del.data$id[row]
       genes.inBand <- as.character(band2gene[which(names(band2gene)==cnv.loc)])
@@ -1196,7 +1199,7 @@ mergeDuplicates <- function(mat.to.plot) {
   mat.to.plot[mat.to.plot == "NA;NA;NA"] <- NA
   
   # remerge genomic event and band
-  mat.to.plot <- tidyr::unite(mat.to.plot, col = "genomic.event", genomic.event:band,
+  mat.to.plot <- tidyr::unite(mat.to.plot, col = "genomic.event", .data$genomic.event:.data$band,
                               sep = " ", na.rm = TRUE)
   
   mat.to.plot
