@@ -98,13 +98,13 @@ Moma <- setRefClass("Moma", fields =
                           message("Running fCNV on supplied cnv matrix. Functional CNVs will be determined significant at a threshold of p < ", fCNV.sig)
                           
                           fCNV.tmp <- fcnvAnalysis(.self, fCNV.sig, fCNV.method, expression)
-                          cnv.local <- cnv[intersect(fCNV.tmp, rownames(cnv)), ]
+                          cnv.local <- cnv[intersect(fCNV.tmp, rownames(cnv)),,drop = FALSE]
                           message("fCNV analysis successfully run.")
                           fCNVs <<- fCNV.tmp
                           
                         } else {
                           message("fCNV supplied, filtering for only functional CNVs")
-                          cnv.local <- cnv[intersect(fCNV, rownames(cnv)), ]
+                          cnv.local <- cnv[intersect(fCNV, rownames(cnv)),,drop = FALSE ]
                           fCNVs <<- fCNV
                         }
                         
@@ -119,17 +119,17 @@ Moma <- setRefClass("Moma", fields =
                         
                         # save the exact hypotheses (genes) we're testing, based on MIN.EVENTS
                         
-                        temp.amps <- rownames(amps[apply(amps, 1, sum, na.rm = TRUE) >= min.events, ])
+                        temp.amps <- rownames(amps[apply(amps, 1, sum, na.rm = TRUE) >= min.events,,drop = F ])
                         amps.hypotheses <- temp.amps[which(!(temp.amps %in% gene.blacklist))]
-                        amps.mat <- amps[amps.hypotheses,]
+                        amps.mat <- amps[amps.hypotheses,,drop = FALSE]
                         
-                        temp.dels <- rownames(dels[apply(dels, 1, sum, na.rm = TRUE) >= min.events, ])
+                        temp.dels <- rownames(dels[apply(dels, 1, sum, na.rm = TRUE) >= min.events,,drop = F])
                         dels.hypotheses <- temp.dels[which(!(temp.dels %in% gene.blacklist))]
-                        dels.mat <- dels[dels.hypotheses,]
+                        dels.mat <- dels[dels.hypotheses,,drop = FALSE]
                         
-                        temp.muts <- rownames(somut[apply(somut, 1, sum, na.rm = TRUE) >= min.events, ])
+                        temp.muts <- rownames(somut[apply(somut, 1, sum, na.rm = TRUE) >= min.events,,drop = F])
                         muts.hypotheses <- temp.muts[which(!(temp.muts %in% gene.blacklist))]
-                        muts.mat <- somut[muts.hypotheses,]
+                        muts.mat <- somut[muts.hypotheses,,drop = FALSE]
                         
                         
                         # Print info about 
@@ -170,8 +170,8 @@ Moma <- setRefClass("Moma", fields =
                         
                         nes.fusions <- NULL
                         if (!is.na(fusions[1,1])) {
-                          fus.hypotheses <- rownames(fusions[apply(fusions, 1, sum, na.rm = TRUE) >= min.events, ])
-                          fus.mat <- fusions[fus.hypotheses,]
+                          fus.hypotheses <- rownames(fusions[apply(fusions, 1, sum, na.rm = TRUE) >= min.events,,drop = F])
+                          fus.mat <- fusions[fus.hypotheses,,drop = FALSE]
                           
                           events <- list(mut = muts.hypotheses, del = dels.hypotheses, amp = amps.hypotheses, fus = fus.hypotheses)
                           matrices <- list(mut = muts.mat, del = dels.mat, amp = amps.mat, fus = fus.mat)
@@ -179,7 +179,7 @@ Moma <- setRefClass("Moma", fields =
                           
                           # hypotheses <<- list(mut = muts.hypotheses, del = dels.hypotheses, 
                           #                     amp = amps.hypotheses, fus = fus.hypotheses)
-                          nes.fusions <- associateEvents(viper, fusions, 
+                          nes.fusions <- associateEvents(viper, fus.mat, 
                                                          min.events = min.events, 
                                                          event.type = "Fusions",
                                                          verbose = verbose)
@@ -393,14 +393,15 @@ Moma <- setRefClass("Moma", fields =
                         if(isFALSE(new)) {
                           weights <- log(ranks[["integrated"]])^2
                         } else {
-                          weights <- tibble::deframe(ranks.new)
+                          weights <- ranks.new %>% dplyr::select(.data$regulator, .data$ecdf.p) %>%
+                            tibble::deframe()
                           weights <- weights[as.character(rownames(viper))]
                           
                           # adjustment of weights
-                          # TODO 
-                          # currently just taking log. subject to change
+                          # currently taking log^2 of edcf adjusted p values.
+                          # resulting distribution is similar to MOMA v1
                           
-                          weights <- -log(weights)
+                          weights <- log(weights)^2
                         }
                         
                         
@@ -613,7 +614,7 @@ Moma <- setRefClass("Moma", fields =
                           })
                           
                           pvals <- sort(2*pnorm(-abs(stouffer.zscores)), decreasing = F)
-                          sig.active.mrs <- names(pvals[p.adjust(pvals, method='bonferroni') < 0.05])
+                          sig.active.mrs <- names(pvals[p.adjust(pvals, method='fdr') < 0.05])
                           
                           # rank using the subtype-specific rankings generated in this function, above. 
                           # otherwise this is the same analysis done on the overall rankings

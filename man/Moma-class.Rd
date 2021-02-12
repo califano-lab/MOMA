@@ -83,13 +83,6 @@ cluster assignments, names are sample ids}
   progression.free = FALSE
 )}}{Cluster the samples after applying the MOMA weights to the VIPER scores}
 
-\item{\code{makeInteractions(
-  genomic.event.types = c("amp", "del", "mut", "fus"),
-  cindy.only = FALSE
-)}}{Make interaction web for significant MRs based on their associated events}
-
-\item{\code{makeInteractionsNew(genomic.event.types = c("amp", "del", "mut", "fus"))}}{Make merged file of each MR-Event pairing with all associated pathway test values}
-
 \item{\code{Rank(
   use.cindy = TRUE,
   genomic.event.types = c("amp", "del", "mut", "fus"),
@@ -105,6 +98,13 @@ cluster assignments, names are sample ids}
 )}}{Recalculate regulator rankings for each cluster based on presence of genomic events in that cluster}
 
 \item{\code{RankNew(na.value = NA, aQTL.threshold = 1)}}{Combine all genomic information to create event-MR ranking and full MR ranking}
+
+\item{\code{makeInteractions(
+  genomic.event.types = c("amp", "del", "mut", "fus"),
+  cindy.only = FALSE
+)}}{Make interaction web for significant MRs based on their associated events}
+
+\item{\code{makeInteractionsNew(genomic.event.types = c("amp", "del", "mut", "fus"))}}{Make merged file of each MR-Event pairing with all associated pathway test values}
 
 \item{\code{runDIGGIT(
   fCNV = NULL,

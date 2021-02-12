@@ -64,7 +64,7 @@ matrix has the samples across the columns and the regulators in the rows.
 
 The other assays needed for the experiment are:
 
-- **SNP matrix**: binary 0/1 values where 1 indicates the prescence of a mutation
+- **SNP matrix**: binary 0/1 values where 1 indicates the presence of a mutation
 - **CNV matrix**: copy number variant values
 - **Fusion matrix**: binary 0/1 values (optional)
 
@@ -106,7 +106,7 @@ the analysis. The required inputs are the following:
 
 - **Assays**: a MultiAssayExperiment object with the previously mentioned assays.
 Alternatively a named list with the assays as matrices can be supplied. In both 
-cased the names of the assays must be "viper", "cnv", "mut" and "fusion"
+cases the names of the assays must be "viper", "cnv", "mut" and "fusion"
 - **Pathway list**: see above
 
 Other optional inputs include:

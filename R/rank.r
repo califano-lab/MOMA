@@ -50,7 +50,8 @@ twoStepRankIntegration <- function(interactions.df, na.value) {
   
   # Modify first step if NAs are present because otherwise rows 
   # with only 1 value don't need to be integrated and will error 
-  
+  message("Doing regulator-event integrations...")
+  message("Using ", na.value, " for non existing interaction values.")
   if(!is.na(na.value)) {
     values.df[is.na(values.df)] <- na.value
     event.int.p <- apply(values.df, 1, function(x){
@@ -69,11 +70,13 @@ twoStepRankIntegration <- function(interactions.df, na.value) {
   interactions.df$int.p <- event.int.p
   
   # second ranking step
+  message("Doing integration of all events for each regulator...")
   ranks.df <- interactions.df %>% 
     dplyr::group_by(.data$regulator) %>%
     dplyr::summarize(int.mr.p = poolr::fisher(.data$int.p)$p)
   
   ranks.df$int.mr.p <- stats::p.adjust(ranks.df$int.mr.p, method = "fdr")
+  ranks.df$ecdf.p <- cdfPval(ranks.df$int.mr.p)
   
   return(list(interactions.df = interactions.df, 
               ranks.df = ranks.df))

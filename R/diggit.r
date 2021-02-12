@@ -81,18 +81,18 @@ associateEvents <- function(vipermat, events.mat, min.events = NA,
     
     # subset the two matrices to common samples
     common.samples <- intersect(colnames(vipermat), colnames(events.mat))
-    vipermat <- vipermat[, common.samples]
-    events.mat <- events.mat[, common.samples]
+    vipermat <- vipermat[, common.samples,drop = FALSE]
+    events.mat <- events.mat[, common.samples,drop = FALSE]
     
     # include only whitelist items
     if (!(is.na(whitelist))) {
-        events.mat <- events.mat[intersect(rownames(events.mat), whitelist), ]
+        events.mat <- events.mat[intersect(rownames(events.mat), whitelist),,drop = FALSE ]
     }
-    # filter to minmum number of somatic events
+    # filter to minimum number of somatic events
     if (!is.na(min.events)) {
-        events.mat <- events.mat[apply(events.mat, 1, sum, na.rm = TRUE) >= min.events,]
+        events.mat <- events.mat[apply(events.mat, 1, sum, na.rm = TRUE) >= min.events,,drop = FALSE]
     }
-    # test again after removing low freuquency events
+    # test again after removing low frequency events
     if (is.null(dim(events.mat))) {
         message("Not enough ", event.type,", skipping")
         return(NULL)
