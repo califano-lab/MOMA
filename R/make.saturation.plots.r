@@ -2,17 +2,17 @@
 #' @import ComplexHeatmap
 #' @import circlize
 #' @import grid
-#' @param momaObj : momaObj that has already run the saturationCalculation function
-#' @param clustering.solution : clustering vector with sample names and cluster designations
-#' @param important.genes : vector of gene names to prioritize when plotting. 
+#' @param momaObj momaObj that has already run the saturationCalculation function
+#' @param clustering.solution clustering vector with sample names and cluster designations
+#' @param important.genes vector of gene names to prioritize when plotting. 
 #' Can be general genes of interest, oncogenes, tumor suppressors etc
-#' @param fCNVs : vector of confirmed functional CNVs if calculated. Will filter for only those CNVs
-#' @param topN : number of MRs to take into account for plotting along the x axis
-#' @param cnv.threshold : value cut off for binarizing cnvs, option of one number, two numbers or "gistic"
+#' @param fCNVs vector of confirmed functional CNVs if calculated. Will filter for only those CNVs
+#' @param topN number of MRs to take into account for plotting along the x axis
+#' @param cnv.threshold value cut off for binarizing cnvs, option of one number, two numbers or "gistic"
 #' If using two numbers the higher one will determine the threshold between focal/regional events. 
 #' Gistic will automatically make these numbers 1 and 2 (see GISTIC and MOMA documentation for more information)
-#' @param cytoband.collapse : T/F regarding whether or not the genomic saturation analysis was done with collapsing the CNVs to cytobands
-#' @param max.events : maximum number of events to plot for the oncoplots
+#' @param cytoband.collapse T/F regarding whether or not the genomic saturation analysis was done with collapsing the CNVs to cytobands
+#' @param max.events maximum number of events to plot for the oncoplots
 #' @param oncoprint.params optional list of oncoprint parameters to supply if 
 #' additional types of events are added/ if different parameters want to be supplied
 #' @param new T/F based on whether or not using results from version 1 or 2 of the pipeline
@@ -37,6 +37,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
     } else {
       checkpoints <- momaObj$checkpoints.byCluster
       genomic.saturation <- momaObj$genomic.saturation.byCluster
+      nulls <- momaObj$null.coverage.byCluster
     }
   } else {
     if (length(momaObj$checkpoints) == 0) {
@@ -45,6 +46,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
     } else {
       checkpoints <- momaObj$checkpoints
       genomic.saturation <- momaObj$genomic.saturation
+      nulls <- momaObj$null.coverage
     }
   }
   
@@ -143,7 +145,7 @@ makeSaturationPlots <- function(momaObj, clustering.solution = NULL,
     #########
     # Saturation Curve Plots
     #########
-    p.coverage <- genomicPlotSmall(tissue.coverage.df, fraction=0.85, tissue.cluster=k)
+    p.coverage <- genomicPlotSmall(tissue.coverage.df, length(checkpoints[[k]]), tissue.cluster=k, nulls[[k]])
     tmp.curveplots[[k]] <- p.coverage
     
   }
@@ -630,9 +632,9 @@ oncoprintPlot <- function(summary.table, snpmat.thisClus, amps.thisClus,
   }
   
   
-  ##########
+  #############
   # Heatmap plot
-  #########
+  #############
   
   
   heatmap_legend_param = list(title = "Alterations", 
@@ -712,205 +714,6 @@ oncoprintPlot <- function(summary.table, snpmat.thisClus, amps.thisClus,
 
 
 
-
-
-
-
-##### No longer the primary plot style but keeping as an option plot style
-##### TODO: Need to make it a freestanding function
-#' Plot barchart of genomic events 
-#' 
-#' @importFrom rlang .data
-#' @param summary.vec : named vector of the counts, named 'Event name':'Type'
-#' where type is 'mut', 'amp', 'del', 'fus'. Mutations are in Entrez ID
-#' Amp/Deletion CNV events are in genomic band location
-#' @param highlight.genes : well known genes to highlight in the analysis in 
-#' @param genomeBand_2_gene : mapping of genomic location IDs to gene name: 
-#' vector of HUGO gene ids, named by genomic loci
-#' @param samples.total : number of samples in the subtype, used to calculate percentages
-#' @param max.muts : maximum number of mutations to get per sample, default is 10
-#' @param max.cnv : maximum number of cnvs to per sample, default is 5
-#' @return plot object
-#' @keywords internal 
-plotEvents <- function(summary.vec, highlight.genes=NULL, genomeBand_2_gene=NULL,
-                       samples.total, max.muts = 10, max.cnv = 5) {
-  
-  data <- data.frame(coverage=names(summary.vec), Freq=as.numeric(summary.vec))
-  # order by individual frequency
-  data <- data[order(-data$Freq),]
-  
-  data$id <- unlist(lapply(data$coverage, function(label) {
-    label <- as.character(label)
-    name <- strsplit(label, ':')[[1]][1]
-    hugo <- mapEntrez(as.character(name))
-    if (is.na(hugo)) {
-      return (name)
-    } else {
-      return (hugo)
-    }
-  }))
-  
-  # make a new column: for CNV band locations
-  data$type <- unlist(lapply(data$coverage, function(label) {
-    type <- strsplit(as.character(label), ':')[[1]][2]
-    type
-  }))
-  
-  # get order dataframe of events 
-  mapped <- getDataFrame(data, highlight.genes, genomeBand_2_gene, max.muts = 10, max.cnv = 5)
-  # check the size: if we have too many events to display, then select the top N unique IDs
-  # already sorted by frequency of occurence. 
-  if (nrow(mapped) > 50) {
-    # add at least half simply with mutated gene labels
-    mut.data <- mapped[mapped$type=='mut',]
-    add.labels <- na.omit(unique(mut.data[order(-mut.data$Freq),][seq_len(25),]$id))
-    # and add cnv
-    additional <- setdiff(unique(mapped$id), add.labels)[seq_len(50-length(add.labels))]
-    mapped <- mapped[mapped$id %in% union(additional, add.labels),]
-  }
-  
-  # The palette with black: (unnecessary?)
-  # cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-  
-  # if exporting as object then just use default of 10 and then change by adding geom/layer when plotting
-  # else if plotting directly then try to adjust text size to fit based on number of events
-  
-  # data.size <- nrow(mapped)
-  # if(is.null(output)) {
-  #   print("No file output name found, using pre-selected text size for plotting")
-  #   y.textSize <- 10
-  # } else {
-  #   print("Output plot name found, adjusting text size based on number of events")
-  #   if (num.subtypes > 5 && data.size > 50) {
-  #     y.textSize <- 1
-  #   } else if (num.subtypes > 4 && data.size > 25) {
-  #     y.textSize <- 2
-  #   } else if (num.subtypes > 4 && data.size <= 25) {
-  #     y.textSize <- 3
-  #   } else if (data.size < 20) {
-  #     y.textSize <- 5
-  #   } else if (data.size < 40) {
-  #     y.textSize <- 6
-  #   }
-  # }
-  
-  message('Number of entries in events matrix: ', nrow(mapped))
-  #print (paste('Using font size ', y.textSize))
-  
-  
-  # Scale frequency to a percentage of samples in that cluster not number of occurences
-  mapped$freq.percentage <- mapped$Freq/samples.total
-  
-  p <- ggplot2::qplot(x=mapped$id, y=mapped$freq.percentage, fill=mapped$type, data=mapped, geom = "col") + coord_flip() +
-    scale_fill_manual(values = c("mut"='#00BA38', "amp"= '#F8766D', "del" = '#619CFF', "fus" = '#FF8C00' )) +
-    ylab("Frequency") + xlab("Event") 
-  #theme(axis.text.y = element_text(size=y.textSize))
-  #labs(title=label) 
-  
-  # if (!is.null(output)) {
-  #   p <- p + labs(title = paste(plot.label, "subtype", k))
-  #   ggsave(output)
-  # }
-  
-  p
-}
-
-
-
-#' Helper function to get data frame for bar plot plot.events function
-
-#' @param data data.frame with $type, $id, $Freq per event
-#' @param highlight.genes genes to look for in mutations/cnv lists (if looking
-#'  for specific genes because of prior knowledge)
-#' @param genomeBand_2_gene mapping of genomic location IDs to gene name: 
-#' vector of HUGO gene ids, named by genomic loci
-#' @param max.muts maximum number of mutations to get per sample, default is 10
-#' @param max.cnv maximum number of cnvs to per sample, default is 5
-#' @return ordered data frame with each genomic event and it's frequency
-#' @keywords internal
-getDataFrame <- function(data, highlight.genes, genomeBand_2_gene, 
-                         max.muts = 10, max.cnv = 5) {
-  
-  #### edit logic of this section ?
-  
-  
-  MAX.muts <- max.muts
-  MAX.CNV.loc <- max.cnv
-  ## all all highlight genes and events to the 
-  
-  ## for each CNV location event, find genes that overlap with the highlight list. 
-  ## add duplicate entries for those genes
-  mapped <- c()
-  loc.data <- data[data$type=='del',]
-  for (row in seq_len(nrow(loc.data))) {
-    loc <- loc.data[row, 3]
-    genes.inBand <- as.character(genomeBand_2_gene[which(names(genomeBand_2_gene)==loc)])
-    hgIB <- intersect(genes.inBand, highlight.genes)
-    
-    if (length(hgIB)==0) { next }
-    
-    mapped <- rbind(mapped, data.frame(coverage=loc.data[row, 1], 
-                                       Freq=loc.data[row, 2], 
-                                       id=hgIB, 
-                                       type=loc.data[row, 4]))
-  }
-  loc.data <- data[data$type=='amp',]
-  for (row in seq_len(nrow(loc.data))) {
-    loc <- loc.data[row, 3]
-    genes.inBand <- as.character(genomeBand_2_gene[which(names(genomeBand_2_gene)==loc)])
-    hgIB <- intersect(genes.inBand, highlight.genes)
-    
-    if (length(hgIB)==0) { next }
-    
-    mapped <- rbind(mapped, data.frame(coverage=loc.data[row, 1], 
-                                       Freq=loc.data[row, 2], 
-                                       id=hgIB, 
-                                       type=loc.data[row, 4]))
-  }
-  
-  # find mutations in key regions
-  loc.data <- data[data$type=='mut',]
-  for (row in seq_len(nrow(loc.data))) {
-    gene <- loc.data[row, 3]
-    hgIB <- intersect(gene, highlight.genes)
-    if (length(hgIB)==0) { next }
-    mapped <- rbind(mapped, data.frame(coverage=loc.data[row, 1], 
-                                       Freq=loc.data[row, 2], 
-                                       id=hgIB, 
-                                       ype=loc.data[row, 4]))
-  }
-  
-  # HUGO ids: add additional mutation events outside of the highlight genes
-  all.gene.ids <- as.character(mapped$id)
-  # add in top X mutations not in the driver list
-  mut.data <- data[data$type=='mut',]
-  i = 1	
-  for (row in seq_len(nrow(mut.data))) {
-    if (mut.data[row,]$id %in% all.gene.ids) { next }
-    if (i > MAX.muts) { break }
-    mapped <- rbind(mapped, mut.data[row,])
-    i = 1+i
-  }
-  
-  # add all fusions
-  mapped <- rbind(mapped, data[data$type=='fus',])
-  
-  # add CNV band locations (a few)
-  subset <- data[apply(cbind(data$type=='amp', data$type=='del'), 1, any),]
-  if (nrow(subset) > MAX.CNV.loc) { subset <- subset[seq_len(MAX.CNV.loc),] }
-  mapped <- rbind(mapped, subset)
-  
-  # order by total frequency of events by gene/id
-  mapped$event_sums <- vapply(mapped$id, function(id) { 
-    sum(as.numeric(mapped[which(mapped$id==as.character(id)),]$Freq)) }, 
-    FUN.VALUE = numeric(1))
-  mapped <- mapped[order(-mapped$event_sums),]
-  mapped$id <- factor(mapped$id, levels=unique(rev(mapped$id)))
-  
-  mapped
-}
-
-
 #' Make small genomic plot
 #' @importFrom tidyr drop_na
 #' @importFrom rlang .data
@@ -918,14 +721,16 @@ getDataFrame <- function(data, highlight.genes, genomeBand_2_gene,
 #' @importFrom RColorBrewer brewer.pal
 #' @import ggplot2
 #' @import magrittr
-#' @param input.df : tissue.coverage.df with mean, k, fraction and unique events.
-#' @param fraction : what fraction coverage to use for genomic curve threshold
-#' @param tissue.cluster : which cluster subsample to look at
+#' @param input.df tissue.coverage.df with mean, k, fraction and unique events.
+#' @param best.k number of regulators in the checkpoint
+#' @param tissue.cluster which cluster to look at
+#' @param null.matrix fractions generated for null model
 #' @return output .png
 #' @keywords internal
-genomicPlotSmall <- function(input.df, fraction=0.85, tissue.cluster=NULL)  { 
+genomicPlotSmall <- function(input.df, best.k, tissue.cluster=NULL, null.matrix)  { 
   
-  #### need to add in null matrix function ###
+ # get upper and lower quantiles from the null model
+  null.q <- nullQuantiles(null.matrix)
   
   
   # get number of subtypes and colors for plotting
@@ -939,18 +744,18 @@ genomicPlotSmall <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
   subtype.df <- subtype.df %>% tidyr::drop_na(.data$fraction)
   
   
-  sweep <- subtype.df$fraction
-  names(sweep) <- sort(unique(subtype.df$k))
-  #best.k <- fitCurvePercent(sweep, frac=fraction)
-  best.k <- getInflection(sweep, tissue.cluster)
-  message("Number of MRs in checkpoint: ", best.k)
+  # sweep <- subtype.df$fraction
+  # names(sweep) <- sort(unique(subtype.df$k))
+  # best.k <- fitCurvePercent(sweep, frac=fraction)
+  # best.k <- getInflection(sweep, tissue.cluster)
+  # message("Number of MRs in checkpoint: ", best.k)
   
   
   # mean statistic for these samples
   mean.stat <- unlist(lapply(sort(unique(subtype.df$k)), function(k) {
     mean(subtype.df[which(subtype.df$k==k),]$fraction)
   }))
-  sweep <- mean.stat
+  # sweep <- mean.stat
   # Get mean # of samples
   mean.events.stat <- unlist(lapply(sort(unique(subtype.df$k)), function(k) {
     mean(subtype.df[which(subtype.df$k==k),]$mean)
@@ -971,15 +776,36 @@ genomicPlotSmall <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
       sec.axis = sec_axis(~ . * y.multiplier, name = "Count"),
       limits=c(0,ymax+0.01)
     ) +
-    #geom_ribbon(aes(ymin=null.bq, ymax=null.uq), color='#808080', alpha=0.2, linetype=2) +
+    geom_ribbon(aes(ymin=null.q$bottom, ymax=null.q$upper), color='#808080', alpha=0.2, linetype=2) +
     geom_vline(xintercept=as.numeric(best.k), linetype=3) +
     xlim(0,100) +
-    #labs(title=tissue) +
     theme(axis.text.x = element_text(size=10), axis.text.y = element_text(size=10), legend.position="none")
   
   # return the plot itself
   p.100 
 }
+
+#' Function to get lower and upper quantiles for the null model
+#' @param null.matrix table of fractions
+#' @keywords internal
+#' @return list with upper and lower quantile
+nullQuantiles <- function(null.matrix) {
+  
+  # compute upper and lower quantiles	
+  null.mean <- as.numeric(apply(null.matrix, 1, function(x) mean(x)))
+  
+  null.bq <- as.numeric(apply(null.matrix, 1, function(x) mean(x)-2*sd(x)))
+  null.uq <- as.numeric(apply(null.matrix, 1, function(x) mean(x)+2*sd(x)))
+  
+  # correct lower quantile - set below zero to 0
+  null.bq <- vapply(null.bq, function(x) max(x, 0), FUN.VALUE = numeric(1))
+  
+  list(upper = null.uq, bottom = null.bq)
+  
+}
+
+
+
 
 #' Function to plot genomic events in the style of oncoPrint/cBioPortal using new data structures
 #' @importFrom tidyr drop_na separate unite
@@ -1000,6 +826,10 @@ genomicPlotSmall <- function(input.df, fraction=0.85, tissue.cluster=NULL)  {
 oncoprintPlotNew <- function(summary.table, clus.event.mats, clus.genomic.saturation,
                              cutoff, important.genes, max.events, k,
                              cytoband.collapse, oncoprint.params, cnv.threshold) {
+  
+  if(nrow(summary.table) == 0) {
+    return(grid::textGrob("No significant events to plot for this subtype"))
+  }
   
   # make merged coverage.df from samples based on cMR number
   # will get all interaction information for these samples
@@ -1081,6 +911,11 @@ subsetEventPlots <- function(summary.table, clus.event.mats, etype, full.coverag
     dplyr::select(.data$id, .data$freq) %>%
     tibble::deframe()
   data <- data[!is.na(names(data))]
+  
+  # if no events in these samples for this etype return an empty tibble
+  if(length(data) == 0) {
+    return (tibble::tibble())
+  }
   
   # subset matrices based on these events
   # if cytoband (ie event names don't match) then figure out which gene in

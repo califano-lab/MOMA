@@ -8,10 +8,11 @@
 #' @param interaction.df dataframe of all interactions associated with the regulators
 #' @param cytoband.collapse T/F of whether to consolidate cnvs in the same cytoband to be considered as one event
 #' @param topN how many regulators to consider for the saturation analysis 
+#' @param verbose T/F whether to print sample names
 #' @return a list obj with all the coverage information for each sample analyzed
 #' @keywords internal
 sampleEventOverlap <- function(momaObj, viper.samples, selected.tfs,
-                               interaction.df, cytoband.collapse = T, topN = 100) {
+                               interaction.df, cytoband.collapse = T, topN = 100, verbose = F) {
 
   # restrict selected.tfs to topN, starting with 100 may change later
   selected.tfs <- selected.tfs[seq_len(topN)]
@@ -31,7 +32,9 @@ sampleEventOverlap <- function(momaObj, viper.samples, selected.tfs,
   
   coverage <- lapply(all.sample.names, function(sample) {
     
-    print(paste0("Computing coverage for sample ", sample))
+    if(isTRUE(verbose)){
+      message("Computing coverage for sample ", sample)
+    } 
     
     # find active and inactive proteins in this sample
     viper.pvals <- 2*pnorm(-abs(momaObj$viper[, sample]))
@@ -45,6 +48,12 @@ sampleEventOverlap <- function(momaObj, viper.samples, selected.tfs,
     
     all.sample.genomics <- tibble::tibble(.rows = 0)
     for (etype in event.types) {
+      
+      # First double check that sample exists in data set. Mainly for fusions.
+      # Could consider making this the only check and allowing samples with  
+      # partial genomic inputs to be considered...
+      if(!sample %in% colnames(momaObj$hypotheses$matrices[[etype]])) next
+      
       present <- as.character(names(which(momaObj$hypotheses$matrices[[etype]][,sample] > 0)))
       
       df <- tibble::tibble(event = present, type = etype)
@@ -224,4 +233,73 @@ getInflection <- function(fractions, clus.id) {
   
   best
   
+}
+
+
+#' Function to generate null model for the saturation curves
+#' @param momaObj momaObj 
+#' @param viper.samples samples to consider
+#' @param tissue.cluster which cluster to look at
+#' @param topN number of MRs to take into account 
+#' @param cytoband.collapse T/F regarding whether or not the genomic saturation analysis was done with collapsing the CNVs to cytobands
+#' @param interaction.p pvalue threshold to use for MR-event interactions
+#' @param aqtl.p pvalue threshold to use for aQTL scores
+#' @param new T/F based on whether or not using results from version 1 or 2 of the pipeline
+#' @return null means object
+#' @keywords internal
+saturationNull <- function(momaObj, viper.samples, tissue.cluster, topN, cytoband.collapse = T, interaction.p = 0.05, aqtl.p = 1, new = F) {
+  message("Generating null model for saturation plots...")
+  
+  null.means <- c()
+  
+  # split analysis based on v1 vs v2
+  if(isTRUE(new)){
+    
+    ranks <- momaObj$ranks.byCluster[[tissue.cluster]] %>% 
+      dplyr::select(.data$regulator, .data$int.mr.p) %>%
+      tibble::deframe()
+    interactions.df <- dplyr::left_join(momaObj$interactions.byCluster[[tissue.cluster]], momaObj$gene.loc.mapping,
+                                        by = c("event" = "Entrez.IDs")) %>%
+      dplyr::filter(int.p <= interaction.p) %>%
+      dplyr::filter(aQTL <= aqtl.p)
+    
+    for(i in seq_len(10)) {
+      
+      # look at the bottom half of TFs
+      null.tfs <- ranks[which(ranks > quantile(ranks, 0.5))]
+      set.seed(i)
+      pvals <- sample(as.numeric(null.tfs), length(null.tfs))
+      names(pvals) <- names(null.tfs)
+      permuted.pvals <- sort(pvals)
+      
+      coverage.range <- sampleEventOverlap(momaObj, viper.samples, names(permuted.pvals),
+                                           interactions.df, cytoband.collapse, topN, verbose = F)
+      
+      null.df <- genomicSaturationSummary(coverage.range, topN)
+      null.means <- cbind(null.means, null.df$fraction)
+    }
+    
+  } else {
+    
+    ranks <- momaObj$ranks[["integrated"]]
+    
+    for(i in seq_len(10)) {
+      
+      # look at the bottom half of TFs
+      null.tfs <- ranks[which(ranks > quantile(ranks, 0.5))]
+      set.seed(i)
+      pvals <- sample(as.numeric(null.tfs), length(null.tfs))
+      names(pvals) <- names(null.tfs)
+      permuted.pvals <- sort(pvals)
+      
+      coverage.range <- getCoverage(momaObj, names(permuted.pvals), 
+                                    viper.samples, topN = topN, verbose = F)
+      
+      null.df <- mergeGenomicSaturation(coverage.range, topN = topN)
+      null.means <- cbind(null.means, null.df$fraction)
+      
+    }
+  }
+  
+  null.means
 }

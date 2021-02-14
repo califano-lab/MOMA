@@ -18,24 +18,24 @@ makeSaturationPlots(
 )
 }
 \arguments{
-\item{momaObj}{: momaObj that has already run the saturationCalculation function}
+\item{momaObj}{momaObj that has already run the saturationCalculation function}
 
-\item{clustering.solution}{: clustering vector with sample names and cluster designations}
+\item{clustering.solution}{clustering vector with sample names and cluster designations}
 
-\item{important.genes}{: vector of gene names to prioritize when plotting. 
+\item{important.genes}{vector of gene names to prioritize when plotting. 
 Can be general genes of interest, oncogenes, tumor suppressors etc}
 
-\item{fCNVs}{: vector of confirmed functional CNVs if calculated. Will filter for only those CNVs}
+\item{fCNVs}{vector of confirmed functional CNVs if calculated. Will filter for only those CNVs}
 
-\item{topN}{: number of MRs to take into account for plotting along the x axis}
+\item{topN}{number of MRs to take into account for plotting along the x axis}
 
-\item{cnv.threshold}{: value cut off for binarizing cnvs, option of one number, two numbers or "gistic"
+\item{cnv.threshold}{value cut off for binarizing cnvs, option of one number, two numbers or "gistic"
 If using two numbers the higher one will determine the threshold between focal/regional events. 
 Gistic will automatically make these numbers 1 and 2 (see GISTIC and MOMA documentation for more information)}
 
-\item{cytoband.collapse}{: T/F regarding whether or not the genomic saturation analysis was done with collapsing the CNVs to cytobands}
+\item{cytoband.collapse}{T/F regarding whether or not the genomic saturation analysis was done with collapsing the CNVs to cytobands}
 
-\item{max.events}{: maximum number of events to plot for the oncoplots}
+\item{max.events}{maximum number of events to plot for the oncoplots}
 
 \item{oncoprint.params}{optional list of oncoprint parameters to supply if 
 additional types of events are added/ if different parameters want to be supplied}

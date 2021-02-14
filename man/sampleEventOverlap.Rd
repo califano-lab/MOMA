@@ -10,7 +10,8 @@ sampleEventOverlap(
   selected.tfs,
   interaction.df,
   cytoband.collapse = T,
-  topN = 100
+  topN = 100,
+  verbose = F
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ sampleEventOverlap(
 \item{cytoband.collapse}{T/F of whether to consolidate cnvs in the same cytoband to be considered as one event}
 
 \item{topN}{how many regulators to consider for the saturation analysis}
+
+\item{verbose}{T/F whether to print sample names}
 }
 \value{
 a list obj with all the coverage information for each sample analyzed

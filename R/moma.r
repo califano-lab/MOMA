@@ -49,6 +49,8 @@
 #' @field genomic.saturation.byCluster result field for new genomic saturation results
 #' @field coverage.summaryStats results field for genomic saturation analysis
 #' @field coverage.summaryStats.byCluster results field for new coverage analysis
+#' @field null.coverage results field for null model of saturation analysis
+#' @field null.coverage.byCluster results field for cluster specific saturation null models
 #' @field checkpoints results field with the MRs determined to be the checkpoint for each cluster
 #' @field checkpoints.byCluster resulst field for new checkpoints analysis
 #' @field sample.clustering field to save sample clustering vector. Numbers are 
@@ -79,6 +81,8 @@ Moma <- setRefClass("Moma", fields =
                            genomic.saturation.byCluster = "list", # NEW result field
                            coverage.summaryStats = "list", # result field
                            coverage.summaryStats.byCluster = "list", # NEW result field
+                           null.coverage = "list", #NEW result field
+                           null.coverage.byCluster = "list",  #NEW result field
                            checkpoints = "list", # result field
                            checkpoints.byCluster = "list", # NEW result field
                            sample.clustering = "numeric" # result field 
@@ -515,7 +519,7 @@ Moma <- setRefClass("Moma", fields =
                       },
                       
                       saturationCalculation = function(clustering.solution = NULL, cov.fraction = 0.85, 
-                                                       topN = 100, verbose = FALSE) {
+                                                       topN = 100, verbose = FALSE, min.clus.size = 5) {
                         "Calculate the number of MRs it takes to represent the desired coverage fraction of events"
                         
                         # get clustering solution to use for calculations
@@ -528,7 +532,7 @@ Moma <- setRefClass("Moma", fields =
                         }
                         
                         # make sure submitted clustering solution has sufficiently large clusters (at least 5 samples)
-                        clus.sizes <- table(clustering.solution) < 5
+                        clus.sizes <- table(clustering.solution) < min.clus.size
                         
                         if(any(clus.sizes)) {
                           stop("At least one cluster does not have sufficient samples. Select a different clustering solution and resave to object")
@@ -538,6 +542,7 @@ Moma <- setRefClass("Moma", fields =
                         coverage.subtypes <- list()
                         tmp.summaryStats <- list()
                         tmp.checkpoints <- list()
+                        tmp.nulls <- list()
                         for (clus.id in unique(clustering.solution)) {
                           
                           message("Analyzing cluster ", clus.id, " coverage using the top ", 
@@ -570,12 +575,18 @@ Moma <- setRefClass("Moma", fields =
                           best.k <- fitCurvePercent(sweep, frac = cov.fraction)
                           # pick the top cMRs based on this
                           tmp.checkpoints[[clus.id]] <- names(subtype.specific.MR_ranks[seq_len(best.k)])
+                          
+                          # generate null 
+                          tmp.nulls[[clus.id]] <- saturationNull(.self, viper.samples, clus.id, topN)
+                          
                         }
                         genomic.saturation <<- coverage.subtypes
                         coverage.summaryStats <<- tmp.summaryStats
                         checkpoints <<- setNames(tmp.checkpoints, seq_along(tmp.checkpoints))
                       },
-                      saturationCalculationNew = function(clustering.solution = NULL, cytoband.collapse = TRUE, topN = 100, interaction.p = 0.05) {
+                      saturationCalculationNew = function(clustering.solution = NULL, 
+                                                          cytoband.collapse = TRUE, topN = 100, interaction.p = 0.05, 
+                                                          aqtl.p = 1, min.clus.size = 5) {
                         "Calculate the number of MRs it takes to represent the desired coverage fraction of events"
                         
                         # main update from old version: 
@@ -592,7 +603,7 @@ Moma <- setRefClass("Moma", fields =
                         }
                         
                         # make sure submitted clustering solution has sufficiently large clusters (at least 5 samples)
-                        clus.sizes <- table(clustering.solution) < 5
+                        clus.sizes <- table(clustering.solution) < min.clus.size
                         
                         if(any(clus.sizes)) {
                           stop("At least one cluster does not have sufficient samples. Select a different clustering solution and resave to object")
@@ -602,6 +613,7 @@ Moma <- setRefClass("Moma", fields =
                         coverage.subtypes <- list()
                         tmp.summaryStats <- list()
                         tmp.checkpoints <- list()
+                        tmp.null <- list()
                         
                         for (clus.id in unique(clustering.solution)) {
                           message("Analyzing cluster ", clus.id, " coverage...")
@@ -627,7 +639,9 @@ Moma <- setRefClass("Moma", fields =
                           # filter cluster interactions list to only the significant MRs and significant events
                           # TODO: Might need to tweak this threshold step
                           clus.interactions.topmrs <- interactions.byCluster[[clus.id]] %>%
-                            dplyr::filter(regulator %in% subtype.specific.MR_ranks & int.p < interaction.p) 
+                            dplyr::filter(regulator %in% subtype.specific.MR_ranks & 
+                                            int.p <= interaction.p & 
+                                            aQTL <= aqtl.p) 
                           
                           clus.interactions.topmrs <- dplyr::left_join(clus.interactions.topmrs, gene.loc.mapping, 
                                                                        by = c("event" = "Entrez.IDs"))
@@ -651,7 +665,7 @@ Moma <- setRefClass("Moma", fields =
                           # }
                           
                           coverage.range <- sampleEventOverlap(.self, viper.samples, subtype.specific.MR_ranks, clus.interactions.topmrs,
-                                                               cytoband.collapse, topN)
+                                                               cytoband.collapse, topN, verbose = T)
                           coverage.subtypes[[clus.id]] <- coverage.range
                           
                           # Solve the checkpoint for each subtype
@@ -664,11 +678,16 @@ Moma <- setRefClass("Moma", fields =
                           best.k <- getInflection(tmp.summaryStats[[clus.id]]$fraction, clus.id)
                           
                           tmp.checkpoints[[clus.id]] <- subtype.specific.MR_ranks[seq_len(best.k)]
+                          
+                          # calculate null model for saturation analysis
+                          tmp.null[[clus.id]] <- saturationNull(.self, viper.samples, clus.id, topN, cytoband.collapse, interaction.p, aqtl.p, new = T)
+                          
                           }
                         
                         checkpoints.byCluster <<- tmp.checkpoints
                         genomic.saturation.byCluster <<- coverage.subtypes
                         coverage.summaryStats.byCluster <<- tmp.summaryStats
+                        null.coverage.byCluster <<- tmp.null
                         
                       },
                       saveData = function(.self, output.folder, ...) {

@@ -4,14 +4,16 @@
 \alias{genomicPlotSmall}
 \title{Make small genomic plot}
 \usage{
-genomicPlotSmall(input.df, fraction = 0.85, tissue.cluster = NULL)
+genomicPlotSmall(input.df, best.k, tissue.cluster = NULL, null.matrix)
 }
 \arguments{
-\item{input.df}{: tissue.coverage.df with mean, k, fraction and unique events.}
+\item{input.df}{tissue.coverage.df with mean, k, fraction and unique events.}
 
-\item{fraction}{: what fraction coverage to use for genomic curve threshold}
+\item{best.k}{number of regulators in the checkpoint}
 
-\item{tissue.cluster}{: which cluster subsample to look at}
+\item{tissue.cluster}{which cluster to look at}
+
+\item{null.matrix}{fractions generated for null model}
 }
 \value{
 output .png

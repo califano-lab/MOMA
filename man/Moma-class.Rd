@@ -62,6 +62,10 @@ high mutation frequency}
 
 \item{\code{coverage.summaryStats.byCluster}}{results field for new coverage analysis}
 
+\item{\code{null.coverage}}{results field for null model of saturation analysis}
+
+\item{\code{null.coverage.byCluster}}{results field for cluster specific saturation null models}
+
 \item{\code{checkpoints}}{results field with the MRs determined to be the checkpoint for each cluster}
 
 \item{\code{checkpoints.byCluster}}{resulst field for new checkpoints analysis}
@@ -120,14 +124,17 @@ cluster assignments, names are sample ids}
   clustering.solution = NULL,
   cov.fraction = 0.85,
   topN = 100,
-  verbose = FALSE
+  verbose = FALSE,
+  min.clus.size = 5
 )}}{Calculate the number of MRs it takes to represent the desired coverage fraction of events}
 
 \item{\code{saturationCalculationNew(
   clustering.solution = NULL,
   cytoband.collapse = TRUE,
   topN = 100,
-  interaction.p = 0.05
+  interaction.p = 0.05,
+  aqtl.p = 1,
+  min.clus.size = 5
 )}}{Calculate the number of MRs it takes to represent the desired coverage fraction of events}
 }}
 
