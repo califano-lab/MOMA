@@ -32,7 +32,6 @@ Imports:
 	MKmisc,
 	MultiAssayExperiment,
 	parallel,
-	poolr,
 	pracma,
 	purrr,
 	qvalue,
@@ -42,7 +41,6 @@ Imports:
 	rlang,
 	stats,
 	stringr,
-	survival,
 	tibble,
 	tidyr,
 	utils
@@ -50,6 +48,7 @@ Suggests:
   BiocStyle,
   knitr,
   rmarkdown,
+  survival,
   testthat,
   viper
 VignetteBuilder: knitr

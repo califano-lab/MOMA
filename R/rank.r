@@ -55,12 +55,12 @@ twoStepRankIntegration <- function(interactions.df, na.value) {
   if(!is.na(na.value)) {
     values.df[is.na(values.df)] <- na.value
     event.int.p <- apply(values.df, 1, function(x){
-      poolr::fisher(x)$p
+      fishers.integration(x)
     })
   } else {
     event.int.p <- apply(values.df, 1, function(x) {
       if(sum(!is.na(x)) > 1) {
-        poolr::fisher(x[!is.na(x)])$p
+        fishers.integration(x[!is.na(x)])
       } else {
         x[!is.na(x)]
       }
@@ -73,7 +73,7 @@ twoStepRankIntegration <- function(interactions.df, na.value) {
   message("Doing integration of all events for each regulator...")
   ranks.df <- interactions.df %>% 
     dplyr::group_by(.data$regulator) %>%
-    dplyr::summarize(int.mr.p = poolr::fisher(.data$int.p)$p)
+    dplyr::summarize(int.mr.p = fishers.integration(.data$int.p))
   
   ranks.df$int.mr.p <- stats::p.adjust(ranks.df$int.mr.p, method = "fdr")
   ranks.df$ecdf.p <- cdfPval(ranks.df$int.mr.p)
@@ -82,6 +82,21 @@ twoStepRankIntegration <- function(interactions.df, na.value) {
               ranks.df = ranks.df))
   
 }
+
+#' Fisher's integration
+#' 
+#' Helper function to do fisher's integration of set of p values
+#' @param p vector of p values
+#' @return integrated p value
+#' @keywords internal
+fishers.integration <- function(p) {
+  k <- length(p)
+  statistic <- -2 * sum(log(p))
+  pval <- pchisq(statistic, df = 2 * k, lower.tail = FALSE)
+  pval
+}
+
+
 
 
 #' Over-representation Test for genomic events

@@ -7,7 +7,6 @@
 #' @import methods
 #' @import MKmisc
 #' @import parallel
-#' @import poolr
 #' @import qvalue
 #' @import RColorBrewer
 #' @import readr
@@ -502,7 +501,8 @@ Moma <- setRefClass("Moma", fields =
                           
                           # integrate events to get a rank for each regulator
                           ranks.df <- filtered.interactions %>% dplyr::group_by(regulator) %>%
-                            dplyr::summarize(int.mr.p = poolr::fisher(int.p)$p) %>% dplyr::arrange(int.mr.p)
+                            dplyr::summarize(int.mr.p = fishers.integration(int.p)) %>% 
+                            dplyr::arrange(int.mr.p)
                           
                           ranks.df$int.mr.p <- stats::p.adjust(ranks.df$int.mr.p, method = "fdr")
                           ranks.df$cluster <- cluster
